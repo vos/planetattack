@@ -3,7 +3,6 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QTimer>
-#include <QStatusBar>
 
 #include <cmath>
 #include <QDebug>

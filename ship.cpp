@@ -1,24 +1,26 @@
 #include "ship.h"
-#include <cmath>
+
+#define _USE_MATH_DEFINES
+#include <math.h> // cmath won't compile with _USE_MATH_DEFINES
 
 Ship::Ship(const QVector2D& position, Planet *target, int resources, const QColor &color, QObject *parent) :
     SpaceObject(position, resources, color, parent)
 {
-    mTarget = target;
-    mSpeed = 100; // TODO dynamic
+    m_target = target;
+    m_speed = 100; // TODO dynamic
 }
 
-void Ship::update(const QElapsedTimer &gameTimer, const QElapsedTimer &frameTimer)
+void Ship::update(const GameTime &gameTime)
 {
-    if (mTarget != NULL) {
+    if (m_target != NULL) {
         // move towards target
-        mDirection = mTarget->position() - mPosition;
-        mDirection.normalize();
-        mPosition += mDirection * (mSpeed * frameTimer.elapsed() / 1000.0);
-        if ((mTarget->position() - mPosition).length() <= mTarget->radius()) {
-            mTarget->setResources(mTarget->resources() + mResources);
-            mResources = 0;
-            mTarget = NULL;
+        m_direction = m_target->position() - m_position;
+        m_direction.normalize();
+        m_position += m_direction * (m_speed * gameTime.elapsedGameTimeSeconds());
+        if ((m_target->position() - m_position).length() <= m_target->radius()) {
+            m_target->setResources(m_target->resources() + m_resources);
+            m_resources = 0;
+            m_target = NULL;
         }
     }
 }
@@ -32,16 +34,16 @@ void Ship::draw(QPainter &painter)
     polygon.append(QPoint(0,-8));
 
     QMatrix matrix;
-    qreal degrees = atan2(mDirection.y(), mDirection.x()) * (180 / M_PI) + 90; // REFAC
+    qreal degrees = atan2(m_direction.y(), m_direction.x()) * (180 / M_PI) + 90; // REFAC
     matrix.rotate(degrees);
     polygon = matrix.map(polygon);
     matrix.reset();
-    matrix.translate(mPosition.x(), mPosition.y());
+    matrix.translate(m_position.x(), m_position.y());
     polygon = matrix.map(polygon);
 
-    painter.setPen(QPen(mColor, 3, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+    painter.setPen(QPen(m_color, 3, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
     painter.drawPolyline(polygon);
 
     painter.setPen(Qt::white);
-    painter.drawText(mPosition.toPoint(), QString::number(mResources));
+    painter.drawText(m_position.toPoint(), QString::number(m_resources));
 }

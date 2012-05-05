@@ -4,28 +4,26 @@
 #
 #-------------------------------------------------
 
-QT       += core gui opengl
+QT += core gui opengl
 
 TARGET = PlanetAttack
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-    canvas.cpp \
-    planet.cpp \
-    ship.cpp \
-    spaceobject.cpp \
-    drawable.cpp
-
-HEADERS  += \
+HEADERS += \
     canvas.h \
     planet.h \
     ship.h \
     spaceobject.h \
-    drawable.h
+    drawable.h \
+    player.h \
+    gametime.h
 
-FORMS    +=
-
-
-
-
+SOURCES += main.cpp \
+    canvas.cpp \
+    planet.cpp \
+    ship.cpp \
+    spaceobject.cpp \
+    drawable.cpp \
+    player.cpp \
+    gametime.cpp

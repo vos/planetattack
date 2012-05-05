@@ -2,9 +2,9 @@
 #define DRAWABLE_H
 
 #include <QObject>
-
-#include <QElapsedTimer>
 #include <QPainter>
+
+#include "gametime.h"
 
 class Drawable : public QObject
 {
@@ -14,7 +14,7 @@ public:
     explicit Drawable(QObject *parent = NULL);
 
 public slots:
-    virtual inline void update(const QElapsedTimer &gameTimer, const QElapsedTimer &frameTimer) { }
+    virtual inline void update(const GameTime &gameTime) { }
     virtual void draw(QPainter &painter) = 0;
     
 };

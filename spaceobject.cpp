@@ -3,7 +3,7 @@
 SpaceObject::SpaceObject(const QVector2D& position, int resources, const QColor &color, QObject *parent) :
     Drawable(parent)
 {
-    mPosition = position;
-    mResources = resources;
-    mColor = color;
+    m_position = position;
+    m_resources = resources;
+    m_color = color;
 }

@@ -10,18 +10,18 @@ class Planet : public SpaceObject
 public:
     Planet(const QVector2D& position, int radius, int resources, const QColor &color = Qt::blue, QObject *parent = NULL);
 
-    inline int radius() const { return mRadius; }
-    inline void setRadius(int radius) { mRadius = radius; }
+    inline int radius() const { return m_radius; }
+    inline void setRadius(int radius) { m_radius = radius; }
 
     QRect rect() const;
 
 public slots:
-    void update(const QElapsedTimer &gameTimer, const QElapsedTimer &frameTimer);
+    void update(const GameTime &gameTime);
     void draw(QPainter &painter);
 
 private:
-    int mRadius;
-    QElapsedTimer mTimer;
+    int m_radius;
+    QElapsedTimer m_timer;
 
 };
 

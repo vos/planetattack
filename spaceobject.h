@@ -13,19 +13,19 @@ class SpaceObject : public Drawable
 public:
     SpaceObject(const QVector2D& position = QVector2D(), int resources = 0, const QColor &color = Qt::blue, QObject *parent = NULL);
 
-    inline const QVector2D& position() const { return mPosition; }
-    inline void setPosition(const QVector2D &position) { mPosition = position; }
+    inline const QVector2D& position() const { return m_position; }
+    inline void setPosition(const QVector2D &position) { m_position = position; }
 
-    inline int resources() const { return mResources; }
-    inline void setResources(int resources) { mResources = resources; }
+    inline int resources() const { return m_resources; }
+    inline void setResources(int resources) { m_resources = resources; }
 
-    inline const QColor& color() const { return mColor; }
-    inline void setColor(const QColor &color = Qt::blue) { mColor = color; }
+    inline const QColor& color() const { return m_color; }
+    inline void setColor(const QColor &color = Qt::blue) { m_color = color; }
 
 protected:
-    QVector2D mPosition;
-    int mResources;
-    QColor mColor;
+    QVector2D m_position;
+    int m_resources;
+    QColor m_color;
     
 };
 

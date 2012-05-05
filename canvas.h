@@ -6,6 +6,7 @@
 #include <QSet>
 #include <QElapsedTimer>
 
+#include "gametime.h"
 #include "planet.h"
 #include "ship.h"
 
@@ -18,44 +19,41 @@ public:
 
     explicit Canvas(QWidget *parent = 0);
 
-    inline const QSet<Planet*>& selectedPlanets() const { return mSelectedPlanets; }
-
-public slots:
-    void keyReleaseEvent(QKeyEvent *keyEvent);
-
-private slots:
-    void mousePressEvent(QMouseEvent *mouseEvent);
-    void mouseDoubleClickEvent(QMouseEvent *mouseEvent);
-    void mouseMoveEvent(QMouseEvent *mouseEvent);
-    void mouseReleaseEvent(QMouseEvent *mouseEvent);
-
-    void tick();
+    inline const QSet<Planet*>& selectedPlanets() const { return m_selectedPlanets; }
 
 private:
-    QPainter mPainter;
+    QPainter m_painter;
 
-    QSet<Planet*> mPlanets;
-    QSet<Planet*> mSelectedPlanets;
-    Planet *mTarget;
+    QSet<Planet*> m_planets;
+    QSet<Planet*> m_selectedPlanets;
+    Planet *m_target;
 
-    QSet<Ship*> mShips;
+    QSet<Ship*> m_ships;
 
     enum Mode {
         EditorMode,
         GameMode
     };
     static const QString ModeStrings[];
-    Mode mMode;
+    Mode m_mode;
 
-    QElapsedTimer mGameTimer;
-    QElapsedTimer mFrameTimer;
-    QElapsedTimer mFPSTimer;
-    int mFPSCounter;
-    int mFPS;
+    GameTime m_gameTime;
 
-    QImage mBackgroundImage;
+    QElapsedTimer m_FPSTimer;
+    int m_FPSCounter;
+    int m_FPS;
 
+    QImage m_backgroundImage;
+
+    void timerEvent(QTimerEvent *timerEvent);
     void paintEvent(QPaintEvent *paintEvent);
+
+    void keyReleaseEvent(QKeyEvent *keyEvent);
+
+    void mousePressEvent(QMouseEvent *mouseEvent);
+    void mouseDoubleClickEvent(QMouseEvent *mouseEvent);
+    void mouseMoveEvent(QMouseEvent *mouseEvent);
+    void mouseReleaseEvent(QMouseEvent *mouseEvent);
 
 };
 

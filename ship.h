@@ -11,16 +11,16 @@ class Ship : public SpaceObject
 public:
     Ship(const QVector2D& position, Planet *target, int resources = 0, const QColor &color = Qt::blue, QObject *parent = NULL);
 
-    inline const Planet* target() const { return mTarget; }
+    inline const Planet* target() const { return m_target; }
 
 public slots:
-    void update(const QElapsedTimer &gameTimer, const QElapsedTimer &frameTimer);
+    void update(const GameTime &gameTime);
     void draw(QPainter &painter);
 
 private:
-    Planet *mTarget;
-    int mSpeed; // pixels per second
-    QVector2D mDirection; // tmp
+    Planet *m_target;
+    int m_speed; // pixels per second
+    QVector2D m_direction; // temp
     
 };
 

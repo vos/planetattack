@@ -3,6 +3,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h> // cmath won't compile with _USE_MATH_DEFINES
 
+#include "planet.h"
+
 Ship::Ship(const QVector2D& position, Planet *target, int resources, const QColor &color, QObject *parent) :
     SpaceObject(position, resources, color, parent)
 {

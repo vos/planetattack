@@ -7,8 +7,7 @@
 #include <QElapsedTimer>
 
 #include "gametime.h"
-#include "planet.h"
-#include "ship.h"
+#include "player.h"
 
 class Canvas : public QGLWidget
 {
@@ -17,18 +16,12 @@ class Canvas : public QGLWidget
 public:
     static Canvas *Instance; // singleton
 
-    explicit Canvas(QWidget *parent = 0);
+    explicit Canvas(QWidget *parent = NULL);
 
-    inline const QSet<Planet*>& selectedPlanets() const { return m_selectedPlanets; }
+    inline QSet<Player*>& player() { return m_players; }
 
 private:
     QPainter m_painter;
-
-    QSet<Planet*> m_planets;
-    QSet<Planet*> m_selectedPlanets;
-    Planet *m_target;
-
-    QSet<Ship*> m_ships;
 
     enum Mode {
         EditorMode,
@@ -44,6 +37,9 @@ private:
     int m_FPS;
 
     QImage m_backgroundImage;
+
+    QSet<Player*> m_players;
+    Player *m_localPlayer;
 
     void timerEvent(QTimerEvent *timerEvent);
     void paintEvent(QPaintEvent *paintEvent);

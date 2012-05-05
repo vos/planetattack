@@ -2,14 +2,15 @@
 #define SHIP_H
 
 #include "spaceobject.h"
-#include "planet.h"
+
+class Planet;
 
 class Ship : public SpaceObject
 {
     Q_OBJECT
 
 public:
-    Ship(const QVector2D& position, Planet *target, int resources = 0, const QColor &color = Qt::blue, QObject *parent = NULL);
+    Ship(const QVector2D& position, Planet *target, int resources, const QColor &color, QObject *parent = NULL);
 
     inline const Planet* target() const { return m_target; }
 

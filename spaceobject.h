@@ -11,7 +11,7 @@ class SpaceObject : public Drawable
     Q_OBJECT
 
 public:
-    SpaceObject(const QVector2D& position = QVector2D(), int resources = 0, const QColor &color = Qt::blue, QObject *parent = NULL);
+    SpaceObject(const QVector2D& position = QVector2D(), int resources = 0, const QColor &color = Qt::white, QObject *parent = NULL);
 
     inline const QVector2D& position() const { return m_position; }
     inline void setPosition(const QVector2D &position) { m_position = position; }

@@ -17,7 +17,12 @@ HEADERS += \
     spaceobject.h \
     drawable.h \
     player.h \
-    gametime.h
+    gametime.h \
+    humanplayer.h \
+    computerplayer.h \
+    intelligence.h \
+    playerintelligence.h \
+    defaultplayerintelligence.h
 
 SOURCES += main.cpp \
     canvas.cpp \
@@ -26,4 +31,9 @@ SOURCES += main.cpp \
     spaceobject.cpp \
     drawable.cpp \
     player.cpp \
-    gametime.cpp
+    gametime.cpp \
+    humanplayer.cpp \
+    computerplayer.cpp \
+    intelligence.cpp \
+    playerintelligence.cpp \
+    defaultplayerintelligence.cpp

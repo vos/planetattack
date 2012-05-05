@@ -43,6 +43,13 @@ Canvas::Canvas(QWidget *parent) :
     computerPlayer->planets().insert(computerPlanet);
     m_players.insert(computerPlayer);
 
+    ComputerPlayer *computerPlayer2 = new ComputerPlayer("Kai", Qt::darkGreen, NULL, this);
+    Planet *computerPlanet2 = new Planet(QVector2D(500, 500), 75, 75, computerPlayer2->color(), computerPlayer2);
+    computerPlayer2->planets().insert(computerPlanet2);
+    Planet *computerPlanet3 = new Planet(QVector2D(650, 600), 25, 25, computerPlayer2->color(), computerPlayer2);
+    computerPlayer2->planets().insert(computerPlanet3);
+    m_players.insert(computerPlayer2);
+
     Random::init();
 
     m_gameTime.start();

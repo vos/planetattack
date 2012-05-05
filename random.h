@@ -7,7 +7,7 @@ class Random
 {
 public:
     static void init();
-    static int randomInt(int min, int max);
+    static int randomInt(int from, int to);
 
     // TODO move to cpp!
     template <typename Container>

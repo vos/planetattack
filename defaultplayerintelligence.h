@@ -14,6 +14,7 @@ public:
 
 private:
     QElapsedTimer m_timer;
+    int m_delay;
 
 };
 

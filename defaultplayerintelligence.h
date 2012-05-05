@@ -12,6 +12,9 @@ public:
 
     void think(const GameTime &gameTime);
 
+private:
+    QElapsedTimer m_timer;
+
 };
 
 #endif // DEFAULTPLAYERINTELLIGENCE_H

@@ -8,6 +8,7 @@
 
 #include "humanplayer.h"
 #include "computerplayer.h"
+#include "random.h"
 
 Canvas* Canvas::Instance = NULL;
 
@@ -41,6 +42,8 @@ Canvas::Canvas(QWidget *parent) :
     Planet *computerPlanet = new Planet(QVector2D(750, 250), 100, 100, computerPlayer->color(), computerPlayer);
     computerPlayer->planets().insert(computerPlanet);
     m_players.insert(computerPlayer);
+
+    Random::init();
 
     m_gameTime.start();
     m_FPSTimer.start();
@@ -165,7 +168,7 @@ void Canvas::keyReleaseEvent(QKeyEvent *keyEvent)
 
 void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
 {
-    QSet<Planet*>& selectedPlanets = m_localPlayer->selectedPlanets();
+    QSet<Planet*> &selectedPlanets = m_localPlayer->selectedPlanets();
     if (mouseEvent->button() == Qt::LeftButton) {
         if (!(mouseEvent->modifiers() & Qt::ControlModifier)) {
             m_localPlayer->selectedPlanets().clear();

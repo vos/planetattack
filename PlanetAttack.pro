@@ -22,7 +22,8 @@ HEADERS += \
     computerplayer.h \
     intelligence.h \
     playerintelligence.h \
-    defaultplayerintelligence.h
+    defaultplayerintelligence.h \
+    random.h
 
 SOURCES += main.cpp \
     canvas.cpp \
@@ -36,4 +37,5 @@ SOURCES += main.cpp \
     computerplayer.cpp \
     intelligence.cpp \
     playerintelligence.cpp \
-    defaultplayerintelligence.cpp
+    defaultplayerintelligence.cpp \
+    random.cpp

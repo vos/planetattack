@@ -18,7 +18,7 @@ public:
 
     explicit Canvas(QWidget *parent = NULL);
 
-    inline QSet<Player*>& player() { return m_players; }
+    inline QSet<Player*>& players() { return m_players; }
 
 private:
     QPainter m_painter;

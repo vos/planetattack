@@ -2,6 +2,7 @@
 #define PLAYERINTELLIGENCE_H
 
 #include "intelligence.h"
+#include "canvas.h"
 
 class ComputerPlayer;
 
@@ -12,7 +13,10 @@ class PlayerIntelligence : public Intelligence
 public:
     explicit PlayerIntelligence(QObject *parent = NULL);
 
-    inline ComputerPlayer* computerPlayer() const { return (ComputerPlayer*)parent(); } // qobject_cast<ComputerPlayer*>(parent());
+protected:
+    inline Player* getSelf() { return (Player*)parent(); }
+    inline QSet<Player*>& getAllPlayers() { return Canvas::Instance->players(); }
+    QSet<Player*> getEnemies();
 
 };
 

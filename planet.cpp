@@ -50,7 +50,7 @@ void Planet::draw(QPainter &painter)
     QRect boundingRect = rect();
     painter.drawEllipse(boundingRect);
 
-    QString text = QString::number(m_resources);
+    QString text = QString("%1\n%2").arg(player->name()).arg(m_resources);
     painter.setPen(Qt::white);
     painter.drawText(boundingRect, Qt::AlignCenter, text);
 }

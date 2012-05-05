@@ -3,7 +3,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h> // cmath won't compile with _USE_MATH_DEFINES
 
-#include "planet.h"
+#include "player.h"
 
 Ship::Ship(const QVector2D& position, Planet *target, int resources, const QColor &color, QObject *parent) :
     SpaceObject(position, resources, color, parent)
@@ -20,7 +20,28 @@ void Ship::update(const GameTime &gameTime)
         m_direction.normalize();
         m_position += m_direction * (m_speed * gameTime.elapsedGameTimeSeconds());
         if ((m_target->position() - m_position).length() <= m_target->radius()) {
-            m_target->setResources(m_target->resources() + m_resources);
+            Player *player = (Player*)(((Planet*)parent())->parent()); // REFAC
+            Player *targetOwner = (Player*)m_target->parent();
+            if (targetOwner == player) {
+                // own planet -> add resources
+                m_target->setResources(m_target->resources() + m_resources);
+            } else {
+                // enemy planet -> substract resources
+                m_target->setResources(m_target->resources() - m_resources);
+                if (m_target->resources() <= 0) {
+                    // resources depleted -> take-over target planet!
+                    // REFAC remove target planet from owner
+                    if (targetOwner->target() == m_target) {
+                        targetOwner->setTarget(NULL);
+                    }
+                    targetOwner->selectedPlanets().remove(m_target);
+                    targetOwner->planets().remove(m_target);
+                    m_target->setParent(player);
+                    m_target->setColor(player->color());
+                    m_target->setResources(m_target->radius()); // reset resources
+                    player->planets().insert(m_target);
+                }
+            }
             m_resources = 0;
             m_target = NULL;
         }

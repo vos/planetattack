@@ -12,7 +12,7 @@ public:
     ComputerPlayer(const QString &name, const QColor &color = Qt::red, PlayerIntelligence *intelligence = NULL, QObject *parent = NULL);
 
     inline PlayerIntelligence* intelligence() const { return m_intelligence; }
-    inline void setIntelligence(PlayerIntelligence *intelligence) { m_intelligence = intelligence; m_intelligence->setParent(this); }
+    void setIntelligence(PlayerIntelligence *intelligence = NULL);
 
 private:
     PlayerIntelligence *m_intelligence;

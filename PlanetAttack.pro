@@ -11,6 +11,7 @@ TEMPLATE = app
 
 
 HEADERS += \
+    mainwindow.h \
     canvas.h \
     planet.h \
     ship.h \
@@ -26,6 +27,7 @@ HEADERS += \
     random.h
 
 SOURCES += main.cpp \
+    mainwindow.cpp \
     canvas.cpp \
     planet.cpp \
     ship.cpp \
@@ -39,3 +41,5 @@ SOURCES += main.cpp \
     playerintelligence.cpp \
     defaultplayerintelligence.cpp \
     random.cpp
+
+FORMS += mainwindow.ui

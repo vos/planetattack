@@ -23,8 +23,8 @@ void DefaultPlayerIntelligence::think(const GameTime &gameTime)
         Player *enemyPlayer = *Random::randomElement(enemies);
         if (enemyPlayer->planets().isEmpty()) return; // enemy has no planets!
         Planet *enemyPlanet = *Random::randomElement(enemyPlayer->planets());
-        // attack enemy planet with 50% of my choosen planets resources
-        int res = int(myPlanet->resources() * 0.5);
+        // attack enemy planet with 25-75% of my choosen planets resources
+        int res = int(myPlanet->resources() * Random::randomReal(0.25, 0.75));
         myPlanet->setResources(myPlanet->resources() - res);
         Ship *ship = new Ship(myPlanet->position(), enemyPlanet, res, myPlanet->color(), myPlanet);
         myPlanet->ships().insert(ship);

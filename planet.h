@@ -10,6 +10,7 @@
 class Planet : public SpaceObject
 {
     Q_OBJECT
+    Q_PROPERTY(int radius READ radius WRITE setRadius)
 
 public:
     Planet(const QVector2D& position, int radius, int resources, const QColor &color, QObject *parent = NULL);

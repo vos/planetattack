@@ -187,6 +187,7 @@ void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
                     selectedPlanets.remove(planet);
                 } else {
                     selectedPlanets.insert(planet);
+                    emit selectionChanged(planet); // TODO select first
                 }
             }
         }
@@ -194,6 +195,7 @@ void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
             Planet *planet = new Planet(QVector2D(mouseEvent->pos()), 50, 0, m_localPlayer->color(), m_localPlayer);
             m_localPlayer->planets().insert(planet);
             selectedPlanets.insert(planet);
+            emit selectionChanged(planet);
         }
     } else if (mouseEvent->button() == Qt::RightButton) {
         if (m_mode == GameMode) {
@@ -237,10 +239,12 @@ void Canvas::mouseMoveEvent(QMouseEvent *mouseEvent)
             foreach (Planet *planet, m_localPlayer->selectedPlanets()) {
                 qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
                 planet->setRadius(int(len));
+                emit selectionChanged(planet); // TODO select first
             }
         } else {
             foreach (Planet *planet, m_localPlayer->selectedPlanets()) {
                 planet->setPosition(QVector2D(mouseEvent->pos()));
+                emit selectionChanged(planet); // TODO select first
             }
         }
     }

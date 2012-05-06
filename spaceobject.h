@@ -9,6 +9,9 @@
 class SpaceObject : public Drawable
 {
     Q_OBJECT
+    Q_PROPERTY(QVector2D position READ position WRITE setPosition)
+    Q_PROPERTY(int resources READ resources WRITE setResources)
+    Q_PROPERTY(QColor color READ color WRITE setColor)
 
 public:
     SpaceObject(const QVector2D& position = QVector2D(), int resources = 0, const QColor &color = Qt::white, QObject *parent = NULL);

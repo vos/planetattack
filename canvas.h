@@ -20,6 +20,9 @@ public:
 
     inline QSet<Player*>& players() { return m_players; }
 
+signals:
+    void selectionChanged(QObject *o);
+
 private:
     QPainter m_painter;
 

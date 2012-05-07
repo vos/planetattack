@@ -13,7 +13,7 @@ class Vector2DPropertyEditor : public QWidget, public PropertyEditor
     Q_OBJECT
 
 public:
-    explicit Vector2DPropertyEditor(QWidget *parent = 0);
+    explicit Vector2DPropertyEditor(QWidget *parent = NULL);
 
     QWidget* widget() const { return (QWidget*)this; }
 

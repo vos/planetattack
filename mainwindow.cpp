@@ -25,7 +25,9 @@ MainWindow::MainWindow(QWidget *parent) :
     QLayout *layout = new QVBoxLayout;
     ui->editorWidget->setLayout(layout);
     connect(m_canvas, SIGNAL(selectionChanged(QObject*)), SLOT(canvas_selectionChanged(QObject*)));
+
     m_canvas->setFocus(); // TODO focus on click
+    connect(ui->action_setFocus, SIGNAL(triggered()), m_canvas, SLOT(setFocus()));
 
     m_selectedObject = NULL;
 }

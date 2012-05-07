@@ -31,6 +31,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="action_setFocus"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="editorDockWidget">
@@ -45,6 +46,11 @@
    </attribute>
    <widget class="QWidget" name="editorWidget"/>
   </widget>
+  <action name="action_setFocus">
+   <property name="text">
+    <string>Set Focus</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

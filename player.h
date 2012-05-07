@@ -5,6 +5,7 @@
 #include <QSet>
 
 #include "planet.h"
+#include "ship.h"
 
 class Player : public QObject
 {
@@ -28,6 +29,8 @@ public:
     inline Planet* target() { return m_target; }
     inline void setTarget(Planet *target) { m_target = target; }
 
+    inline QSet<Ship*>& ships() { return m_ships; }
+
 protected:
     QString m_name;
     QColor m_color;
@@ -36,6 +39,8 @@ protected:
     QSet<Planet*> m_planets;
     QSet<Planet*> m_selectedPlanets;
     Planet *m_target;
+
+    QSet<Ship*> m_ships;
 
 };
 

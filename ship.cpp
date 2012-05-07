@@ -20,7 +20,7 @@ void Ship::update(const GameTime &gameTime)
         m_direction.normalize();
         m_position += m_direction * (m_speed * gameTime.elapsedGameTimeSeconds());
         if ((m_target->position() - m_position).length() <= m_target->radius()) {
-            Player *player = (Player*)(((Planet*)parent())->parent()); // REFAC
+            Player *player = (Player*)parent();
             Player *targetOwner = (Player*)m_target->parent();
             if (targetOwner == player) {
                 // own planet -> add resources

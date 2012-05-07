@@ -68,6 +68,13 @@ void Canvas::timerEvent(QTimerEvent *timerEvent)
             foreach (Planet *planet, player->planets()) {
                 planet->update(m_gameTime);
             }
+            foreach (Ship *ship, player->ships()) {
+                ship->update(m_gameTime);
+                if (ship->target() == NULL) {
+                    player->ships().remove(ship);
+                    delete ship;
+                }
+            }
         }
     }
 
@@ -94,7 +101,7 @@ void Canvas::paintEvent(QPaintEvent *paintEvent)
         m_painter.drawRect(rect());
     }
 
-    // players
+    // planets
     foreach (Player *player, m_players) {
         foreach (Planet *planet, player->planets()) {
             planet->draw(m_painter);
@@ -114,18 +121,12 @@ void Canvas::paintEvent(QPaintEvent *paintEvent)
 
     // ships
     foreach (Player *player, m_players) {
-        foreach (Planet *planet, player->planets()) {
-            foreach (Ship *ship, planet->ships()) {
-                ship->draw(m_painter);
-            }
+        foreach (Ship *ship, player->ships()) {
+            ship->draw(m_painter);
         }
     }
 
     // status overlay
-    int shipCount = 0;
-    foreach (Planet *planet, m_localPlayer->planets()) {
-        shipCount += planet->ships().count();
-    }
     QString statusText = QString("Mode = %1\n"
                                  "Game Time = %2 (%3) ms\n"
                                  "FPS = %4\n"
@@ -135,7 +136,7 @@ void Canvas::paintEvent(QPaintEvent *paintEvent)
             .arg(m_gameTime.totalGameTime()).arg(m_gameTime.elapsedGameTime())
             .arg(m_FPS)
             .arg(m_localPlayer->planets().count()).arg(m_localPlayer->selectedPlanets().count())
-            .arg(shipCount);
+            .arg(m_localPlayer->ships().count());
     QFontMetrics fontMetrics = m_painter.fontMetrics();
     QSize statusSize = fontMetrics.size(0, statusText);
     QRect statusBoundingRect(10, 10, statusSize.width() + 20, statusSize.height() + 10);
@@ -208,9 +209,9 @@ void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
                             foreach (Planet *selectedPlanet, selectedPlanets) {
                                 if (selectedPlanet != planet) {
                                     int res = selectedPlanet->resources() / 2;
-                                    Ship *ship = new Ship(selectedPlanet->position(), planet, res, selectedPlanet->color(), selectedPlanet);
+                                    Ship *ship = new Ship(selectedPlanet->position(), planet, res, selectedPlanet->color(), m_localPlayer);
                                     selectedPlanet->setResources(selectedPlanet->resources() - res);
-                                    selectedPlanet->ships().insert(ship);
+                                    player->ships().insert(ship);
                                 }
                             }
                             m_localPlayer->setTarget(planet);

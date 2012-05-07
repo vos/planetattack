@@ -26,15 +26,6 @@ void Planet::update(const GameTime &gameTime)
         m_resources += m_radius;
         m_timer.restart();
     }
-
-    // ships
-    foreach (Ship *ship, m_ships) {
-        ship->update(gameTime);
-        if (ship->target() == NULL) {
-            m_ships.remove(ship); // TODO remove and delete in foreach?
-            delete ship;
-        }
-    }
 }
 
 void Planet::draw(QPainter &painter)

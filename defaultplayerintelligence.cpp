@@ -26,8 +26,8 @@ void DefaultPlayerIntelligence::think(const GameTime &gameTime)
         // attack enemy planet with 25-75% of my choosen planets resources
         int res = int(myPlanet->resources() * Random::randomReal(0.25, 0.75));
         myPlanet->setResources(myPlanet->resources() - res);
-        Ship *ship = new Ship(myPlanet->position(), enemyPlanet, res, myPlanet->color(), myPlanet);
-        myPlanet->ships().insert(ship);
+        Ship *ship = new Ship(myPlanet->position(), enemyPlanet, res, myPlanet->color(), self);
+        self->ships().insert(ship);
 
         m_delay = Random::randomInt(250, 1000);
         m_timer.restart();

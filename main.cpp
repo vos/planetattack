@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     QWidget *w;
-    if (a.arguments().contains("-canvas")) {
+    if (a.arguments().contains("-noui")) {
         w = new Canvas;
     } else {
         w = new MainWindow;

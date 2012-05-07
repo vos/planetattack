@@ -55,7 +55,7 @@ Canvas::Canvas(QWidget *parent) :
     m_gameTime.start();
     m_FPSTimer.start();
 
-    startTimer(int(1000.0 / 60)); // start the "game loop"
+    startTimer(int(1000.0 / m_FPS)); // start the "game loop"
 }
 
 void Canvas::timerEvent(QTimerEvent *timerEvent)

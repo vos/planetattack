@@ -24,7 +24,10 @@ HEADERS += \
     intelligence.h \
     playerintelligence.h \
     defaultplayerintelligence.h \
-    random.h
+    random.h \
+    propertyeditor.h \
+    stringpropertyeditor.h \
+    vector2dpropertyeditor.h
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -40,6 +43,8 @@ SOURCES += main.cpp \
     intelligence.cpp \
     playerintelligence.cpp \
     defaultplayerintelligence.cpp \
-    random.cpp
+    random.cpp \
+    stringpropertyeditor.cpp \
+    vector2dpropertyeditor.cpp
 
 FORMS += mainwindow.ui

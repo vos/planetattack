@@ -5,6 +5,7 @@
 #include <QList>
 
 #include "canvas.h"
+#include "propertyeditor.h"
 
 namespace Ui {
 class MainWindow;
@@ -20,12 +21,13 @@ public:
 
 private slots:
     void canvas_selectionChanged(QObject *o);
+    void saveButton_clicked();
 
 private:
     Ui::MainWindow *ui;
     Canvas *m_canvas;
     QObject *m_selectedObject;
-    QList<QWidget*> m_objectEditorList;
+    QList<PropertyEditor*> m_propertyEditorList;
 
 };
 

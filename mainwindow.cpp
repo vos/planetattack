@@ -6,10 +6,11 @@
 
 #include <QVBoxLayout>
 #include <QLabel>
-#include <QTextEdit>
 #include <QPushButton>
 
 #include "canvas.h"
+#include "stringpropertyeditor.h"
+#include "vector2dpropertyeditor.h"
 
 #include <QDebug>
 
@@ -37,10 +38,11 @@ MainWindow::~MainWindow()
 void MainWindow::canvas_selectionChanged(QObject *o)
 {
     const QMetaObject *metaObject = o->metaObject();
-    if (o != m_selectedObject) {
+    if (m_selectedObject == NULL || typeid(o) != typeid(m_selectedObject)) {
+        // type has changed -> create new view
         QLayout *layout = ui->editorWidget->layout();
         // delete all widgets
-        m_objectEditorList.clear();
+        m_propertyEditorList.clear();
         QLayoutItem *item;
         while ((item = layout->takeAt(0)) != NULL) {
             delete item->widget();
@@ -50,32 +52,40 @@ void MainWindow::canvas_selectionChanged(QObject *o)
         for(int i = 1; i < metaObject->propertyCount(); ++i) {
             QMetaProperty property = metaObject->property(i);
             layout->addWidget(new QLabel(QString("%1 (%2)").arg(property.name(), property.typeName())));
-            QString value;
-            if (property.type() == QVariant::Vector2D) {
-                QVector2D vec = property.read(o).value<QVector2D>();
-                value = QString("%1, %2").arg(vec.x()).arg(vec.y());
-            } else {
-                value = property.read(o).toString();
+            PropertyEditor *editor;
+            switch (property.type()) {
+            case QVariant::Vector2D:
+                editor = new Vector2DPropertyEditor;
+                break;
+            default:
+                editor = new StringPropertyEditor;
             }
-            QWidget *editorWidget = new QTextEdit(value);
-            layout->addWidget(editorWidget);
-            m_objectEditorList.append(editorWidget);
+            editor->setValue(property.read(o).value<QVariant>());
+            layout->addWidget(editor->widget());
+            m_propertyEditorList.append(editor);
         }
         QPushButton *saveButton = new QPushButton("Save");
-        saveButton->setEnabled(false);
+        connect(saveButton, SIGNAL(clicked()), SLOT(saveButton_clicked()));
         layout->addWidget(saveButton);
-        m_selectedObject = o;
     } else {
+        // type has not changed -> just update the view
         for(int i = 1; i < metaObject->propertyCount(); ++i) {
             QMetaProperty property = metaObject->property(i);
-            QString value;
-            if (property.type() == QVariant::Vector2D) {
-                QVector2D vec = property.read(o).value<QVector2D>();
-                value = QString("%1, %2").arg(vec.x()).arg(vec.y());
-            } else {
-                value = property.read(o).toString();
-            }
-            ((QTextEdit*)m_objectEditorList.at(i-1))->setText(value);
+            PropertyEditor *editor = m_propertyEditorList.at(i - 1);
+            editor->setValue(property.read(o).value<QVariant>());
         }
+    }
+    m_selectedObject = o;
+}
+
+void MainWindow::saveButton_clicked()
+{
+    if (!m_selectedObject) return;
+
+    const QMetaObject *metaObject = m_selectedObject->metaObject();
+    for(int i = 1; i < metaObject->propertyCount(); ++i) {
+        QMetaProperty property = metaObject->property(i);
+        PropertyEditor *editor = m_propertyEditorList.at(i - 1);
+        property.write(m_selectedObject, editor->value());
     }
 }

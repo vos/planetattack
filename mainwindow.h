@@ -20,8 +20,11 @@ public:
     ~MainWindow();
 
 private slots:
+    void canvas_modeChanged();
     void canvas_selectionChanged(QObject *o);
     void saveButton_clicked();
+
+    void on_modeComboBox_currentIndexChanged(int index);
 
 private:
     Ui::MainWindow *ui;

@@ -18,20 +18,26 @@ public:
 
     explicit Canvas(QWidget *parent = NULL);
 
-    inline QSet<Player*>& players() { return m_players; }
-
-signals:
-    void selectionChanged(QObject *o);
-
-private:
-    QPainter m_painter;
-
     enum Mode {
         EditorMode,
         GameMode
     };
+    inline Mode mode() const { return m_mode; }
+    inline const QString& modeString() const { return ModeStrings[m_mode]; }
+    static inline const QString& modeString(Mode mode) { return ModeStrings[mode]; }
+    inline void setMode(Mode mode) { if (mode == m_mode) return; m_mode = mode; emit modeChanged(); }
+
+    inline QSet<Player*>& players() { return m_players; }
+
+signals:
+    void modeChanged();
+    void selectionChanged(QObject *o);
+
+private:
     static const QString ModeStrings[];
+
     Mode m_mode;
+    QPainter m_painter;
 
     GameTime m_gameTime;
 

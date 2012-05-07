@@ -22,8 +22,15 @@ MainWindow::MainWindow(QWidget *parent) :
     m_canvas = new Canvas(this);
     setCentralWidget(m_canvas);
     setWindowTitle(m_canvas->windowTitle());
+
+    ui->modeComboBox->addItem(Canvas::modeString(Canvas::EditorMode));
+    ui->modeComboBox->addItem(Canvas::modeString(Canvas::GameMode));
+    ui->modeComboBox->setCurrentIndex(m_canvas->mode());
+
     QLayout *layout = new QVBoxLayout;
     ui->editorWidget->setLayout(layout);
+
+    connect(m_canvas, SIGNAL(modeChanged()), SLOT(canvas_modeChanged()));
     connect(m_canvas, SIGNAL(selectionChanged(QObject*)), SLOT(canvas_selectionChanged(QObject*)));
 
     m_canvas->setFocus(); // TODO focus on click
@@ -35,6 +42,18 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::on_modeComboBox_currentIndexChanged(int index)
+{
+    m_canvas->setMode((Canvas::Mode)index);
+}
+
+void MainWindow::canvas_modeChanged()
+{
+    if (ui->modeComboBox->currentIndex() == m_canvas->mode())
+        return;
+    ui->modeComboBox->setCurrentIndex(m_canvas->mode());
 }
 
 void MainWindow::canvas_selectionChanged(QObject *o)

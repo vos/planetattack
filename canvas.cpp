@@ -132,7 +132,7 @@ void Canvas::paintEvent(QPaintEvent *paintEvent)
                                  "FPS = %4\n"
                                  "Planet Count = %5 (%6)\n"
                                  "Ship Count = %7")
-            .arg(ModeStrings[m_mode])
+            .arg(modeString())
             .arg(m_gameTime.totalGameTime()).arg(m_gameTime.elapsedGameTime())
             .arg(m_FPS)
             .arg(m_localPlayer->planets().count()).arg(m_localPlayer->selectedPlanets().count())
@@ -156,7 +156,7 @@ void Canvas::keyReleaseEvent(QKeyEvent *keyEvent)
 //    qDebug() << "keyPressEvent = " << keyEvent;
     switch (keyEvent->key()) {
     case Qt::Key_F1: {
-        m_mode = m_mode == EditorMode ? GameMode : EditorMode;
+        setMode(m_mode == EditorMode ? GameMode : EditorMode);
         break;
     }
     case Qt::Key_Delete:

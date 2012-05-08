@@ -1,20 +1,20 @@
 #include "vector2dpropertyeditor.h"
 
 #include <QHBoxLayout>
-#include <QTextEdit>
+#include <QLineEdit>
 
 Vector2DPropertyEditor::Vector2DPropertyEditor(QWidget *parent) :
     QWidget(parent)
 {
     QHBoxLayout *layout = new QHBoxLayout;
-    layout->addWidget(m_x = new QTextEdit);
-    layout->addWidget(m_y = new QTextEdit);
+    layout->addWidget(m_x = new QLineEdit);
+    layout->addWidget(m_y = new QLineEdit);
     setLayout(layout);
 }
 
 QVariant Vector2DPropertyEditor::value() const
 {
-    return QVector2D(m_x->toPlainText().toDouble(), m_y->toPlainText().toDouble());
+    return QVector2D(m_x->text().toDouble(), m_y->text().toDouble());
 }
 
 void Vector2DPropertyEditor::setValue(const QVariant &value)

@@ -1,10 +1,10 @@
 #ifndef STRINGPROPERTYEDITOR_H
 #define STRINGPROPERTYEDITOR_H
 
-#include <QTextEdit>
+#include <QLineEdit>
 #include "propertyeditor.h"
 
-class StringPropertyEditor : public QTextEdit, public PropertyEditor
+class StringPropertyEditor : public QLineEdit, public PropertyEditor
 {
     Q_OBJECT
 
@@ -13,7 +13,7 @@ public:
 
     QWidget* widget() const { return (QWidget*)this; }
 
-    inline QVariant value() const { return this->toPlainText(); }
+    inline QVariant value() const { return this->text(); }
     inline void setValue(const QVariant &value) { this->setText(value.toString()); }
 
 };

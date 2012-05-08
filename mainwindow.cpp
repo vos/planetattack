@@ -71,7 +71,7 @@ void MainWindow::canvas_selectionChanged(QObject *o)
     const QMetaObject *metaObject = o->metaObject();
     if (m_selectedObject == NULL || m_selectedObject->metaObject() != metaObject) {
         // type has changed -> create new view
-        QLayout *layout = ui->editorWidget->layout();
+        QVBoxLayout *layout = (QVBoxLayout*)ui->editorWidget->layout();
         // delete all widgets
         m_propertyEditorList.clear();
         QLayoutItem *item;
@@ -101,6 +101,7 @@ void MainWindow::canvas_selectionChanged(QObject *o)
             layout->addWidget(editor->widget());
             m_propertyEditorList.append(editor);
         }
+        layout->addStretch();
         QPushButton *saveButton = new QPushButton("Save");
         connect(saveButton, SIGNAL(clicked()), SLOT(saveButton_clicked()));
         layout->addWidget(saveButton);

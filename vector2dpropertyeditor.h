@@ -6,7 +6,7 @@
 
 #include <QVector2D>
 
-QT_FORWARD_DECLARE_CLASS(QTextEdit)
+QT_FORWARD_DECLARE_CLASS(QLineEdit)
 
 class Vector2DPropertyEditor : public QWidget, public PropertyEditor
 {
@@ -21,8 +21,8 @@ public:
     void setValue(const QVariant &value);
 
 private:
-    QTextEdit *m_x;
-    QTextEdit *m_y;
+    QLineEdit *m_x;
+    QLineEdit *m_y;
 
 };
 

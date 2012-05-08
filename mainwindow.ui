@@ -46,6 +46,9 @@
      <item row="0" column="0">
       <widget class="QComboBox" name="modeComboBox"/>
      </item>
+     <item row="1" column="0">
+      <widget class="QComboBox" name="playerComboBox"/>
+     </item>
     </layout>
    </widget>
   </widget>

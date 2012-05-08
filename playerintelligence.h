@@ -20,4 +20,6 @@ protected:
 
 };
 
+Q_DECLARE_METATYPE(PlayerIntelligence*)
+
 #endif // PLAYERINTELLIGENCE_H

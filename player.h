@@ -10,6 +10,8 @@
 class Player : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName USER true)
+    Q_PROPERTY(QColor color READ color WRITE setColor)
 
 public:
     Player(const QString &name, const QColor &color, bool human = true, QObject *parent = NULL);

@@ -181,14 +181,16 @@ void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
         if (!(mouseEvent->modifiers() & Qt::ControlModifier)) {
             m_localPlayer->selectedPlanets().clear();
         }
-        foreach (Planet *planet, m_localPlayer->planets()) {
-            qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
-            if (len <= planet->radius()) {
-                if (selectedPlanets.contains(planet)) {
-                    selectedPlanets.remove(planet);
-                } else {
-                    selectedPlanets.insert(planet);
-                    emit selectionChanged(planet); // TODO select first
+        foreach (Player *player, m_players) {
+            foreach (Planet *planet, player->planets()) {
+                qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
+                if (len <= planet->radius()) {
+                    if (selectedPlanets.contains(planet)) {
+                        selectedPlanets.remove(planet);
+                    } else {
+                        selectedPlanets.insert(planet);
+                        emit selectionChanged(planet); // TODO select first
+                    }
                 }
             }
         }

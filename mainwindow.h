@@ -25,6 +25,7 @@ private slots:
     void saveButton_clicked();
 
     void on_modeComboBox_currentIndexChanged(int index);
+    void on_playerComboBox_currentIndexChanged(int index);
 
 private:
     Ui::MainWindow *ui;

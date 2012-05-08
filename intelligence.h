@@ -11,9 +11,10 @@ class Intelligence : public QObject
 
 public:
     explicit Intelligence(QObject *parent = NULL);
+    Intelligence(const Intelligence &);
 
 public slots:
-    virtual void think(const GameTime &gameTime) = 0;
+    virtual void think(const GameTime &gameTime) { } // TODO abstract not possible with Qt Meta System
 
 };
 

@@ -4,10 +4,14 @@
 #include "mainwindow.h"
 #include "canvas.h"
 
+#include "playerintelligence.h"
+
 int main(int argc, char *argv[])
 {
     //    QApplication::setGraphicsSystem("opengl");
     QApplication a(argc, argv);
+
+    qRegisterMetaType<PlayerIntelligence*>("PlayerIntelligence*");
 
     QWidget *w;
     if (a.arguments().contains("-noui")) {

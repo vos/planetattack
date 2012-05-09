@@ -6,11 +6,10 @@
 
 const QColor Planet::SelectedColor = Qt::green;
 
-Planet::Planet(const QVector2D& position, int radius, int resources, const QColor &color, QObject *parent) :
+Planet::Planet(const QVector2D& position, qreal radius, qreal resources, const QColor &color, QObject *parent) :
     SpaceObject(position, resources, color, parent)
 {
     m_radius = radius;
-    m_timer.start();
 }
 
 QRect Planet::rect() const
@@ -22,10 +21,7 @@ QRect Planet::rect() const
 
 void Planet::update(const GameTime &gameTime)
 {
-    if (m_timer.hasExpired(1000)) {
-        m_resources += m_radius;
-        m_timer.restart();
-    }
+    m_resources += m_radius * gameTime.elapsedGameTimeSeconds();
 }
 
 void Planet::draw(QPainter &painter)
@@ -41,7 +37,7 @@ void Planet::draw(QPainter &painter)
     QRect boundingRect = rect();
     painter.drawEllipse(boundingRect);
 
-    QString text = QString("%1\n%2").arg(player->name()).arg(m_resources);
+    QString text = QString("%1\n%2").arg(player->name()).arg(int(m_resources));
     painter.setPen(Qt::white);
     painter.drawText(boundingRect, Qt::AlignCenter, text);
 }

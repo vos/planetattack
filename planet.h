@@ -6,13 +6,13 @@
 class Planet : public SpaceObject
 {
     Q_OBJECT
-    Q_PROPERTY(int radius READ radius WRITE setRadius)
+    Q_PROPERTY(qreal radius READ radius WRITE setRadius)
 
 public:
-    Planet(const QVector2D& position, int radius, int resources, const QColor &color, QObject *parent = NULL);
+    Planet(const QVector2D& position, qreal radius, qreal resources, const QColor &color, QObject *parent = NULL);
 
-    inline int radius() const { return m_radius; }
-    inline void setRadius(int radius) { m_radius = radius; }
+    inline qreal radius() const { return m_radius; }
+    inline void setRadius(qreal radius) { m_radius = radius; }
 
     QRect rect() const;
 
@@ -23,9 +23,7 @@ public slots:
 private:
     static const QColor SelectedColor;
 
-    int m_radius;
-
-    QElapsedTimer m_timer;
+    qreal m_radius;
 
 };
 

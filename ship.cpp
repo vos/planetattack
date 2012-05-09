@@ -5,7 +5,7 @@
 
 #include "player.h"
 
-Ship::Ship(const QVector2D& position, Planet *target, int resources, const QColor &color, QObject *parent) :
+Ship::Ship(const QVector2D& position, Planet *target, qreal resources, const QColor &color, QObject *parent) :
     SpaceObject(position, resources, color, parent)
 {
     m_target = target;
@@ -28,7 +28,7 @@ void Ship::update(const GameTime &gameTime)
             } else {
                 // enemy planet -> substract resources
                 m_target->setResources(m_target->resources() - m_resources);
-                if (m_target->resources() <= 0) {
+                if (m_target->resources() < 0.0) {
                     // resources depleted -> take-over target planet!
                     // REFAC remove target planet from owner
                     if (targetOwner->target() == m_target) {
@@ -42,7 +42,7 @@ void Ship::update(const GameTime &gameTime)
                     player->planets().insert(m_target);
                 }
             }
-            m_resources = 0;
+            m_resources = 0.0;
             m_target = NULL;
         }
     }
@@ -68,5 +68,5 @@ void Ship::draw(QPainter &painter)
     painter.drawPolyline(polygon);
 
     painter.setPen(Qt::white);
-    painter.drawText(m_position.toPoint(), QString::number(m_resources));
+    painter.drawText(m_position.toPoint(), QString::number(int(m_resources)));
 }

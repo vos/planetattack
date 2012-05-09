@@ -10,7 +10,7 @@ class Ship : public SpaceObject
     Q_OBJECT
 
 public:
-    Ship(const QVector2D& position, Planet *target, int resources, const QColor &color, QObject *parent = NULL);
+    Ship(const QVector2D& position, Planet *target, qreal resources, const QColor &color, QObject *parent = NULL);
 
     inline const Planet* target() const { return m_target; }
 

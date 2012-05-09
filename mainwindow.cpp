@@ -9,6 +9,7 @@
 #include <QPushButton>
 
 #include "canvas.h"
+#include "computerplayer.h"
 #include "stringpropertyeditor.h"
 #include "vector2dpropertyeditor.h"
 #include "playerintelligencepropertyeditor.h"
@@ -136,7 +137,26 @@ void MainWindow::on_modeComboBox_currentIndexChanged(int index)
 
 void MainWindow::on_playerComboBox_activated(int index)
 {
-    Player *player = *(m_canvas->players().begin() + index);
+    Q_UNUSED(index)
+    QString playerName = ui->playerComboBox->currentText();
+    Player *player;
+    foreach (Player *p, m_canvas->players()) {
+        if (p->name() == playerName) {
+            player = p;
+            break;
+        }
+    }
     m_canvas->setActivePlayer(player);
+    canvas_selectionChanged(player);
+}
+
+void MainWindow::on_addPlayerButton_clicked()
+{
+    Player *player = new ComputerPlayer("Player", Qt::white, NULL, m_canvas);
+    m_canvas->players().insert(player);
+    m_canvas->setActivePlayer(player);
+    ui->playerComboBox->addItem(player->name());
+    connect(player, SIGNAL(nameChanged(QString,QString)), SLOT(player_nameChanged(QString,QString)));
+    ui->playerComboBox->setCurrentIndex(ui->playerComboBox->count()-1);
     canvas_selectionChanged(player);
 }

@@ -133,11 +133,13 @@ void Canvas::paintEvent(QPaintEvent *paintEvent)
     QString statusText = QString("Mode = %1\n"
                                  "Game Time = %2 (%3) ms\n"
                                  "FPS = %4\n"
-                                 "Planet Count = %5 (%6)\n"
-                                 "Ship Count = %7")
+                                 "Active Player = %5\n"
+                                 "Planet Count = %6 (%7)\n"
+                                 "Ship Count = %8")
             .arg(modeString())
             .arg(m_gameTime.totalGameTime()).arg(m_gameTime.elapsedGameTime())
             .arg(m_FPS)
+            .arg(m_activePlayer->name())
             .arg(m_activePlayer->planets().count()).arg(m_activePlayer->selectedPlanets().count())
             .arg(m_activePlayer->ships().count());
     QFontMetrics fontMetrics = m_painter.fontMetrics();

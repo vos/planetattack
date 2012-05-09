@@ -1,6 +1,7 @@
 #include "playerintelligence.h"
+#include "canvas.h"
 
-PlayerIntelligence::PlayerIntelligence(QObject *parent) :
+PlayerIntelligence::PlayerIntelligence(Player *parent) :
     Intelligence(parent)
 {
 }

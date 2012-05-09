@@ -11,7 +11,7 @@ class PlayerIntelligence : public Intelligence
     Q_OBJECT
 
 public:
-    explicit PlayerIntelligence(QObject *parent = NULL);
+    explicit PlayerIntelligence(Player *parent = NULL);
 
 protected:
     inline Player* getSelf() { return (Player*)parent(); }

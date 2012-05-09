@@ -8,11 +8,16 @@ class Planet;
 class Ship : public SpaceObject
 {
     Q_OBJECT
+    Q_PROPERTY(qreal speed READ speed WRITE setSpeed)
 
 public:
-    Ship(const QVector2D& position, Planet *target, qreal resources, const QColor &color, QObject *parent = NULL);
+    Ship(const QVector2D& position, Planet *target, qreal resources, const QColor &color, Player *parent = NULL);
 
     inline const Planet* target() const { return m_target; }
+    inline void setTarget(Planet *target) { m_target = target; }
+
+    inline qreal speed() const { return m_speed; }
+    inline void setSpeed(qreal speed) { m_speed = speed; }
 
 public slots:
     void update(const GameTime &gameTime);
@@ -20,7 +25,7 @@ public slots:
 
 private:
     Planet *m_target;
-    int m_speed; // pixels per second
+    qreal m_speed; // pixels per second
     QVector2D m_direction; // temp
     
 };

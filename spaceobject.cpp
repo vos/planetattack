@@ -1,6 +1,7 @@
 #include "spaceobject.h"
+#include "player.h"
 
-SpaceObject::SpaceObject(const QVector2D& position, qreal resources, const QColor &color, QObject *parent) :
+SpaceObject::SpaceObject(const QVector2D& position, qreal resources, const QColor &color, Player *parent) :
     Drawable(parent)
 {
     m_position = position;

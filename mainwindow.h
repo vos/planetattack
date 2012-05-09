@@ -23,9 +23,10 @@ private slots:
     void canvas_modeChanged();
     void canvas_selectionChanged(QObject *o);
     void saveButton_clicked();
+    void player_nameChanged(const QString &oldName, const QString &newName);
 
     void on_modeComboBox_currentIndexChanged(int index);
-    void on_playerComboBox_currentIndexChanged(int index);
+    void on_playerComboBox_activated(int index);
 
 private:
     Ui::MainWindow *ui;

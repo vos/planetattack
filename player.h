@@ -10,17 +10,18 @@
 class Player : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString name READ name WRITE setName USER true)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged USER true)
     Q_PROPERTY(QColor color READ color WRITE setColor)
 
 public:
     Player(const QString &name, const QColor &color, bool human = true, QObject *parent = NULL);
+    virtual ~Player();
 
     inline const QString& name() const { return m_name; }
-    inline void setName(const QString &name) { m_name = name; }
+    void setName(const QString &name);
 
     inline const QColor& color() const { return m_color; }
-    inline void setColor(const QColor &color) { m_color = color; }
+    void setColor(const QColor &color);
 
     inline bool isHuman() const { return m_human; }
     inline bool isComputer() const { return !m_human; }
@@ -32,6 +33,16 @@ public:
     inline void setTarget(Planet *target) { m_target = target; }
 
     inline QSet<Ship*>& ships() { return m_ships; }
+
+    void addPlanet(Planet *planet);
+    Planet* addPlanet(const QVector2D& position, qreal radius = 50.0, qreal resources = 0.0);
+    void removePlanet(Planet *planet);
+
+    Ship* addShip(Planet *origin, Planet *target, qreal resourceFactor = 0.5);
+    void removeShip(Ship *ship);
+
+signals:
+    void nameChanged(const QString &oldName, const QString &newName);
 
 protected:
     QString m_name;

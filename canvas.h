@@ -28,6 +28,8 @@ public:
     inline void setMode(Mode mode) { if (mode == m_mode) return; m_mode = mode; emit modeChanged(); }
 
     inline QSet<Player*>& players() { return m_players; }
+    inline Player* activePlayer() const { return m_activePlayer; }
+    inline void setActivePlayer(Player *player) { m_activePlayer = player; }
 
 signals:
     void modeChanged();
@@ -48,7 +50,7 @@ private:
     QImage m_backgroundImage;
 
     QSet<Player*> m_players;
-    Player *m_localPlayer;
+    Player *m_activePlayer;
 
     void timerEvent(QTimerEvent *timerEvent);
     void paintEvent(QPaintEvent *paintEvent);
@@ -58,7 +60,6 @@ private:
     void mousePressEvent(QMouseEvent *mouseEvent);
     void mouseDoubleClickEvent(QMouseEvent *mouseEvent);
     void mouseMoveEvent(QMouseEvent *mouseEvent);
-    void mouseReleaseEvent(QMouseEvent *mouseEvent);
 
 };
 

@@ -8,6 +8,7 @@
 
 #include "humanplayer.h"
 #include "computerplayer.h"
+#include "randomplayerintelligence.h"
 #include "random.h"
 
 Canvas* Canvas::Instance = NULL;
@@ -36,18 +37,18 @@ Canvas::Canvas(QWidget *parent) :
 
     m_backgroundImage = QImage("background.jpg");
 
-    m_localPlayer = new HumanPlayer("Alex", Qt::blue, this);
-    m_players.insert(m_localPlayer);
-    ComputerPlayer *computerPlayer = new ComputerPlayer("GLaDOS", Qt::red, NULL, this);
-    Planet *computerPlanet = new Planet(QVector2D(750, 250), 100, 100, computerPlayer->color(), computerPlayer);
-    computerPlayer->planets().insert(computerPlanet);
+    m_activePlayer = new HumanPlayer("Alex", Qt::blue, this);
+    m_players.insert(m_activePlayer);
+
+    // TEST AI 1
+    ComputerPlayer *computerPlayer = new ComputerPlayer("GLaDOS", Qt::red, new RandomPlayerIntelligence, this);
+    computerPlayer->addPlanet(QVector2D(750, 250), 100, 100);
     m_players.insert(computerPlayer);
 
+    // TEST AI 2
     ComputerPlayer *computerPlayer2 = new ComputerPlayer("Kai", Qt::darkGreen, NULL, this);
-    Planet *computerPlanet2 = new Planet(QVector2D(500, 500), 75, 75, computerPlayer2->color(), computerPlayer2);
-    computerPlayer2->planets().insert(computerPlanet2);
-    Planet *computerPlanet3 = new Planet(QVector2D(650, 600), 25, 25, computerPlayer2->color(), computerPlayer2);
-    computerPlayer2->planets().insert(computerPlanet3);
+    computerPlayer2->addPlanet(QVector2D(500, 500), 75, 75);
+    computerPlayer2->addPlanet(QVector2D(650, 600), 25, 25);
     m_players.insert(computerPlayer2);
 
     Random::init();
@@ -60,6 +61,7 @@ Canvas::Canvas(QWidget *parent) :
 
 void Canvas::timerEvent(QTimerEvent *timerEvent)
 {
+    Q_UNUSED(timerEvent)
     if (m_mode == GameMode) {
         foreach (Player *player, m_players) {
             if (player->isComputer()) {
@@ -71,7 +73,7 @@ void Canvas::timerEvent(QTimerEvent *timerEvent)
             foreach (Ship *ship, player->ships()) {
                 ship->update(m_gameTime);
                 if (ship->target() == NULL) {
-                    player->ships().remove(ship);
+                    player->removeShip(ship);
                     delete ship;
                 }
             }
@@ -91,6 +93,7 @@ void Canvas::timerEvent(QTimerEvent *timerEvent)
 
 void Canvas::paintEvent(QPaintEvent *paintEvent)
 {
+    Q_UNUSED(paintEvent)
     m_painter.begin(this);
 
     // clear canvas
@@ -135,8 +138,8 @@ void Canvas::paintEvent(QPaintEvent *paintEvent)
             .arg(modeString())
             .arg(m_gameTime.totalGameTime()).arg(m_gameTime.elapsedGameTime())
             .arg(m_FPS)
-            .arg(m_localPlayer->planets().count()).arg(m_localPlayer->selectedPlanets().count())
-            .arg(m_localPlayer->ships().count());
+            .arg(m_activePlayer->planets().count()).arg(m_activePlayer->selectedPlanets().count())
+            .arg(m_activePlayer->ships().count());
     QFontMetrics fontMetrics = m_painter.fontMetrics();
     QSize statusSize = fontMetrics.size(0, statusText);
     QRect statusBoundingRect(10, 10, statusSize.width() + 20, statusSize.height() + 10);
@@ -161,12 +164,8 @@ void Canvas::keyReleaseEvent(QKeyEvent *keyEvent)
     }
     case Qt::Key_Delete:
         if (m_mode == EditorMode) {
-            foreach (Planet *planet, m_localPlayer->selectedPlanets()) {
-                if (planet == m_localPlayer->target()) {
-                    m_localPlayer->setTarget(NULL);
-                }
-                m_localPlayer->selectedPlanets().remove(planet);
-                m_localPlayer->planets().remove(planet);
+            foreach (Planet *planet, m_activePlayer->selectedPlanets()) {
+                m_activePlayer->removePlanet(planet);
                 delete planet;
             }
         }
@@ -176,33 +175,30 @@ void Canvas::keyReleaseEvent(QKeyEvent *keyEvent)
 
 void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
 {
-    QSet<Planet*> &selectedPlanets = m_localPlayer->selectedPlanets();
+    QSet<Planet*> &selectedPlanets = m_activePlayer->selectedPlanets();
     if (mouseEvent->button() == Qt::LeftButton) {
         if (!(mouseEvent->modifiers() & Qt::ControlModifier)) {
-            m_localPlayer->selectedPlanets().clear();
+            m_activePlayer->selectedPlanets().clear();
         }
-        foreach (Player *player, m_players) {
-            foreach (Planet *planet, player->planets()) {
-                qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
-                if (len <= planet->radius()) {
-                    if (selectedPlanets.contains(planet)) {
-                        selectedPlanets.remove(planet);
-                    } else {
-                        selectedPlanets.insert(planet);
-                        emit selectionChanged(planet); // TODO select first
-                    }
+        foreach (Planet *planet, m_activePlayer->planets()) {
+            qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
+            if (len <= planet->radius()) {
+                if (selectedPlanets.contains(planet)) {
+                    selectedPlanets.remove(planet);
+                } else {
+                    selectedPlanets.insert(planet);
+                    emit selectionChanged(planet); // TODO select first
                 }
             }
         }
         if (m_mode == EditorMode && selectedPlanets.isEmpty()) {
-            Planet *planet = new Planet(QVector2D(mouseEvent->pos()), 50, 0, m_localPlayer->color(), m_localPlayer);
-            m_localPlayer->planets().insert(planet);
+            Planet *planet = m_activePlayer->addPlanet(QVector2D(mouseEvent->pos()));
             selectedPlanets.insert(planet);
             emit selectionChanged(planet);
         }
     } else if (mouseEvent->button() == Qt::RightButton) {
         if (m_mode == GameMode) {
-            m_localPlayer->setTarget(NULL);
+            m_activePlayer->setTarget(NULL);
             if (!selectedPlanets.isEmpty()) {
                 foreach (Player *player, m_players) {
                     foreach (Planet *planet, player->planets()) {
@@ -210,13 +206,10 @@ void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
                         if (len <= planet->radius()) {
                             foreach (Planet *selectedPlanet, selectedPlanets) {
                                 if (selectedPlanet != planet) {
-                                    int res = selectedPlanet->resources() / 2;
-                                    Ship *ship = new Ship(selectedPlanet->position(), planet, res, selectedPlanet->color(), m_localPlayer);
-                                    selectedPlanet->setResources(selectedPlanet->resources() - res);
-                                    player->ships().insert(ship);
+                                    m_activePlayer->addShip(selectedPlanet, planet);
                                 }
                             }
-                            m_localPlayer->setTarget(planet);
+                            m_activePlayer->setTarget(planet);
                             break;
                         }
                     }
@@ -229,8 +222,8 @@ void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
 void Canvas::mouseDoubleClickEvent(QMouseEvent *mouseEvent)
 {
     if (mouseEvent->button() == Qt::LeftButton) {
-        foreach (Planet *planet, m_localPlayer->planets()) {
-            m_localPlayer->selectedPlanets().insert(planet);
+        foreach (Planet *planet, m_activePlayer->planets()) {
+            m_activePlayer->selectedPlanets().insert(planet);
         }
     }
 }
@@ -239,20 +232,16 @@ void Canvas::mouseMoveEvent(QMouseEvent *mouseEvent)
 {
     if (m_mode == EditorMode) {
         if (mouseEvent->modifiers() & Qt::AltModifier) {
-            foreach (Planet *planet, m_localPlayer->selectedPlanets()) {
+            foreach (Planet *planet, m_activePlayer->selectedPlanets()) {
                 qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
                 planet->setRadius(int(len));
                 emit selectionChanged(planet); // TODO select first
             }
         } else {
-            foreach (Planet *planet, m_localPlayer->selectedPlanets()) {
+            foreach (Planet *planet, m_activePlayer->selectedPlanets()) {
                 planet->setPosition(QVector2D(mouseEvent->pos()));
                 emit selectionChanged(planet); // TODO select first
             }
         }
     }
-}
-
-void Canvas::mouseReleaseEvent(QMouseEvent *mouseEvent)
-{
 }

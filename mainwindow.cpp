@@ -34,7 +34,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     foreach (Player *player, m_canvas->players()) {
         ui->playerComboBox->addItem(player->name());
+        connect(player, SIGNAL(nameChanged(QString,QString)), SLOT(player_nameChanged(QString,QString)));
     }
+    ui->playerComboBox->setCurrentIndex(ui->playerComboBox->findText(m_canvas->activePlayer()->name()));
 
     connect(m_canvas, SIGNAL(modeChanged()), SLOT(canvas_modeChanged()));
     connect(m_canvas, SIGNAL(selectionChanged(QObject*)), SLOT(canvas_selectionChanged(QObject*)));
@@ -45,18 +47,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    qDeleteAll(m_propertyEditorList);
+    delete m_canvas;
     delete ui;
-}
-
-void MainWindow::on_modeComboBox_currentIndexChanged(int index)
-{
-    m_canvas->setMode((Canvas::Mode)index);
-}
-
-void MainWindow::on_playerComboBox_currentIndexChanged(int index)
-{
-    Player *player = *(m_canvas->players().begin() + index);
-    canvas_selectionChanged(player);
 }
 
 void MainWindow::canvas_modeChanged()
@@ -124,6 +117,26 @@ void MainWindow::saveButton_clicked()
     for(int i = 1; i < metaObject->propertyCount(); ++i) {
         QMetaProperty property = metaObject->property(i);
         PropertyEditor *editor = m_propertyEditorList.at(i - 1);
-        property.write(m_selectedObject, editor->value());
+        if (!property.write(m_selectedObject, editor->value())) {
+            qWarning("property write failed: %s::%s with value=%s", metaObject->className(), property.name(),
+                     qPrintable(editor->value().toString()));
+        }
     }
+}
+
+void MainWindow::player_nameChanged(const QString &oldName, const QString &newName)
+{
+    ui->playerComboBox->setItemText(ui->playerComboBox->findText(oldName), newName);
+}
+
+void MainWindow::on_modeComboBox_currentIndexChanged(int index)
+{
+    m_canvas->setMode((Canvas::Mode)index);
+}
+
+void MainWindow::on_playerComboBox_activated(int index)
+{
+    Player *player = *(m_canvas->players().begin() + index);
+    m_canvas->setActivePlayer(player);
+    canvas_selectionChanged(player);
 }

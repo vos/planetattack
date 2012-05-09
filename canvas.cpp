@@ -166,6 +166,7 @@ void Canvas::keyReleaseEvent(QKeyEvent *keyEvent)
     }
     case Qt::Key_Delete:
         if (m_mode == EditorMode) {
+            emit selectionChanged(NULL);
             foreach (Planet *planet, m_activePlayer->selectedPlanets()) {
                 m_activePlayer->removePlanet(planet);
                 delete planet;

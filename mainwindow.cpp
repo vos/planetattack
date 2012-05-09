@@ -62,6 +62,20 @@ void MainWindow::canvas_modeChanged()
 
 void MainWindow::canvas_selectionChanged(QObject *o)
 {
+    if (!o) {
+        // selection set to NULL -> clear editor
+        QVBoxLayout *layout = (QVBoxLayout*)ui->editorWidget->layout();
+        // delete all widgets
+        m_propertyEditorList.clear();
+        QLayoutItem *item;
+        while ((item = layout->takeAt(0)) != NULL) {
+            delete item->widget();
+            delete item;
+        }
+        m_selectedObject = NULL;
+        return;
+    }
+
     const QMetaObject *metaObject = o->metaObject();
     if (m_selectedObject == NULL || m_selectedObject->metaObject() != metaObject) {
         // type has changed -> create new view

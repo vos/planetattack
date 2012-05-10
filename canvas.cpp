@@ -39,6 +39,11 @@ Canvas::Canvas(QWidget *parent) :
     m_factorSelectionActive = false;
     m_backgroundImage = QImage("background.jpg");
 
+    // add neutral planets
+    m_planets.insert(new Planet(QVector2D(400, 100), 40, 40));
+    m_planets.insert(new Planet(QVector2D(350, 225), 50, 50));
+    m_planets.insert(new Planet(QVector2D(500, 200), 60, 60));
+
     m_activePlayer = new HumanPlayer("Alex", Qt::blue, this);
     m_players.insert(m_activePlayer);
 
@@ -59,6 +64,12 @@ Canvas::Canvas(QWidget *parent) :
     m_FPSTimer.start();
 
     startTimer(int(1000.0 / m_FPS)); // start the "game loop"
+}
+
+Canvas::~Canvas()
+{
+    qDeleteAll(m_planets);
+    qDeleteAll(m_players);
 }
 
 void Canvas::resizeEvent(QResizeEvent *resizeEvent)
@@ -112,11 +123,12 @@ void Canvas::paintEvent(QPaintEvent *paintEvent)
     }
 
     // planets
-    foreach (Player *player, m_players) {
-        foreach (Planet *planet, player->planets()) {
-            planet->draw(m_painter);
-        }
+    foreach (Planet *planet, m_planets) {
+        planet->draw(m_painter);
+    }
 
+    // target and ships
+    foreach (Player *player, m_players) {
         // target
         if (player->target() != NULL) {
             m_painter.setPen(Qt::transparent);
@@ -127,10 +139,7 @@ void Canvas::paintEvent(QPaintEvent *paintEvent)
             m_painter.setBrush(radialGradient);
             m_painter.drawEllipse(player->target()->rect());
         }
-    }
-
-    // ships
-    foreach (Player *player, m_players) {
+        // ships
         foreach (Ship *ship, player->ships()) {
             ship->draw(m_painter);
         }
@@ -201,6 +210,7 @@ void Canvas::keyReleaseEvent(QKeyEvent *keyEvent)
             emit selectionChanged(NULL);
             foreach (Planet *planet, m_activePlayer->selectedPlanets()) {
                 m_activePlayer->removePlanet(planet);
+                m_planets.remove(planet);
                 delete planet;
             }
         }
@@ -241,18 +251,16 @@ void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
             if (m_mode == GameMode) {
                 m_activePlayer->setTarget(NULL);
                 if (!selectedPlanets.isEmpty()) {
-                    foreach (Player *player, m_players) {
-                        foreach (Planet *planet, player->planets()) {
-                            qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
-                            if (len <= planet->radius()) {
-                                foreach (Planet *selectedPlanet, selectedPlanets) {
-                                    if (selectedPlanet != planet) {
-                                        m_activePlayer->addShip(selectedPlanet, planet);
-                                    }
+                    foreach (Planet *planet, m_planets) {
+                        qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
+                        if (len <= planet->radius()) {
+                            foreach (Planet *selectedPlanet, selectedPlanets) {
+                                if (selectedPlanet != planet) {
+                                    m_activePlayer->addShip(selectedPlanet, planet);
                                 }
-                                m_activePlayer->setTarget(planet);
-                                break;
                             }
+                            m_activePlayer->setTarget(planet);
+                            break;
                         }
                     }
                 }

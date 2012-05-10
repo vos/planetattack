@@ -10,13 +10,15 @@ class Planet : public SpaceObject
     Q_PROPERTY(qreal productionFactor READ productionFactor WRITE setProductionFactor)
 
 public:
-    Planet(const QVector2D& position, qreal radius, qreal resources, const QColor &color, Player *parent = NULL);
+    Planet(const QVector2D& position, qreal radius = 50.0, qreal resources = 0.0, const QColor &color = Qt::darkGray, Player *parent = NULL);
 
     inline qreal radius() const { return m_radius; }
     inline void setRadius(qreal radius) { m_radius = radius; }
 
     inline qreal productionFactor() const { return m_productionFactor; }
     inline void setProductionFactor(qreal factor) { m_productionFactor = factor; }
+
+    inline bool isNeutral() const { return !hasPlayer(); }
 
     QRect rect() const;
 

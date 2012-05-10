@@ -34,7 +34,7 @@ void Planet::draw(QPainter &painter)
     QRect boundingRect = rect();
     painter.drawEllipse(boundingRect);
 
-    if (player()->selectedPlanets().contains(this)) {
+    if (hasPlayer() && player()->selectedPlanets().contains(this)) {
         QRadialGradient selectionGradient(m_position.toPoint(), m_radius);
         selectionGradient.setColorAt(0.8, Qt::transparent);
         selectionGradient.setColorAt(0.9, m_color.lighter());
@@ -43,7 +43,7 @@ void Planet::draw(QPainter &painter)
         painter.drawEllipse(boundingRect);
     }
 
-    QString text = QString("%1\n%2").arg(player()->name()).arg(int(m_resources));
+    QString text = QString("%1\n%2").arg(hasPlayer() ? player()->name() : "<neutral>").arg(int(m_resources));
     painter.setPen(Qt::white);
     painter.drawText(boundingRect, Qt::AlignCenter, text);
 }

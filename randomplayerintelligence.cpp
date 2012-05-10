@@ -17,15 +17,13 @@ void RandomPlayerIntelligence::think(const GameTime &gameTime)
         // choose own planet at random
         if (self->planets().isEmpty()) return; // I have no planets! :o
         Planet *myPlanet = *Random::randomElement(self->planets());
-        // choose random enemy planet
-        QSet<Player*> enemies = getEnemies();
-        if (enemies.isEmpty()) return; // no enemies found! :)
-        Player *enemyPlayer = *Random::randomElement(enemies);
-        if (enemyPlayer->planets().isEmpty()) return; // enemy has no planets!
-        Planet *enemyPlanet = *Random::randomElement(enemyPlayer->planets());
-        // attack enemy planet with 25-75% of my choosen planets resources
-        self->addShip(myPlanet, enemyPlanet, Random::randomReal(0.25, 0.75));
-
+        // choose random other planet
+        QSet<Planet*> otherPlanets = getOtherPlanets();
+        if (otherPlanets.isEmpty()) return; // no other planets found!
+        Planet *otherPlanet = *Random::randomElement(otherPlanets);
+        // attack other planet with 25-75% of my choosen planets resources
+        self->addShip(myPlanet, otherPlanet, Random::randomReal(0.25, 0.75));
+        // set a new delay until the next attack
         m_delay = Random::randomInt(250, 1000);
         m_timer.restart();
     }

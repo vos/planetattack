@@ -17,6 +17,7 @@ public:
     static Canvas *Instance; // singleton
 
     explicit Canvas(QWidget *parent = NULL);
+    ~Canvas();
 
     enum Mode {
         EditorMode,
@@ -30,6 +31,8 @@ public:
     inline QSet<Player*>& players() { return m_players; }
     inline Player* activePlayer() const { return m_activePlayer; }
     inline void setActivePlayer(Player *player) { m_activePlayer = player; }
+
+    inline QSet<Planet*>& planets() { return m_planets; }
 
 signals:
     void modeChanged();
@@ -54,6 +57,8 @@ private:
 
     QSet<Player*> m_players;
     Player *m_activePlayer;
+
+    QSet<Planet*> m_planets;
 
     void resizeEvent(QResizeEvent *resizeEvent);
     void timerEvent(QTimerEvent *timerEvent);

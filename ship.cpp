@@ -25,10 +25,12 @@ void Ship::update(const GameTime &gameTime)
                 // own planet -> add resources
                 m_target->addResources(m_resources);
             } else {
-                // enemy planet
+                // neutral or enemy planet
                 if (m_target->resources() - m_resources < 0.0) {
                     // resources depleted -> take-over target planet!
-                    targetOwner->removePlanet(m_target);
+                    if (!m_target->isNeutral()) { // planet has no owner if it is neutral
+                        targetOwner->removePlanet(m_target);
+                    }
                     player()->addPlanet(m_target);
                     m_target->setResources(m_resources - m_target->resources());
                 } else {

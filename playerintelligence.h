@@ -16,7 +16,11 @@ public:
 protected:
     inline Player* getSelf() { return (Player*)parent(); }
     inline QSet<Player*>& getAllPlayers() { return Canvas::Instance->players(); }
+    inline QSet<Planet*>& getAllPlanets() { return Canvas::Instance->planets(); }
     QSet<Player*> getEnemies();
+    QSet<Planet*> getEnemyPlanets();
+    QSet<Planet*> getNeutralPlanets();
+    QSet<Planet*> getOtherPlanets();
 
 };
 

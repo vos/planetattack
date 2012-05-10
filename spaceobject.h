@@ -30,6 +30,7 @@ public:
     inline void setColor(const QColor &color = Qt::blue) { m_color = color; }
 
     inline Player* player() const { return (Player*)parent(); }
+    inline bool hasPlayer() const { return player() != NULL; }
 
 protected:
     QVector2D m_position;

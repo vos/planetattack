@@ -1,5 +1,7 @@
 #include "player.h"
 
+#include "canvas.h"
+
 Player::Player(const QString &name, const QColor &color, bool human, QObject *parent) :
     QObject(parent)
 {
@@ -13,7 +15,6 @@ Player::Player(const QString &name, const QColor &color, bool human, QObject *pa
 Player::~Player()
 {
     qDeleteAll(m_ships);
-    qDeleteAll(m_planets);
 }
 
 void Player::setName(const QString &name)
@@ -48,6 +49,7 @@ void Player::addPlanet(Planet *planet)
 Planet *Player::addPlanet(const QVector2D &position, qreal radius, qreal resources)
 {
     Planet *planet = new Planet(position, radius, resources, m_color, this);
+    Canvas::Instance->planets().insert(planet);
     m_planets.insert(planet);
     return planet;
 }

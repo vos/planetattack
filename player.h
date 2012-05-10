@@ -63,4 +63,6 @@ protected:
 
 };
 
+Q_DECLARE_METATYPE(Player*)
+
 #endif // PLAYER_H

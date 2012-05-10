@@ -34,7 +34,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->editorWidget->setLayout(layout);
 
     foreach (Player *player, m_canvas->players()) {
-        ui->playerComboBox->addItem(player->name());
+        QVariant playerVar;
+        playerVar.setValue(player);
+        ui->playerComboBox->addItem(player->name(), playerVar);
         connect(player, SIGNAL(nameChanged(QString,QString)), SLOT(player_nameChanged(QString,QString)));
     }
     ui->playerComboBox->setCurrentIndex(ui->playerComboBox->findText(m_canvas->activePlayer()->name()));
@@ -151,15 +153,7 @@ void MainWindow::on_modeComboBox_currentIndexChanged(int index)
 
 void MainWindow::on_playerComboBox_activated(int index)
 {
-    Q_UNUSED(index)
-    QString playerName = ui->playerComboBox->currentText();
-    Player *player;
-    foreach (Player *p, m_canvas->players()) {
-        if (p->name() == playerName) {
-            player = p;
-            break;
-        }
-    }
+    Player *player = ui->playerComboBox->itemData(index).value<Player*>();
     m_canvas->setActivePlayer(player);
     canvas_selectionChanged(player);
 }
@@ -169,7 +163,9 @@ void MainWindow::on_addPlayerButton_clicked()
     Player *player = new ComputerPlayer("Player", Qt::white, NULL, m_canvas);
     m_canvas->players().insert(player);
     m_canvas->setActivePlayer(player);
-    ui->playerComboBox->addItem(player->name());
+    QVariant playerVar;
+    playerVar.setValue(player);
+    ui->playerComboBox->addItem(player->name(), playerVar);
     connect(player, SIGNAL(nameChanged(QString,QString)), SLOT(player_nameChanged(QString,QString)));
     ui->playerComboBox->setCurrentIndex(ui->playerComboBox->count()-1);
     canvas_selectionChanged(player);

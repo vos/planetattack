@@ -8,9 +8,10 @@
 
 int main(int argc, char *argv[])
 {
-    //    QApplication::setGraphicsSystem("opengl");
+//    QApplication::setGraphicsSystem("opengl");
     QApplication a(argc, argv);
 
+    qRegisterMetaType<Player*>("Player*");
     qRegisterMetaType<PlayerIntelligence*>("PlayerIntelligence*");
 
     QWidget *w;

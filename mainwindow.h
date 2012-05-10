@@ -28,6 +28,7 @@ private slots:
     void on_modeComboBox_currentIndexChanged(int index);
     void on_playerComboBox_activated(int index);
     void on_addPlayerButton_clicked();
+    void on_globalAccessCheckBox_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

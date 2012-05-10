@@ -176,3 +176,8 @@ void MainWindow::on_addPlayerButton_clicked()
     ui->playerComboBox->setCurrentIndex(ui->playerComboBox->count()-1);
     canvas_selectionChanged(player);
 }
+
+void MainWindow::on_globalAccessCheckBox_toggled(bool checked)
+{
+    m_canvas->setGlobalAccess(checked);
+}

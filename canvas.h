@@ -32,6 +32,9 @@ public:
     inline Player* activePlayer() const { return m_activePlayer; }
     inline void setActivePlayer(Player *player) { m_activePlayer = player; }
 
+    inline bool globalAccess() const { return m_globalAccess; }
+    inline void setGlobalAccess(bool access = false) { m_globalAccess = access; }
+
     inline QSet<Planet*>& planets() { return m_planets; }
 
 signals:
@@ -57,6 +60,7 @@ private:
 
     QSet<Player*> m_players;
     Player *m_activePlayer;
+    bool m_globalAccess;
 
     QSet<Planet*> m_planets;
     Planet *m_selectedPlanet;

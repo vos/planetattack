@@ -46,19 +46,17 @@ void Ship::update(const GameTime &gameTime)
 
 void Ship::draw(QPainter &painter)
 {
-    QPolygon polygon; // TODO static const
-    polygon.append(QPoint(0,-8));
-    polygon.append(QPoint(5,8));
-    polygon.append(QPoint(-5,8));
-    polygon.append(QPoint(0,-8));
+    static const QPolygon s_polygon = QPolygon()
+            << QPoint( 0, -8)
+            << QPoint( 5,  8)
+            << QPoint(-5,  8)
+            << QPoint( 0, -8);
 
     QMatrix matrix;
     qreal degrees = atan2(m_direction.y(), m_direction.x()) * (180 / M_PI) + 90; // REFAC
     matrix.rotate(degrees);
-    polygon = matrix.map(polygon);
-    matrix.reset();
-    matrix.translate(m_position.x(), m_position.y());
-    polygon = matrix.map(polygon);
+    QPolygon polygon = matrix.map(s_polygon);
+    polygon.translate(m_position.toPoint());
 
     painter.setPen(QPen(m_color, 3, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
     painter.drawPolyline(polygon);

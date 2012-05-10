@@ -154,7 +154,7 @@ void Canvas::paintEvent(QPaintEvent *paintEvent)
     factorSectionRegion.setWidth(m_factorSelectorRegion.width() * m_activePlayer->resourceFactor());
     m_painter.drawRect(factorSectionRegion);
     m_painter.setPen(Qt::white);
-    m_painter.drawText(m_factorSelectorRegion, Qt::AlignCenter, QString("%1 \%").arg(m_activePlayer->resourceFactor() * 100));
+    m_painter.drawText(m_factorSelectorRegion, Qt::AlignCenter, QString("%1 %").arg(m_activePlayer->resourceFactor() * 100));
 
     // status overlay
     QString statusText = QString("Mode = %1\n"

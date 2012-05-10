@@ -8,3 +8,11 @@ SpaceObject::SpaceObject(const QVector2D& position, qreal resources, const QColo
     m_resources = resources;
     m_color = color;
 }
+
+bool SpaceObject::setPlayer(Player *p)
+{
+    if (p == player())
+        return false;
+    setParent((QObject*)p);
+    return true;
+}

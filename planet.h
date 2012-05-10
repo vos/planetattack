@@ -19,6 +19,7 @@ public:
     inline void setProductionFactor(qreal factor) { m_productionFactor = factor; }
 
     inline bool isNeutral() const { return !hasPlayer(); }
+    bool setPlayer(Player *player);
 
     QRect rect() const;
 

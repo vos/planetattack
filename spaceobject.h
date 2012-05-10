@@ -14,9 +14,10 @@ class SpaceObject : public Drawable
     Q_PROPERTY(QVector2D position READ position WRITE setPosition)
     Q_PROPERTY(qreal resources READ resources WRITE setResources)
     Q_PROPERTY(QColor color READ color WRITE setColor)
+    Q_PROPERTY(Player* player READ player WRITE setPlayer)
 
 public:
-    SpaceObject(const QVector2D& position = QVector2D(), qreal resources = 0.0, const QColor &color = Qt::white, Player *parent = NULL);
+    SpaceObject(const QVector2D& position = QVector2D(), qreal resources = 0.0, const QColor &color = Qt::darkGray, Player *parent = NULL);
 
     inline const QVector2D& position() const { return m_position; }
     inline void setPosition(const QVector2D &position) { m_position = position; }
@@ -27,9 +28,10 @@ public:
     inline qreal subtractResources(qreal resources) { m_resources -= resources; return m_resources; }
 
     inline const QColor& color() const { return m_color; }
-    inline void setColor(const QColor &color = Qt::blue) { m_color = color; }
+    inline void setColor(const QColor &color = Qt::darkGray) { m_color = color; }
 
     inline Player* player() const { return (Player*)parent(); }
+    virtual bool setPlayer(Player *player);
     inline bool hasPlayer() const { return player() != NULL; }
 
 protected:

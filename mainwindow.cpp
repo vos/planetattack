@@ -12,6 +12,7 @@
 #include "computerplayer.h"
 #include "stringpropertyeditor.h"
 #include "vector2dpropertyeditor.h"
+#include "playerpropertyeditor.h"
 #include "playerintelligencepropertyeditor.h"
 
 #include <QDebug>
@@ -92,16 +93,21 @@ void MainWindow::canvas_selectionChanged(QObject *o)
         layout->addWidget(new QLabel(metaObject->className()));
         for(int i = 1; i < metaObject->propertyCount(); ++i) {
             QMetaProperty property = metaObject->property(i);
-            layout->addWidget(new QLabel(QString("%1 (%2)").arg(property.name(), property.typeName())));
+            const char *typeName = property.typeName();
+            layout->addWidget(new QLabel(QString("%1 (%2)").arg(property.name(), typeName)));
             PropertyEditor *editor;
             switch (property.type()) {
             case QVariant::Vector2D:
                 editor = new Vector2DPropertyEditor;
                 break;
             case QVariant::UserType:
-                qDebug() << "UserType" << property.typeName();
-                if (strcmp(property.typeName(), "PlayerIntelligence*") == 0) {
+                if (strcmp(typeName, "Player*") == 0) {
+                    editor = new PlayerPropertyEditor;
+                }
+                else if (strcmp(typeName, "PlayerIntelligence*") == 0) {
                     editor = new PlayerIntelligencePropertyEditor;
+                } else {
+                    qWarning("no property edtor for type %s", typeName);
                 }
                 break;
             default:

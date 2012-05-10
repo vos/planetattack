@@ -28,7 +28,8 @@ HEADERS += \
     stringpropertyeditor.h \
     vector2dpropertyeditor.h \
     playerintelligencepropertyeditor.h \
-    randomplayerintelligence.h
+    randomplayerintelligence.h \
+    playerpropertyeditor.h
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -47,6 +48,7 @@ SOURCES += main.cpp \
     stringpropertyeditor.cpp \
     vector2dpropertyeditor.cpp \
     playerintelligencepropertyeditor.cpp \
-    randomplayerintelligence.cpp
+    randomplayerintelligence.cpp \
+    playerpropertyeditor.cpp
 
 FORMS += mainwindow.ui

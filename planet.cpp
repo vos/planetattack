@@ -11,6 +11,21 @@ Planet::Planet(const QVector2D& position, qreal radius, qreal resources, const Q
     m_productionFactor = 0.1; // default factor
 }
 
+bool Planet::setPlayer(Player *p)
+{
+    if (p == player())
+        return false;
+    if (hasPlayer())
+        player()->removePlanet(this);
+    if (p != NULL)
+        p->addPlanet(this);
+    else {
+        setParent(NULL);
+        setColor();
+    }
+    return true;
+}
+
 QRect Planet::rect() const
 {
     QPoint size(m_radius, m_radius);

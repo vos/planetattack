@@ -59,6 +59,7 @@ private:
     Player *m_activePlayer;
 
     QSet<Planet*> m_planets;
+    Planet *m_selectedPlanet;
 
     void resizeEvent(QResizeEvent *resizeEvent);
     void timerEvent(QTimerEvent *timerEvent);

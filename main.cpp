@@ -2,8 +2,9 @@
 #include <QDesktopWidget>
 
 #include "mainwindow.h"
-#include "canvas.h"
 
+#include "random.h"
+#include "canvas.h"
 #include "playerintelligence.h"
 
 int main(int argc, char *argv[])
@@ -13,6 +14,8 @@ int main(int argc, char *argv[])
 
     qRegisterMetaType<Player*>("Player*");
     qRegisterMetaType<PlayerIntelligence*>("PlayerIntelligence*");
+
+    Random::init();
 
     QWidget *w;
     if (a.arguments().contains("-noui")) {

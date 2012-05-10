@@ -47,11 +47,15 @@ private:
     int m_FPSCounter;
     int m_FPS;
 
+    QRect m_factorSelectorRegion;
+    QColor m_factorSelectorColor;
+    bool m_factorSelectionActive;
     QImage m_backgroundImage;
 
     QSet<Player*> m_players;
     Player *m_activePlayer;
 
+    void resizeEvent(QResizeEvent *resizeEvent);
     void timerEvent(QTimerEvent *timerEvent);
     void paintEvent(QPaintEvent *paintEvent);
 
@@ -60,6 +64,7 @@ private:
     void mousePressEvent(QMouseEvent *mouseEvent);
     void mouseDoubleClickEvent(QMouseEvent *mouseEvent);
     void mouseMoveEvent(QMouseEvent *mouseEvent);
+    void mouseReleaseEvent(QMouseEvent *mouseEvent);
 
 };
 

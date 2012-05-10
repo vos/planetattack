@@ -12,6 +12,7 @@ class Player : public QObject
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged USER true)
     Q_PROPERTY(QColor color READ color WRITE setColor)
+    Q_PROPERTY(qreal resourceFactor READ resourceFactor WRITE setResourceFactor)
 
 public:
     Player(const QString &name, const QColor &color, bool human = true, QObject *parent = NULL);
@@ -26,6 +27,9 @@ public:
     inline bool isHuman() const { return m_human; }
     inline bool isComputer() const { return !m_human; }
 
+    inline qreal resourceFactor() const { return m_resourceFactor; }
+    inline void setResourceFactor(qreal factor = 0.5) { m_resourceFactor = qBound(0.0, factor, 1.0); }
+
     inline QSet<Planet*>& planets() { return m_planets; }
     inline QSet<Planet*>& selectedPlanets() { return m_selectedPlanets; }
 
@@ -38,7 +42,8 @@ public:
     Planet* addPlanet(const QVector2D& position, qreal radius = 50.0, qreal resources = 0.0);
     void removePlanet(Planet *planet);
 
-    Ship* addShip(Planet *origin, Planet *target, qreal resourceFactor = 0.5);
+    Ship* addShip(Planet *origin, Planet *target, qreal resourceFactor);
+    Ship* addShip(Planet *origin, Planet *target);
     void removeShip(Ship *ship);
 
 signals:
@@ -48,6 +53,7 @@ protected:
     QString m_name;
     QColor m_color;
     bool m_human;
+    qreal m_resourceFactor;
 
     QSet<Planet*> m_planets;
     QSet<Planet*> m_selectedPlanets;

@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_canvas, SIGNAL(modeChanged()), SLOT(canvas_modeChanged()));
     connect(m_canvas, SIGNAL(selectionChanged(QObject*)), SLOT(canvas_selectionChanged(QObject*)));
 
-    m_canvas->setFocus(); // TODO focus on click
+    m_canvas->setFocus();
     connect(ui->action_setFocus, SIGNAL(triggered()), m_canvas, SLOT(setFocus()));
 }
 

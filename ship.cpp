@@ -25,12 +25,15 @@ void Ship::update(const GameTime &gameTime)
                 // own planet -> add resources
                 m_target->addResources(m_resources);
             } else {
-                // enemy planet -> subtract resources
-                if (m_target->subtractResources(m_resources) < 0.0) {
+                // enemy planet
+                if (m_target->resources() - m_resources < 0.0) {
                     // resources depleted -> take-over target planet!
                     targetOwner->removePlanet(m_target);
                     player()->addPlanet(m_target);
-                    m_target->addResources(m_resources);
+                    m_target->setResources(m_resources - m_target->resources());
+                } else {
+                    // subtract resources
+                    m_target->subtractResources(m_resources);
                 }
             }
             m_resources = 0.0;

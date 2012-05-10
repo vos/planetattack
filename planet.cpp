@@ -4,8 +4,6 @@
 
 #include "player.h"
 
-const QColor Planet::SelectedColor = Qt::green;
-
 Planet::Planet(const QVector2D& position, qreal radius, qreal resources, const QColor &color, Player *parent) :
     SpaceObject(position, resources, color, parent)
 {
@@ -39,7 +37,7 @@ void Planet::draw(QPainter &painter)
     if (player()->selectedPlanets().contains(this)) {
         QRadialGradient selectionGradient(m_position.toPoint(), m_radius);
         selectionGradient.setColorAt(0.8, Qt::transparent);
-        selectionGradient.setColorAt(0.9, SelectedColor);
+        selectionGradient.setColorAt(0.9, m_color.lighter());
         selectionGradient.setColorAt(1.0, Qt::transparent);
         painter.setBrush(selectionGradient);
         painter.drawEllipse(boundingRect);

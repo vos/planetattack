@@ -35,6 +35,8 @@ Canvas::Canvas(QWidget *parent) :
     m_FPSCounter = 0;
     m_FPS = 60;
 
+    m_factorSelectorColor = QColor(0,255,0,32);
+    m_factorSelectionActive = false;
     m_backgroundImage = QImage("background.jpg");
 
     m_activePlayer = new HumanPlayer("Alex", Qt::blue, this);
@@ -57,6 +59,11 @@ Canvas::Canvas(QWidget *parent) :
     m_FPSTimer.start();
 
     startTimer(int(1000.0 / m_FPS)); // start the "game loop"
+}
+
+void Canvas::resizeEvent(QResizeEvent *resizeEvent)
+{
+    m_factorSelectorRegion = QRect(0, resizeEvent->size().height() - 32, resizeEvent->size().width(), 32);
 }
 
 void Canvas::timerEvent(QTimerEvent *timerEvent)
@@ -129,6 +136,17 @@ void Canvas::paintEvent(QPaintEvent *paintEvent)
         }
     }
 
+    // resource factor region
+    m_painter.setPen(Qt::transparent);
+    m_painter.setBrush(m_factorSelectorColor);
+    m_painter.drawRect(m_factorSelectorRegion);
+    m_painter.setBrush(m_factorSelectorColor.lighter());
+    QRect factorSectionRegion(m_factorSelectorRegion);
+    factorSectionRegion.setWidth(m_factorSelectorRegion.width() * m_activePlayer->resourceFactor());
+    m_painter.drawRect(factorSectionRegion);
+    m_painter.setPen(Qt::white);
+    m_painter.drawText(m_factorSelectorRegion, Qt::AlignCenter, QString("%1 \%").arg(m_activePlayer->resourceFactor() * 100));
+
     // status overlay
     QString statusText = QString("Mode = %1\n"
                                  "Game Time = %2 (%3) ms\n"
@@ -164,6 +182,20 @@ void Canvas::keyReleaseEvent(QKeyEvent *keyEvent)
         setMode(m_mode == EditorMode ? GameMode : EditorMode);
         break;
     }
+    case Qt::Key_0:
+        m_activePlayer->setResourceFactor(1.0);
+        break;
+    case Qt::Key_1:
+    case Qt::Key_2:
+    case Qt::Key_3:
+    case Qt::Key_4:
+    case Qt::Key_5:
+    case Qt::Key_6:
+    case Qt::Key_7:
+    case Qt::Key_8:
+    case Qt::Key_9:
+        m_activePlayer->setResourceFactor((keyEvent->key() - Qt::Key_0) / 10.0);
+        break;
     case Qt::Key_Delete:
         if (m_mode == EditorMode) {
             emit selectionChanged(NULL);
@@ -178,42 +210,49 @@ void Canvas::keyReleaseEvent(QKeyEvent *keyEvent)
 
 void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
 {
-    QSet<Planet*> &selectedPlanets = m_activePlayer->selectedPlanets();
-    if (mouseEvent->button() == Qt::LeftButton) {
-        if (!(mouseEvent->modifiers() & Qt::ControlModifier)) {
-            m_activePlayer->selectedPlanets().clear();
-        }
-        foreach (Planet *planet, m_activePlayer->planets()) {
-            qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
-            if (len <= planet->radius()) {
-                if (selectedPlanets.contains(planet)) {
-                    selectedPlanets.remove(planet);
-                } else {
-                    selectedPlanets.insert(planet);
-                    emit selectionChanged(planet); // TODO select first
+    if (!hasFocus())
+        setFocus(); // QMainWindow focus fix
+    if (m_factorSelectorRegion.contains(mouseEvent->pos())) {
+        m_factorSelectionActive = true;
+        mouseMoveEvent(mouseEvent);
+    } else {
+        QSet<Planet*> &selectedPlanets = m_activePlayer->selectedPlanets();
+        if (mouseEvent->button() == Qt::LeftButton) {
+            if (!(mouseEvent->modifiers() & Qt::ControlModifier)) {
+                m_activePlayer->selectedPlanets().clear();
+            }
+            foreach (Planet *planet, m_activePlayer->planets()) {
+                qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
+                if (len <= planet->radius()) {
+                    if (selectedPlanets.contains(planet)) {
+                        selectedPlanets.remove(planet);
+                    } else {
+                        selectedPlanets.insert(planet);
+                        emit selectionChanged(planet); // TODO select first
+                    }
                 }
             }
-        }
-        if (m_mode == EditorMode && selectedPlanets.isEmpty()) {
-            Planet *planet = m_activePlayer->addPlanet(QVector2D(mouseEvent->pos()));
-            selectedPlanets.insert(planet);
-            emit selectionChanged(planet);
-        }
-    } else if (mouseEvent->button() == Qt::RightButton) {
-        if (m_mode == GameMode) {
-            m_activePlayer->setTarget(NULL);
-            if (!selectedPlanets.isEmpty()) {
-                foreach (Player *player, m_players) {
-                    foreach (Planet *planet, player->planets()) {
-                        qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
-                        if (len <= planet->radius()) {
-                            foreach (Planet *selectedPlanet, selectedPlanets) {
-                                if (selectedPlanet != planet) {
-                                    m_activePlayer->addShip(selectedPlanet, planet);
+            if (m_mode == EditorMode && selectedPlanets.isEmpty()) {
+                Planet *planet = m_activePlayer->addPlanet(QVector2D(mouseEvent->pos()));
+                selectedPlanets.insert(planet);
+                emit selectionChanged(planet);
+            }
+        } else if (mouseEvent->button() == Qt::RightButton) {
+            if (m_mode == GameMode) {
+                m_activePlayer->setTarget(NULL);
+                if (!selectedPlanets.isEmpty()) {
+                    foreach (Player *player, m_players) {
+                        foreach (Planet *planet, player->planets()) {
+                            qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
+                            if (len <= planet->radius()) {
+                                foreach (Planet *selectedPlanet, selectedPlanets) {
+                                    if (selectedPlanet != planet) {
+                                        m_activePlayer->addShip(selectedPlanet, planet);
+                                    }
                                 }
+                                m_activePlayer->setTarget(planet);
+                                break;
                             }
-                            m_activePlayer->setTarget(planet);
-                            break;
                         }
                     }
                 }
@@ -233,18 +272,28 @@ void Canvas::mouseDoubleClickEvent(QMouseEvent *mouseEvent)
 
 void Canvas::mouseMoveEvent(QMouseEvent *mouseEvent)
 {
-    if (m_mode == EditorMode) {
-        if (mouseEvent->modifiers() & Qt::AltModifier) {
-            foreach (Planet *planet, m_activePlayer->selectedPlanets()) {
-                qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
-                planet->setRadius(int(len));
-                emit selectionChanged(planet); // TODO select first
-            }
-        } else {
-            foreach (Planet *planet, m_activePlayer->selectedPlanets()) {
-                planet->setPosition(QVector2D(mouseEvent->pos()));
-                emit selectionChanged(planet); // TODO select first
+    if (m_factorSelectionActive) {
+        m_activePlayer->setResourceFactor(qRound(100.0 * mouseEvent->x() / m_factorSelectorRegion.width()) / 100.0);
+    } else {
+        if (m_mode == EditorMode) {
+            if (mouseEvent->modifiers() & Qt::AltModifier) {
+                foreach (Planet *planet, m_activePlayer->selectedPlanets()) {
+                    qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
+                    planet->setRadius(int(len));
+                    emit selectionChanged(planet); // TODO select first
+                }
+            } else {
+                foreach (Planet *planet, m_activePlayer->selectedPlanets()) {
+                    planet->setPosition(QVector2D(mouseEvent->pos()));
+                    emit selectionChanged(planet); // TODO select first
+                }
             }
         }
     }
+}
+
+void Canvas::mouseReleaseEvent(QMouseEvent *mouseEvent)
+{
+    Q_UNUSED(mouseEvent)
+    m_factorSelectionActive = false;
 }

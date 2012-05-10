@@ -25,8 +25,6 @@ public slots:
     void draw(QPainter &painter);
 
 private:
-    static const QColor SelectedColor;
-
     qreal m_radius;
     qreal m_productionFactor;
 

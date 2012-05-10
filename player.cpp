@@ -6,6 +6,7 @@ Player::Player(const QString &name, const QColor &color, bool human, QObject *pa
     m_name = name;
     m_color = color;
     m_human = human;
+    m_resourceFactor = 0.5;
     m_target = NULL;
 }
 
@@ -62,10 +63,17 @@ void Player::removePlanet(Planet *planet)
 Ship* Player::addShip(Planet *origin, Planet *target, qreal resourceFactor)
 {
     int res = origin->resources() * resourceFactor;
+    if (res <= 0)
+        return NULL;
     origin->subtractResources(res);
     Ship *ship = new Ship(origin->position(), target, res, origin->color(), this);
     m_ships.insert(ship);
     return ship;
+}
+
+Ship* Player::addShip(Planet *origin, Planet *target)
+{
+    return addShip(origin, target, m_resourceFactor);
 }
 
 void Player::removeShip(Ship *ship)

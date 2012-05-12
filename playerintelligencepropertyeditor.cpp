@@ -41,6 +41,7 @@ void PlayerIntelligencePropertyEditor::setValue(const QVariant &value)
 
 void PlayerIntelligencePropertyEditor::comboBox_currentIndexChanged(int index)
 {
+    // TODO handle "memory leaks"
     const char* className = m_playerIntelligence->metaObject()->className();
     switch (index) {
     case 0:
@@ -61,7 +62,8 @@ void PlayerIntelligencePropertyEditor::scriptButton_clicked()
     if (!fileName.isEmpty()) {
         ScriptedPlayerIntelligence *spi = qobject_cast<ScriptedPlayerIntelligence*>(m_playerIntelligence);
         if (spi != NULL) {
-            spi->setIntelligenceProgram(QFile(fileName));
+            QFile file(fileName);
+            spi->setIntelligenceProgram(file);
         } else {
             qWarning("error: cannot cast to ScriptedPlayerIntelligence*");
         }

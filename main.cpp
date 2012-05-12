@@ -3,7 +3,7 @@
 
 #include "mainwindow.h"
 
-#include "random.h"
+#include "randomutil.h"
 #include "canvas.h"
 #include "playerintelligence.h"
 
@@ -12,13 +12,14 @@ int main(int argc, char *argv[])
 //    QApplication::setGraphicsSystem("opengl");
     QApplication a(argc, argv);
 
-    qRegisterMetaType<GameTime>("GameTime");
+    qRegisterMetaType<RandomUtil*>("RandomUtil*");
+    qRegisterMetaType<GameTime*>("GameTime*");
     qRegisterMetaType<Player*>("Player*");
     qRegisterMetaType<Planet*>("Planet*");
     qRegisterMetaType<Ship*>("Ship*");
     qRegisterMetaType<PlayerIntelligence*>("PlayerIntelligence*");
 
-    Random::init();
+    RandomUtil::init();
 
     QWidget *w;
     if (a.arguments().contains("-noui")) {

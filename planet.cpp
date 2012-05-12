@@ -35,7 +35,7 @@ QRect Planet::rect() const
 
 void Planet::update(const GameTime &gameTime)
 {
-    m_resources += m_radius * m_productionFactor * gameTime.elapsedGameTimeSeconds();
+    m_resources += m_radius * m_productionFactor * gameTime.elapsedSeconds();
 }
 
 void Planet::draw(QPainter &painter)

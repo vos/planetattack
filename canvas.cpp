@@ -8,6 +8,7 @@
 #include <QAction>
 
 #include "scripttemplates.h"
+#include "randomutil.h"
 
 #include "humanplayer.h"
 #include "computerplayer.h"
@@ -44,14 +45,20 @@ Canvas::Canvas(QWidget *parent) :
     m_selectedPlanet = NULL;
 
     // scripting
-//    scriptRegisterQObjectMetaType<GameTime>(&m_scriptEngine);
+    scriptRegisterQObjectMetaType<RandomUtil*>(&m_scriptEngine);
+    scriptRegisterQObjectMetaType<GameTime*>(&m_scriptEngine);
     scriptRegisterQObjectMetaType<Player*>(&m_scriptEngine);
     scriptRegisterContainerMetaType<QSet<Player*> >(&m_scriptEngine);
     scriptRegisterQObjectMetaType<Planet*>(&m_scriptEngine);
     scriptRegisterContainerMetaType<QSet<Planet*> >(&m_scriptEngine);
     scriptRegisterQObjectMetaType<Ship*>(&m_scriptEngine);
     scriptRegisterContainerMetaType<QSet<Ship*> >(&m_scriptEngine);
-    m_scriptEngine.globalObject().setProperty("Canvas", m_scriptEngine.newQObject((QObject*)this));
+    scriptRegisterQObjectMetaType<PlayerIntelligence*>(&m_scriptEngine);
+
+    QScriptValue globalObject = m_scriptEngine.globalObject();
+    globalObject.setProperty("Canvas", m_scriptEngine.newQObject(this));
+    globalObject.setProperty("Random", m_scriptEngine.newQObject(new RandomUtil(this)));
+    globalObject.setProperty("GameTime", m_scriptEngine.newQObject(&m_gameTime));
 
     m_scriptEngineDebugger.attachTo(&m_scriptEngine);
 
@@ -180,7 +187,7 @@ void Canvas::paintEvent(QPaintEvent *paintEvent)
                                  "Planet Count = %6/%7 (%8)\n"
                                  "Ship Count = %9/%10")
             .arg(modeString())
-            .arg(m_gameTime.totalGameTime()).arg(m_gameTime.elapsedGameTime())
+            .arg(m_gameTime.total()).arg(m_gameTime.elapsed())
             .arg(m_FPS)
             .arg(m_activePlayer->name())
             .arg(m_activePlayer->planets().count())

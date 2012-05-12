@@ -3,26 +3,26 @@
 GameTime::GameTime(QObject *parent) :
     QObject(parent)
 {
-    m_totalGameTime = 0;
-    m_elapsedGameTime = 0;
-    m_elapsedGameTimeSeconds = 0.0;
+    m_total = 0;
+    m_elapsed = 0;
+    m_elapsedSeconds = 0.0;
 }
 
 GameTime::GameTime(const GameTime &other)
 {
     m_gameTimer = other.m_gameTimer;
-    m_totalGameTime = other.m_totalGameTime;
-    m_elapsedGameTime = other.m_elapsedGameTime;
-    m_elapsedGameTimeSeconds = other.m_elapsedGameTimeSeconds;
+    m_total = other.m_total;
+    m_elapsed = other.m_elapsed;
+    m_elapsedSeconds = other.m_elapsedSeconds;
 }
 
 GameTime &GameTime::operator =(const GameTime &other)
 {
     if (&other != this) {
         m_gameTimer = other.m_gameTimer;
-        m_totalGameTime = other.m_totalGameTime;
-        m_elapsedGameTime = other.m_elapsedGameTime;
-        m_elapsedGameTimeSeconds = other.m_elapsedGameTimeSeconds;
+        m_total = other.m_total;
+        m_elapsed = other.m_elapsed;
+        m_elapsedSeconds = other.m_elapsedSeconds;
     }
     return *this;
 }
@@ -35,7 +35,7 @@ void GameTime::start()
 void GameTime::update()
 {
     qint64 elapsed = m_gameTimer.elapsed();
-    m_elapsedGameTime = elapsed - m_totalGameTime;
-    m_elapsedGameTimeSeconds = m_elapsedGameTime / 1000.0;
-    m_totalGameTime = elapsed;
+    m_elapsed = elapsed - m_total;
+    m_elapsedSeconds = m_elapsed / 1000.0;
+    m_total = elapsed;
 }

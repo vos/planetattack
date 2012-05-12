@@ -10,6 +10,7 @@
 class ScriptedPlayerIntelligence : public PlayerIntelligence
 {
     Q_OBJECT
+    Q_PROPERTY(int delay READ delay WRITE setDelay)
 
 public:
     explicit ScriptedPlayerIntelligence(QScriptEngine *engine, Player *parent = NULL);
@@ -21,6 +22,10 @@ public:
     void setIntelligenceProgram(const QString &sourceCode);
     void setIntelligenceProgram(QFile &sourceFile);
 
+    inline int delay() const { return m_delay; }
+    inline void setDelay(int delay) { m_delay = delay; }
+
+public slots:
     void think(const GameTime &gameTime);
 
 private:
@@ -29,6 +34,7 @@ private:
     QScriptValue m_this;
 
     QElapsedTimer m_timer;
+    int m_delay;
 
 };
 

@@ -18,7 +18,7 @@ void Ship::update(const GameTime &gameTime)
         // move towards target
         m_direction = m_target->position() - m_position;
         m_direction.normalize();
-        m_position += m_direction * (m_speed * gameTime.elapsedGameTimeSeconds());
+        m_position += m_direction * (m_speed * gameTime.elapsedSeconds());
         if ((m_target->position() - m_position).length() <= m_target->radius()) {
             Player *targetOwner = m_target->player();
             if (targetOwner == player()) {

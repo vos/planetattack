@@ -8,15 +8,18 @@
 class GameTime : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(qint64 total READ total)
+    Q_PROPERTY(qint64 elapsed READ elapsed)
+    Q_PROPERTY(qreal elapsedSeconds READ elapsedSeconds)
 
 public:
     explicit GameTime(QObject *parent = NULL);
     GameTime(const GameTime &other);
     GameTime& operator =(const GameTime &other);
 
-    Q_INVOKABLE inline qint64 totalGameTime() const { return m_totalGameTime; }
-    Q_INVOKABLE inline qint64 elapsedGameTime() const { return m_elapsedGameTime; }
-    Q_INVOKABLE inline qreal elapsedGameTimeSeconds() const { return m_elapsedGameTimeSeconds; }
+    inline qint64 total() const { return m_total; }
+    inline qint64 elapsed() const { return m_elapsed; }
+    inline qreal elapsedSeconds() const { return m_elapsedSeconds; }
 
 public slots:
     void start();
@@ -25,11 +28,11 @@ public slots:
 private:
     QElapsedTimer m_gameTimer;
 
-    qint64 m_totalGameTime; // milliseconds since the start
-    qint64 m_elapsedGameTime; // milliseconds since the last update
-    qreal m_elapsedGameTimeSeconds; // seconds since the last update (temp)
+    qint64 m_total; // milliseconds since the start
+    qint64 m_elapsed; // milliseconds since the last update
+    qreal m_elapsedSeconds; // seconds since the last update (temp)
 };
 
-Q_DECLARE_METATYPE(GameTime)
+Q_DECLARE_METATYPE(GameTime*)
 
 #endif // GAMETIME_H

@@ -1,29 +1,34 @@
-#include "random.h"
+#include "randomutil.h"
 
 #include <QTime>
 
-void Random::init()
+RandomUtil::RandomUtil(QObject *parent) :
+    QObject(parent)
+{
+}
+
+void RandomUtil::init()
 {
     QTime midnight(0, 0, 0);
     qsrand(midnight.secsTo(QTime::currentTime()));
 }
 
-int Random::randomInt()
+int RandomUtil::randomInt()
 {
     return qrand();
 }
 
-int Random::randomInt(int from, int to)
+int RandomUtil::randomInt(int from, int to)
 {
     return from + (qrand() % (to - from));
 }
 
-qreal Random::randomReal()
+qreal RandomUtil::randomReal()
 {
     return qrand() / (qreal)RAND_MAX;
 }
 
-qreal Random::randomReal(qreal min, qreal max)
+qreal RandomUtil::randomReal(qreal min, qreal max)
 {
     return min + (randomReal() * (max - min));
 }

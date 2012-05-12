@@ -23,14 +23,14 @@ HEADERS += \
     computerplayer.h \
     intelligence.h \
     playerintelligence.h \
-    random.h \
     propertyeditor.h \
     stringpropertyeditor.h \
     vector2dpropertyeditor.h \
     playerintelligencepropertyeditor.h \
     playerpropertyeditor.h \
     scripttemplates.h \
-    scriptedplayerintelligence.h
+    scriptedplayerintelligence.h \
+    randomutil.h
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -45,11 +45,11 @@ SOURCES += main.cpp \
     computerplayer.cpp \
     intelligence.cpp \
     playerintelligence.cpp \
-    random.cpp \
     stringpropertyeditor.cpp \
     vector2dpropertyeditor.cpp \
     playerintelligencepropertyeditor.cpp \
     playerpropertyeditor.cpp \
-    scriptedplayerintelligence.cpp
+    scriptedplayerintelligence.cpp \
+    randomutil.cpp
 
 FORMS += mainwindow.ui

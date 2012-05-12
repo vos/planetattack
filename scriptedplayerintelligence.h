@@ -5,7 +5,6 @@
 
 #include <QScriptEngine>
 #include <QScriptProgram>
-#include <QFile>
 
 class ScriptedPlayerIntelligence : public PlayerIntelligence
 {
@@ -18,12 +17,14 @@ public:
     void setPlayer(Player *player);
 
     inline const QScriptProgram& intelligenceProgram() const { return m_intelligenceProgram; }
-    inline void setIntelligenceProgram(const QScriptProgram &scriptProgram) { m_intelligenceProgram = scriptProgram; }
-    void setIntelligenceProgram(const QString &sourceCode);
-    void setIntelligenceProgram(QFile &sourceFile);
+    bool setIntelligenceProgram(const QScriptProgram &scriptProgram);
+    bool setIntelligenceProgram(const QString &sourceCode);
+    bool setIntelligenceProgramFile(const QString &fileName);
 
     inline int delay() const { return m_delay; }
     inline void setDelay(int delay) { m_delay = delay; }
+
+    static bool checkScriptSyntax(const QString &sourceCode, const QString &fileName = QString());
 
 public slots:
     void think(const GameTime &gameTime);

@@ -74,8 +74,7 @@ Canvas::Canvas(QWidget *parent) :
 
     // TEST AI 1
     ScriptedPlayerIntelligence *playerAI = new ScriptedPlayerIntelligence(&m_scriptEngine);
-    QFile aiFile("scripts/random_ai.js");
-    playerAI->setIntelligenceProgram(aiFile);
+    playerAI->setIntelligenceProgramFile("scripts/random_ai.js");
     ComputerPlayer *computerPlayer = new ComputerPlayer("GLaDOS", Qt::red, playerAI, this);
     computerPlayer->addPlanet(QVector2D(750, 250), 100, 100);
     m_players.insert(computerPlayer);

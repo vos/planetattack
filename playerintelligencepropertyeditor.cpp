@@ -1,10 +1,10 @@
 #include "playerintelligencepropertyeditor.h"
 
 #include <QVBoxLayout>
-#include <QFileDialog>
 
 #include "scriptedplayerintelligence.h"
 #include "canvas.h"
+#include "scriptwindow.h"
 
 PlayerIntelligencePropertyEditor::PlayerIntelligencePropertyEditor(QWidget *parent) :
     QWidget(parent)
@@ -62,14 +62,14 @@ void PlayerIntelligencePropertyEditor::comboBox_currentIndexChanged(int index)
 
 void PlayerIntelligencePropertyEditor::scriptButton_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, "Open Script File", QString(), "Qt Script Files (*.qs *.js);;All Files (*.*)");
-    if (!fileName.isEmpty()) {
-        ScriptedPlayerIntelligence *spi = qobject_cast<ScriptedPlayerIntelligence*>(m_playerIntelligence);
-        if (spi != NULL) {
-            QFile file(fileName);
-            spi->setIntelligenceProgram(file);
-        } else {
-            qWarning("error: cannot cast to ScriptedPlayerIntelligence*");
-        }
+    ScriptedPlayerIntelligence *spi = qobject_cast<ScriptedPlayerIntelligence*>(m_playerIntelligence);
+    if (spi == NULL) {
+        qWarning("error: cannot cast to ScriptedPlayerIntelligence*");
+        return;
     }
+
+    ScriptWindow *scriptWindow = new ScriptWindow(spi, this);
+    scriptWindow->show();
+    scriptWindow->raise();
+    scriptWindow->activateWindow();
 }

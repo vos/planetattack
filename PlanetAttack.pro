@@ -30,7 +30,8 @@ HEADERS += \
     playerpropertyeditor.h \
     scripttemplates.h \
     scriptedplayerintelligence.h \
-    randomutil.h
+    randomutil.h \
+    scriptwindow.h
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -50,9 +51,11 @@ SOURCES += main.cpp \
     playerintelligencepropertyeditor.cpp \
     playerpropertyeditor.cpp \
     scriptedplayerintelligence.cpp \
-    randomutil.cpp
+    randomutil.cpp \
+    scriptwindow.cpp
 
-FORMS += mainwindow.ui
+FORMS += mainwindow.ui \
+    scriptwindow.ui
 
 OTHER_FILES += README.md \
     scripts/random_ai.js

@@ -5,11 +5,12 @@
 #include <QTimer>
 
 #include <QDebug>
+#include <QAction>
+
+#include "scripttemplates.h"
 
 #include "humanplayer.h"
 #include "computerplayer.h"
-#include "randomplayerintelligence.h"
-#include "random.h"
 
 Canvas* Canvas::Instance = NULL;
 
@@ -39,6 +40,21 @@ Canvas::Canvas(QWidget *parent) :
     m_factorSelectionActive = false;
     m_backgroundImage = QImage("background.jpg");
 
+    m_globalAccess = false;
+    m_selectedPlanet = NULL;
+
+    // scripting
+//    scriptRegisterQObjectMetaType<GameTime>(&m_scriptEngine);
+    scriptRegisterQObjectMetaType<Player*>(&m_scriptEngine);
+    scriptRegisterContainerMetaType<QSet<Player*> >(&m_scriptEngine);
+    scriptRegisterQObjectMetaType<Planet*>(&m_scriptEngine);
+    scriptRegisterContainerMetaType<QSet<Planet*> >(&m_scriptEngine);
+    scriptRegisterQObjectMetaType<Ship*>(&m_scriptEngine);
+    scriptRegisterContainerMetaType<QSet<Ship*> >(&m_scriptEngine);
+    m_scriptEngine.globalObject().setProperty("Canvas", m_scriptEngine.newQObject((QObject*)this));
+
+    m_scriptEngineDebugger.attachTo(&m_scriptEngine);
+
     // add neutral planets
     m_planets.insert(new Planet(QVector2D(400, 100), 40, 40));
     m_planets.insert(new Planet(QVector2D(350, 225), 50, 50));
@@ -48,7 +64,7 @@ Canvas::Canvas(QWidget *parent) :
     m_players.insert(m_activePlayer);
 
     // TEST AI 1
-    ComputerPlayer *computerPlayer = new ComputerPlayer("GLaDOS", Qt::red, new RandomPlayerIntelligence, this);
+    ComputerPlayer *computerPlayer = new ComputerPlayer("GLaDOS", Qt::red, NULL, this);
     computerPlayer->addPlanet(QVector2D(750, 250), 100, 100);
     m_players.insert(computerPlayer);
 
@@ -57,9 +73,6 @@ Canvas::Canvas(QWidget *parent) :
     computerPlayer2->addPlanet(QVector2D(500, 500), 75, 75);
     computerPlayer2->addPlanet(QVector2D(650, 600), 25, 25);
     m_players.insert(computerPlayer2);
-
-    m_globalAccess = false;
-    m_selectedPlanet = NULL;
 
     m_gameTime.start();
     m_FPSTimer.start();

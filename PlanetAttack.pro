@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT += core gui opengl
+QT += core gui opengl script scripttools
 
 TARGET = PlanetAttack
 TEMPLATE = app
@@ -28,8 +28,9 @@ HEADERS += \
     stringpropertyeditor.h \
     vector2dpropertyeditor.h \
     playerintelligencepropertyeditor.h \
-    randomplayerintelligence.h \
-    playerpropertyeditor.h
+    playerpropertyeditor.h \
+    scripttemplates.h \
+    scriptedplayerintelligence.h
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -48,7 +49,7 @@ SOURCES += main.cpp \
     stringpropertyeditor.cpp \
     vector2dpropertyeditor.cpp \
     playerintelligencepropertyeditor.cpp \
-    randomplayerintelligence.cpp \
-    playerpropertyeditor.cpp
+    playerpropertyeditor.cpp \
+    scriptedplayerintelligence.cpp
 
 FORMS += mainwindow.ui

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QElapsedTimer>
+#include <QMetaType>
 
 class GameTime : public QObject
 {
@@ -10,10 +11,12 @@ class GameTime : public QObject
 
 public:
     explicit GameTime(QObject *parent = NULL);
+    GameTime(const GameTime &other);
+    GameTime& operator =(const GameTime &other);
 
-    inline qint64 totalGameTime() const { return m_totalGameTime; }
-    inline qint64 elapsedGameTime() const { return m_elapsedGameTime; }
-    inline qreal elapsedGameTimeSeconds() const { return m_elapsedGameTimeSeconds; }
+    Q_INVOKABLE inline qint64 totalGameTime() const { return m_totalGameTime; }
+    Q_INVOKABLE inline qint64 elapsedGameTime() const { return m_elapsedGameTime; }
+    Q_INVOKABLE inline qreal elapsedGameTimeSeconds() const { return m_elapsedGameTimeSeconds; }
 
 public slots:
     void start();
@@ -26,5 +29,7 @@ private:
     qint64 m_elapsedGameTime; // milliseconds since the last update
     qreal m_elapsedGameTimeSeconds; // seconds since the last update (temp)
 };
+
+Q_DECLARE_METATYPE(GameTime)
 
 #endif // GAMETIME_H

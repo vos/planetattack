@@ -27,6 +27,9 @@ MainWindow::MainWindow(QWidget *parent) :
     setCentralWidget(m_canvas);
     setWindowTitle(m_canvas->windowTitle());
 
+    ui->menuBar->addMenu(m_canvas->scriptEngineDebugger().createStandardMenu());
+    addToolBar(Qt::TopToolBarArea, m_canvas->scriptEngineDebugger().createStandardToolBar());
+
     ui->modeComboBox->addItem(Canvas::modeString(Canvas::EditorMode));
     ui->modeComboBox->addItem(Canvas::modeString(Canvas::GameMode));
     ui->modeComboBox->setCurrentIndex(m_canvas->mode());
@@ -51,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    qDeleteAll(m_propertyEditorList);
+    qDeleteAll(m_propertyEditorMap.values());
     delete m_canvas;
     delete ui;
 }
@@ -69,7 +72,7 @@ void MainWindow::canvas_selectionChanged(QObject *o)
         // selection set to NULL -> clear editor
         QVBoxLayout *layout = (QVBoxLayout*)ui->editorWidget->layout();
         // delete all widgets
-        m_propertyEditorList.clear();
+        m_propertyEditorMap.clear();
         QLayoutItem *item;
         while ((item = layout->takeAt(0)) != NULL) {
             delete item->widget();
@@ -84,15 +87,17 @@ void MainWindow::canvas_selectionChanged(QObject *o)
         // type has changed -> create new view
         QVBoxLayout *layout = (QVBoxLayout*)ui->editorWidget->layout();
         // delete all widgets
-        m_propertyEditorList.clear();
+        m_propertyEditorMap.clear();
         QLayoutItem *item;
         while ((item = layout->takeAt(0)) != NULL) {
             delete item->widget();
             delete item;
         }
         layout->addWidget(new QLabel(metaObject->className()));
-        for(int i = 1; i < metaObject->propertyCount(); ++i) {
+        for (int i = 1; i < metaObject->propertyCount(); ++i) {
             QMetaProperty property = metaObject->property(i);
+            if (!property.isDesignable())
+                continue;
             const char *typeName = property.typeName();
             layout->addWidget(new QLabel(QString("%1 (%2)").arg(property.name(), typeName)));
             PropertyEditor *editor;
@@ -114,8 +119,11 @@ void MainWindow::canvas_selectionChanged(QObject *o)
                 editor = new StringPropertyEditor;
             }
             editor->setValue(property.read(o).value<QVariant>());
-            layout->addWidget(editor->widget());
-            m_propertyEditorList.append(editor);
+            QWidget *editorWidget = editor->widget();
+            if (!property.isWritable())
+                editorWidget->setEnabled(false);
+            layout->addWidget(editorWidget);
+            m_propertyEditorMap.insert(property.name(), editor);
         }
         layout->addStretch();
         QPushButton *saveButton = new QPushButton("Save");
@@ -123,9 +131,11 @@ void MainWindow::canvas_selectionChanged(QObject *o)
         layout->addWidget(saveButton);
     } else {
         // type has not changed -> just update the view
-        for(int i = 1; i < metaObject->propertyCount(); ++i) {
+        for (int i = 1; i < metaObject->propertyCount(); ++i) {
             QMetaProperty property = metaObject->property(i);
-            PropertyEditor *editor = m_propertyEditorList.at(i - 1);
+            if (!property.isDesignable())
+                continue;
+            PropertyEditor *editor = m_propertyEditorMap.value(property.name());
             editor->setValue(property.read(o).value<QVariant>());
         }
     }
@@ -137,9 +147,11 @@ void MainWindow::saveButton_clicked()
     if (!m_selectedObject) return;
 
     const QMetaObject *metaObject = m_selectedObject->metaObject();
-    for(int i = 1; i < metaObject->propertyCount(); ++i) {
+    for (int i = 1; i < metaObject->propertyCount(); ++i) {
         QMetaProperty property = metaObject->property(i);
-        PropertyEditor *editor = m_propertyEditorList.at(i - 1);
+        if (!property.isDesignable())
+            continue;
+        PropertyEditor *editor = m_propertyEditorMap.value(property.name());
         if (!property.write(m_selectedObject, editor->value())) {
             qWarning("property write failed: %s::%s with value=%s", metaObject->className(), property.name(),
                      qPrintable(editor->value().toString()));

@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QList>
+#include <QHash>
 
 #include "canvas.h"
 #include "propertyeditor.h"
@@ -34,7 +34,7 @@ private:
     Ui::MainWindow *ui;
     Canvas *m_canvas;
     QObject *m_selectedObject;
-    QList<PropertyEditor*> m_propertyEditorList;
+    QHash<QString, PropertyEditor*> m_propertyEditorMap;
 
 };
 

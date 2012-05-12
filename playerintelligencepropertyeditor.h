@@ -1,10 +1,14 @@
 #ifndef PLAYERINTELLIGENCEPROPERTYEDITOR_H
 #define PLAYERINTELLIGENCEPROPERTYEDITOR_H
 
-#include <QComboBox>
 #include "propertyeditor.h"
 
-class PlayerIntelligencePropertyEditor : public QComboBox, public PropertyEditor
+#include <QComboBox>
+#include <QPushButton>
+
+class PlayerIntelligence;
+
+class PlayerIntelligencePropertyEditor : public QWidget, public PropertyEditor
 {
     Q_OBJECT
 
@@ -15,6 +19,15 @@ public:
 
     QVariant value() const;
     void setValue(const QVariant &value);
+
+private slots:
+    void comboBox_currentIndexChanged(int index);
+    void scriptButton_clicked();
+
+private:
+    PlayerIntelligence *m_playerIntelligence;
+    QComboBox m_comboBox;
+    QPushButton m_scriptButton;
 
 };
 

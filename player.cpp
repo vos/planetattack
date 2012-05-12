@@ -82,3 +82,34 @@ void Player::removeShip(Ship *ship)
 {
     m_ships.remove(ship);
 }
+
+QSet<Player*> Player::getEnemies()
+{
+    QSet<Player*> enemies;
+    foreach (Player *player, Canvas::Instance->players()) {
+        if (player != this) {
+            enemies.insert(player);
+        }
+    }
+    return enemies;
+}
+
+QSet<Planet*> Player::getEnemyPlanets()
+{
+    QSet<Planet*> planets;
+    foreach (Player *player, getEnemies()) {
+        planets.unite(player->planets());
+    }
+    return planets;
+}
+
+QSet<Planet*> Player::getOtherPlanets()
+{
+    QSet<Planet*> planets;
+    foreach (Planet *planet, Canvas::Instance->planets()) {
+        if (planet->player() != this) {
+            planets.insert(planet);
+        }
+    }
+    return planets;
+}

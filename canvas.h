@@ -5,6 +5,8 @@
 #include <QPainter>
 #include <QSet>
 #include <QElapsedTimer>
+#include <QScriptEngine>
+#include <QScriptEngineDebugger>
 
 #include "gametime.h"
 #include "player.h"
@@ -37,6 +39,12 @@ public:
 
     inline QSet<Planet*>& planets() { return m_planets; }
 
+    QScriptEngine& scriptEngine() { return m_scriptEngine; }
+    QScriptEngineDebugger& scriptEngineDebugger() { return m_scriptEngineDebugger; }
+
+    Q_INVOKABLE QSet<Player*> getAllPlayers() { return m_players; }
+    Q_INVOKABLE QSet<Planet*> getAllPlanets() { return m_planets; }
+
 signals:
     void modeChanged();
     void selectionChanged(QObject *o);
@@ -64,6 +72,9 @@ private:
 
     QSet<Planet*> m_planets;
     Planet *m_selectedPlanet;
+
+    QScriptEngine m_scriptEngine;
+    QScriptEngineDebugger m_scriptEngineDebugger;
 
     void resizeEvent(QResizeEvent *resizeEvent);
     void timerEvent(QTimerEvent *timerEvent);

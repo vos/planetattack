@@ -7,7 +7,7 @@
 class ComputerPlayer : public Player
 {
     Q_OBJECT
-    Q_PROPERTY(PlayerIntelligence* intelligence READ intelligence WRITE setIntelligence)
+    Q_PROPERTY(PlayerIntelligence* intelligence READ intelligence WRITE setIntelligence SCRIPTABLE false)
 
 public:
     ComputerPlayer(const QString &name, const QColor &color = Qt::red, PlayerIntelligence *intelligence = NULL, QObject *parent = NULL);

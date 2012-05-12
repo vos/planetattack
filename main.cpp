@@ -12,7 +12,10 @@ int main(int argc, char *argv[])
 //    QApplication::setGraphicsSystem("opengl");
     QApplication a(argc, argv);
 
+    qRegisterMetaType<GameTime>("GameTime");
     qRegisterMetaType<Player*>("Player*");
+    qRegisterMetaType<Planet*>("Planet*");
+    qRegisterMetaType<Ship*>("Ship*");
     qRegisterMetaType<PlayerIntelligence*>("PlayerIntelligence*");
 
     Random::init();

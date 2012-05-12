@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QSet>
+#include <QMetaType>
 
 #include "planet.h"
 #include "ship.h"
@@ -13,6 +14,8 @@ class Player : public QObject
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged USER true)
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(qreal resourceFactor READ resourceFactor WRITE setResourceFactor)
+    Q_PROPERTY(bool human READ isHuman DESIGNABLE false)
+    Q_PROPERTY(bool computer READ isComputer DESIGNABLE false)
 
 public:
     Player(const QString &name, const QColor &color, bool human = true, QObject *parent = NULL);
@@ -31,20 +34,25 @@ public:
     inline void setResourceFactor(qreal factor = 0.5) { m_resourceFactor = qBound(0.0, factor, 1.0); }
 
     inline QSet<Planet*>& planets() { return m_planets; }
+    Q_INVOKABLE QSet<Planet*> getPlanets() { return m_planets; }
+    Q_INVOKABLE void addPlanet(Planet *planet);
+    Q_INVOKABLE Planet* addPlanet(const QVector2D& position, qreal radius = 50.0, qreal resources = 0.0);
+    Q_INVOKABLE void removePlanet(Planet *planet);
+
     inline QSet<Planet*>& selectedPlanets() { return m_selectedPlanets; }
 
     inline Planet* target() { return m_target; }
     inline void setTarget(Planet *target) { m_target = target; }
 
     inline QSet<Ship*>& ships() { return m_ships; }
+    Q_INVOKABLE QSet<Ship*> getShips() { return m_ships; }
+    Q_INVOKABLE Ship* addShip(Planet *origin, Planet *target, qreal resourceFactor);
+    Q_INVOKABLE Ship* addShip(Planet *origin, Planet *target);
+    Q_INVOKABLE void removeShip(Ship *ship);
 
-    void addPlanet(Planet *planet);
-    Planet* addPlanet(const QVector2D& position, qreal radius = 50.0, qreal resources = 0.0);
-    void removePlanet(Planet *planet);
-
-    Ship* addShip(Planet *origin, Planet *target, qreal resourceFactor);
-    Ship* addShip(Planet *origin, Planet *target);
-    void removeShip(Ship *ship);
+    Q_INVOKABLE QSet<Player*> getEnemies();
+    Q_INVOKABLE QSet<Planet*> getEnemyPlanets();
+    Q_INVOKABLE QSet<Planet*> getOtherPlanets();
 
 signals:
     void nameChanged(const QString &oldName, const QString &newName);
@@ -64,5 +72,6 @@ protected:
 };
 
 Q_DECLARE_METATYPE(Player*)
+Q_DECLARE_METATYPE(QSet<Player*>)
 
 #endif // PLAYER_H

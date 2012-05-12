@@ -2,9 +2,9 @@
 #define PLAYERINTELLIGENCE_H
 
 #include "intelligence.h"
-#include "canvas.h"
+#include "player.h"
 
-class ComputerPlayer;
+#include <QMetaType>
 
 class PlayerIntelligence : public Intelligence
 {
@@ -13,14 +13,11 @@ class PlayerIntelligence : public Intelligence
 public:
     explicit PlayerIntelligence(Player *parent = NULL);
 
-protected:
-    inline Player* getSelf() { return (Player*)parent(); }
-    inline QSet<Player*>& getAllPlayers() { return Canvas::Instance->players(); }
-    inline QSet<Planet*>& getAllPlanets() { return Canvas::Instance->planets(); }
-    QSet<Player*> getEnemies();
-    QSet<Planet*> getEnemyPlanets();
-    QSet<Planet*> getNeutralPlanets();
-    QSet<Planet*> getOtherPlanets();
+    inline Player* player() { return m_player; }
+    virtual void setPlayer(Player *player) { m_player = player; setParent(player); }
+
+private:
+    Player *m_player;
 
 };
 

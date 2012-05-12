@@ -2,12 +2,15 @@
 #define PLANET_H
 
 #include "spaceobject.h"
+#include <QMetaType>
+#include <QSet>
 
 class Planet : public SpaceObject
 {
     Q_OBJECT
     Q_PROPERTY(qreal radius READ radius WRITE setRadius)
     Q_PROPERTY(qreal productionFactor READ productionFactor WRITE setProductionFactor)
+    Q_PROPERTY(bool neutral READ isNeutral DESIGNABLE false)
 
 public:
     Planet(const QVector2D& position, qreal radius = 50.0, qreal resources = 0.0, const QColor &color = Qt::darkGray, Player *parent = NULL);
@@ -19,7 +22,7 @@ public:
     inline void setProductionFactor(qreal factor) { m_productionFactor = factor; }
 
     inline bool isNeutral() const { return !hasPlayer(); }
-    bool setPlayer(Player *player);
+    Q_INVOKABLE bool setPlayer(Player *player);
 
     QRect rect() const;
 
@@ -32,5 +35,8 @@ private:
     qreal m_productionFactor;
 
 };
+
+Q_DECLARE_METATYPE(Planet*)
+Q_DECLARE_METATYPE(QSet<Planet*>)
 
 #endif // PLANET_H

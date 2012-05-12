@@ -8,8 +8,9 @@ ComputerPlayer::ComputerPlayer(const QString &name, const QColor &color, PlayerI
 
 void ComputerPlayer::setIntelligence(PlayerIntelligence *intelligence)
 {
-    if (m_intelligence && m_intelligence != intelligence)
+    if (m_intelligence != NULL && m_intelligence != intelligence)
         delete m_intelligence;
-    m_intelligence = intelligence != NULL ? intelligence : new PlayerIntelligence;
-    m_intelligence->setPlayer(this);
+    m_intelligence = intelligence;
+    if (m_intelligence)
+        m_intelligence->setPlayer(this);
 }

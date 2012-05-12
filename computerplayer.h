@@ -14,6 +14,7 @@ public:
 
     inline PlayerIntelligence* intelligence() const { return m_intelligence; }
     void setIntelligence(PlayerIntelligence *intelligence = NULL);
+    inline bool hasIntelligence() const { return m_intelligence != NULL; }
 
 private:
     PlayerIntelligence *m_intelligence;

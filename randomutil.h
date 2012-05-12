@@ -1,5 +1,5 @@
-#ifndef RANDOM_H
-#define RANDOM_H
+#ifndef RANDOMUTIL_H
+#define RANDOMUTIL_H
 
 #include <QObject>
 #include <QMetaType>
@@ -29,4 +29,4 @@ public:
 
 Q_DECLARE_METATYPE(RandomUtil*)
 
-#endif // RANDOM_H
+#endif // RANDOMUTIL_H

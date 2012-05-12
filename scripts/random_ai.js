@@ -7,7 +7,9 @@ if (myPlanets.length > 0) {
     if (otherPlanets.length > 0) {
         var otherPlanet = otherPlanets[Random.randomInt(0, otherPlanets.length)];
         // attack other planet with 25-75% of my choosen planets resources
-        Player.addShip(myPlanet, otherPlanet, Random.randomReal(0.25, 0.75));
+        var resourceFactor = Random.randomReal(0.25, 0.75);
+        Player.resourceFactor = resourceFactor;
+        Player.addShip(myPlanet, otherPlanet);
     } else {
         // no other planets found!
     }

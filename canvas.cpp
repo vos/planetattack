@@ -109,7 +109,10 @@ void Canvas::timerEvent(QTimerEvent *timerEvent)
     if (m_mode == GameMode) {
         foreach (Player *player, m_players) {
             if (player->isComputer()) {
-                ((ComputerPlayer*)player)->intelligence()->think(m_gameTime);
+                ComputerPlayer *computerPlayer = static_cast<ComputerPlayer*>(player);
+                if (computerPlayer->hasIntelligence()) {
+                    computerPlayer->intelligence()->think(m_gameTime);
+                }
             }
             foreach (Planet *planet, player->planets()) {
                 planet->update(m_gameTime);
@@ -182,7 +185,8 @@ void Canvas::paintEvent(QPaintEvent *paintEvent)
     factorSectionRegion.setWidth(m_factorSelectorRegion.width() * m_activePlayer->resourceFactor());
     m_painter.drawRect(factorSectionRegion);
     m_painter.setPen(Qt::white);
-    m_painter.drawText(m_factorSelectorRegion, Qt::AlignCenter, QString("%1 %").arg(m_activePlayer->resourceFactor() * 100));
+    m_painter.drawText(m_factorSelectorRegion, Qt::AlignCenter, QString("%1 %")
+                       .arg(m_activePlayer->resourceFactor() * 100, 0, 'f', 0));
 
     // status overlay
     QString statusText = QString("Mode = %1\n"
@@ -319,7 +323,7 @@ void Canvas::mouseDoubleClickEvent(QMouseEvent *mouseEvent)
 void Canvas::mouseMoveEvent(QMouseEvent *mouseEvent)
 {
     if (m_factorSelectionActive) {
-        m_activePlayer->setResourceFactor(qRound(100.0 * mouseEvent->x() / m_factorSelectorRegion.width()) / 100.0);
+        m_activePlayer->setResourceFactor(mouseEvent->x() / (qreal)m_factorSelectorRegion.width());
     } else {
         if (m_mode == EditorMode && m_selectedPlanet != NULL) {
             m_activePlayer->selectedPlanets().insert(m_selectedPlanet);

@@ -3,13 +3,14 @@
 #include <QVBoxLayout>
 #include <QFileDialog>
 
-#include "playerintelligence.h"
 #include "scriptedplayerintelligence.h"
 #include "canvas.h"
 
 PlayerIntelligencePropertyEditor::PlayerIntelligencePropertyEditor(QWidget *parent) :
     QWidget(parent)
 {
+    m_playerIntelligence = NULL;
+
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setMargin(0);
     setLayout(layout);
@@ -18,7 +19,7 @@ PlayerIntelligencePropertyEditor::PlayerIntelligencePropertyEditor(QWidget *pare
     m_scriptButton.setVisible(false);
     layout->addWidget(&m_scriptButton);
 
-    m_comboBox.addItem("PlayerIntelligence");
+    m_comboBox.addItem("<null>");
     m_comboBox.addItem("ScriptedPlayerIntelligence");
 
     connect(&m_comboBox, SIGNAL(currentIndexChanged(int)), SLOT(comboBox_currentIndexChanged(int)));
@@ -35,21 +36,24 @@ QVariant PlayerIntelligencePropertyEditor::value() const
 void PlayerIntelligencePropertyEditor::setValue(const QVariant &value)
 {
     m_playerIntelligence = value.value<PlayerIntelligence*>();
-    const QMetaObject *metaObject = m_playerIntelligence->metaObject();
-    m_comboBox.setCurrentIndex(m_comboBox.findText(QString(metaObject->className())));
+    if (m_playerIntelligence != NULL) {
+        const QMetaObject *metaObject = m_playerIntelligence->metaObject();
+        m_comboBox.setCurrentIndex(m_comboBox.findText(QString(metaObject->className())));
+    } else {
+        m_comboBox.setCurrentIndex(0);
+    }
 }
 
 void PlayerIntelligencePropertyEditor::comboBox_currentIndexChanged(int index)
 {
     // TODO handle "memory leaks"
-    const char* className = m_playerIntelligence->metaObject()->className();
+    const QString className(m_playerIntelligence ? m_playerIntelligence->metaObject()->className() : "");
     switch (index) {
     case 0:
-        if (strcmp(className, "PlayerIntelligence") != 0)
-            m_playerIntelligence = new PlayerIntelligence;
+        m_playerIntelligence = NULL;
         break;
     case 1:
-        if (strcmp(className, "ScriptedPlayerIntelligence") != 0)
+        if (className != "ScriptedPlayerIntelligence")
             m_playerIntelligence = new ScriptedPlayerIntelligence(&Canvas::Instance->scriptEngine());
         break;
     }

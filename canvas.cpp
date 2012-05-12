@@ -56,9 +56,10 @@ Canvas::Canvas(QWidget *parent) :
     scriptRegisterQObjectMetaType<PlayerIntelligence*>(&m_scriptEngine);
 
     QScriptValue globalObject = m_scriptEngine.globalObject();
-    globalObject.setProperty("Canvas", m_scriptEngine.newQObject(this));
     globalObject.setProperty("Random", m_scriptEngine.newQObject(new RandomUtil(this)));
-    globalObject.setProperty("GameTime", m_scriptEngine.newQObject(&m_gameTime));
+    QScriptValue gameObject = m_scriptEngine.newQObject(this);
+    gameObject.setProperty("Time", m_scriptEngine.newQObject(&m_gameTime));
+    globalObject.setProperty("Game", gameObject);
 
     m_scriptEngineDebugger.attachTo(&m_scriptEngine);
 

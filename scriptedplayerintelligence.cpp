@@ -14,7 +14,7 @@ void ScriptedPlayerIntelligence::setPlayer(Player *player)
 {
     PlayerIntelligence::setPlayer(player);
     m_this = m_scriptEngine->newQObject(player);
-    m_this.setProperty("ai", m_scriptEngine->newQObject(this));
+    m_this.setProperty("AI", m_scriptEngine->newQObject(this));
 }
 
 void ScriptedPlayerIntelligence::setIntelligenceProgram(const QString &sourceCode)
@@ -43,7 +43,7 @@ void ScriptedPlayerIntelligence::think(const GameTime &gameTime)
         return;
 
     if (m_timer.hasExpired(m_delay)) {
-        m_scriptEngine->globalObject().setProperty("player", m_this);
+        m_scriptEngine->globalObject().setProperty("Player", m_this);
         QScriptValue result = m_scriptEngine->evaluate(m_intelligenceProgram);
         if (result.isError()) {
             qCritical() << QString::fromLatin1("%0:%1: %2")

@@ -12,6 +12,7 @@
 
 #include "humanplayer.h"
 #include "computerplayer.h"
+#include "scriptedplayerintelligence.h"
 
 Canvas* Canvas::Instance = NULL;
 
@@ -72,7 +73,10 @@ Canvas::Canvas(QWidget *parent) :
     m_players.insert(m_activePlayer);
 
     // TEST AI 1
-    ComputerPlayer *computerPlayer = new ComputerPlayer("GLaDOS", Qt::red, NULL, this);
+    ScriptedPlayerIntelligence *playerAI = new ScriptedPlayerIntelligence(&m_scriptEngine);
+    QFile aiFile("scripts/random_ai.js");
+    playerAI->setIntelligenceProgram(aiFile);
+    ComputerPlayer *computerPlayer = new ComputerPlayer("GLaDOS", Qt::red, playerAI, this);
     computerPlayer->addPlanet(QVector2D(750, 250), 100, 100);
     m_players.insert(computerPlayer);
 

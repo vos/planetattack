@@ -54,4 +54,5 @@ SOURCES += main.cpp \
 
 FORMS += mainwindow.ui
 
-OTHER_FILES += README.md
+OTHER_FILES += README.md \
+    scripts/random_ai.js

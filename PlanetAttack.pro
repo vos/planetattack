@@ -53,3 +53,5 @@ SOURCES += main.cpp \
     randomutil.cpp
 
 FORMS += mainwindow.ui
+
+OTHER_FILES += README.md

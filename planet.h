@@ -22,7 +22,7 @@ public:
     inline void setProductionFactor(qreal factor) { m_productionFactor = factor; }
 
     inline bool isNeutral() const { return !hasPlayer(); }
-    Q_INVOKABLE bool setPlayer(Player *player);
+    bool setPlayer(Player *player);
 
     QRect rect() const;
 

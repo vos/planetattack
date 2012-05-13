@@ -17,6 +17,8 @@ QT_END_NAMESPACE
 class Canvas : public QGLWidget
 {
     Q_OBJECT
+    Q_PROPERTY(int playerCount READ playerCount)
+    Q_PROPERTY(int planetCount READ planetCount)
 
 public:
     static Canvas *Instance; // singleton
@@ -47,8 +49,13 @@ public:
     QScriptEngine* scriptEngine() { return m_scriptEngine; }
     QScriptEngineDebugger* scriptEngineDebugger() { return m_scriptEngineDebugger; }
 
-    Q_INVOKABLE QSet<Player*> getAllPlayers() { return m_players; }
-    Q_INVOKABLE QSet<Planet*> getAllPlanets() { return m_planets; }
+    inline int playerCount() const { return m_players.count(); }
+    Q_INVOKABLE QSet<Player*> getPlayers() { return m_players; }
+    Q_INVOKABLE Player* getRandomPlayer();
+
+    inline int planetCount() const { return m_planets.count(); }
+    Q_INVOKABLE QSet<Planet*> getPlanets() { return m_planets; }
+    Q_INVOKABLE Planet* getRandomPlanet();
 
 signals:
     void modeChanged();

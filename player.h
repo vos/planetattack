@@ -16,6 +16,8 @@ class Player : public QObject
     Q_PROPERTY(qreal resourceFactor READ resourceFactor WRITE setResourceFactor)
     Q_PROPERTY(bool human READ isHuman DESIGNABLE false)
     Q_PROPERTY(bool computer READ isComputer DESIGNABLE false)
+    Q_PROPERTY(int planetCount READ planetCount DESIGNABLE false)
+    Q_PROPERTY(int shipCount READ shipCount DESIGNABLE false)
 
 public:
     Player(const QString &name, const QColor &color, bool human = true, QObject *parent = NULL);
@@ -33,26 +35,33 @@ public:
     inline qreal resourceFactor() const { return m_resourceFactor; }
     inline void setResourceFactor(qreal factor = 0.5) { m_resourceFactor = qBound(0.0, factor, 1.0); }
 
+    inline int planetCount() const { return m_planets.count(); }
     inline QSet<Planet*>& planets() { return m_planets; }
     Q_INVOKABLE QSet<Planet*> getPlanets() { return m_planets; }
     Q_INVOKABLE void addPlanet(Planet *planet);
     Q_INVOKABLE Planet* addPlanet(const QVector2D& position, qreal radius = 50.0, qreal resources = 0.0);
+    Q_INVOKABLE Planet* addPlanet(qreal xpos, qreal ypos, qreal radius = 50.0, qreal resources = 0.0);
     Q_INVOKABLE void removePlanet(Planet *planet);
+    Q_INVOKABLE Planet* getRandomPlanet() const;
 
     inline QSet<Planet*>& selectedPlanets() { return m_selectedPlanets; }
 
     inline Planet* target() { return m_target; }
     inline void setTarget(Planet *target) { m_target = target; }
 
+    inline int shipCount() const { return m_ships.count(); }
     inline QSet<Ship*>& ships() { return m_ships; }
     Q_INVOKABLE QSet<Ship*> getShips() { return m_ships; }
-    Q_INVOKABLE Ship* addShip(Planet *origin, Planet *target, qreal resourceFactor);
-    Q_INVOKABLE Ship* addShip(Planet *origin, Planet *target);
+    Q_INVOKABLE void addShip(Ship *ship);
     Q_INVOKABLE void removeShip(Ship *ship);
+    Q_INVOKABLE Ship* getRandomShip() const;
 
-    Q_INVOKABLE QSet<Player*> getEnemies();
-    Q_INVOKABLE QSet<Planet*> getEnemyPlanets();
-    Q_INVOKABLE QSet<Planet*> getOtherPlanets();
+    Q_INVOKABLE QSet<Player*> getEnemies() const;
+    Q_INVOKABLE Player* getRandomEnemy() const;
+    Q_INVOKABLE QSet<Planet*> getEnemyPlanets() const;
+    Q_INVOKABLE Planet* getRandomEnemyPlanet() const;
+    Q_INVOKABLE QSet<Planet*> getOtherPlanets() const;
+    Q_INVOKABLE Planet* getRandomOtherPlanet() const;
 
 signals:
     void nameChanged(const QString &oldName, const QString &newName);

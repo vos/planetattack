@@ -8,39 +8,49 @@
 Ship::Ship(const QVector2D& position, Planet *target, qreal resources, const QColor &color, Player *parent) :
     SpaceObject(position, resources, color, parent)
 {
-    m_target = target;
+    setTarget(target);
     m_speed = 100.0; // default speed
+}
+
+void Ship::setTarget(Planet *target)
+{
+    if (target == NULL) {
+        qDebug("Ship::setTarget target cannot be null");
+        return;
+    }
+    m_target = target;
 }
 
 void Ship::update(const GameTime &gameTime)
 {
-    if (m_target != NULL) {
-        // move towards target
-        m_direction = m_target->position() - m_position;
-        m_direction.normalize();
-        m_position += m_direction * (m_speed * gameTime.elapsedSeconds());
-        if ((m_target->position() - m_position).length() <= m_target->radius()) {
-            Player *targetOwner = m_target->player();
-            if (targetOwner == player()) {
-                // own planet -> add resources
-                m_target->addResources(m_resources);
-            } else {
-                // neutral or enemy planet
-                if (m_target->resources() - m_resources < 0.0) {
-                    // resources depleted -> take-over target planet!
-                    if (!m_target->isNeutral()) { // planet has no owner if it is neutral
-                        targetOwner->removePlanet(m_target);
-                    }
-                    player()->addPlanet(m_target);
-                    m_target->setResources(m_resources - m_target->resources());
-                } else {
-                    // subtract resources
-                    m_target->subtractResources(m_resources);
+    if (m_target == NULL)
+        return;
+
+    // move towards target
+    m_direction = m_target->position() - m_position;
+    m_direction.normalize();
+    m_position += m_direction * (m_speed * gameTime.elapsedSeconds());
+    if ((m_target->position() - m_position).length() <= m_target->radius()) {
+        Player *targetOwner = m_target->player();
+        if (targetOwner == player()) {
+            // own planet -> add resources
+            m_target->addResources(m_resources);
+        } else {
+            // neutral or enemy planet
+            if (m_target->resources() - m_resources < 0.0) {
+                // resources depleted -> take-over target planet!
+                if (!m_target->isNeutral()) { // planet has no owner if it is neutral
+                    targetOwner->removePlanet(m_target);
                 }
+                player()->addPlanet(m_target);
+                m_target->setResources(m_resources - m_target->resources());
+            } else {
+                // subtract resources
+                m_target->subtractResources(m_resources);
             }
-            m_resources = 0.0;
-            m_target = NULL; // marks this ship for removal
         }
+        m_resources = 0.0;
+        m_target = NULL; // marks this ship for removal
     }
 }
 

@@ -26,6 +26,31 @@ bool Planet::setPlayer(Player *p)
     return true;
 }
 
+Ship* Planet::transferResourcesTo(Planet *target, qreal resourceFactor)
+{
+    if (target == NULL) {
+        qDebug("Planet::transferResourcesTo() target cannot be null");
+        return NULL;
+    }
+    Player *owner = player();
+    if (owner == NULL)
+        return NULL; // cannot send a ship without a player
+    if (resourceFactor < 0.0)
+        resourceFactor = owner->resourceFactor();
+    int res = m_resources * resourceFactor;
+    if (res <= 0)
+        return NULL;
+    m_resources -= res;
+    Ship *ship = new Ship(m_position, target, res, m_color, owner);
+    owner->addShip(ship);
+    return ship;
+}
+
+Ship* Planet::transferResourcesTo(Planet *target)
+{
+    return transferResourcesTo(target, -1.0);
+}
+
 QRect Planet::rect() const
 {
     QPoint size(m_radius, m_radius);

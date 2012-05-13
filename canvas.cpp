@@ -13,6 +13,7 @@
 #include "humanplayer.h"
 #include "computerplayer.h"
 #include "scriptedplayerintelligence.h"
+#include "randomutil.h"
 
 Canvas* Canvas::Instance = NULL;
 
@@ -24,7 +25,7 @@ const QString Canvas::ModeStrings[] = {
 Canvas::Canvas(QWidget *parent) :
     QGLWidget(parent)
 {
-    setWindowTitle("PlanetAttack 0.0.1 alpha - © 2012 Alexander Vos");
+    setWindowTitle("PlanetAttack 0.1 alpha - © 2012 Alexander Vos");
     Canvas::Instance = this;
 
     m_painter.begin(this);
@@ -286,7 +287,7 @@ void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
                         if (len <= planet->radius()) {
                             foreach (Planet *selectedPlanet, selectedPlanets) {
                                 if (selectedPlanet != planet) {
-                                    m_activePlayer->addShip(selectedPlanet, planet);
+                                    selectedPlanet->transferResourcesTo(planet);
                                 }
                             }
                             m_activePlayer->setTarget(planet);
@@ -329,4 +330,18 @@ void Canvas::mouseReleaseEvent(QMouseEvent *mouseEvent)
 {
     Q_UNUSED(mouseEvent)
     m_factorSelectionActive = false;
+}
+
+Player* Canvas::getRandomPlayer()
+{
+    if (m_players.isEmpty())
+        return NULL;
+    return *RandomUtil::randomElement(m_players);
+}
+
+Planet* Canvas::getRandomPlanet()
+{
+    if (m_planets.isEmpty())
+        return NULL;
+    return *RandomUtil::randomElement(m_planets);
 }

@@ -5,6 +5,8 @@
 #include <QMetaType>
 #include <QSet>
 
+class Ship;
+
 class Planet : public SpaceObject
 {
     Q_OBJECT
@@ -23,6 +25,9 @@ public:
 
     inline bool isNeutral() const { return !hasPlayer(); }
     bool setPlayer(Player *player);
+
+    Q_INVOKABLE Ship* transferResourcesTo(Planet *target, qreal resourceFactor);
+    Q_INVOKABLE Ship* transferResourcesTo(Planet *target);
 
     QRect rect() const;
 

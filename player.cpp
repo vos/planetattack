@@ -1,6 +1,7 @@
 #include "player.h"
 
 #include "canvas.h"
+#include "randomutil.h"
 
 Player::Player(const QString &name, const QColor &color, bool human, QObject *parent) :
     QObject(parent)
@@ -41,6 +42,10 @@ void Player::setColor(const QColor &color)
 
 void Player::addPlanet(Planet *planet)
 {
+    if (planet == NULL) {
+        qDebug("Player::addPlanet() planet cannot be null");
+        return;
+    }
     planet->setParent(this);
     planet->setColor(m_color);
     m_planets.insert(planet);
@@ -54,6 +59,11 @@ Planet *Player::addPlanet(const QVector2D &position, qreal radius, qreal resourc
     return planet;
 }
 
+Planet* Player::addPlanet(qreal xpos, qreal ypos, qreal radius, qreal resources)
+{
+    return addPlanet(QVector2D(xpos, ypos), radius, resources);
+}
+
 void Player::removePlanet(Planet *planet)
 {
     if (planet == m_target)
@@ -62,20 +72,20 @@ void Player::removePlanet(Planet *planet)
     m_planets.remove(planet);
 }
 
-Ship* Player::addShip(Planet *origin, Planet *target, qreal resourceFactor)
+Planet* Player::getRandomPlanet() const
 {
-    int res = origin->resources() * resourceFactor;
-    if (res <= 0)
+    if (m_planets.isEmpty())
         return NULL;
-    origin->subtractResources(res);
-    Ship *ship = new Ship(origin->position(), target, res, origin->color(), this);
-    m_ships.insert(ship);
-    return ship;
+    return *RandomUtil::randomElement(m_planets);
 }
 
-Ship* Player::addShip(Planet *origin, Planet *target)
+void Player::addShip(Ship *ship)
 {
-    return addShip(origin, target, m_resourceFactor);
+    if (ship == NULL) {
+        qDebug("Player::addShip() ship cannot be null");
+        return;
+    }
+    m_ships.insert(ship);
 }
 
 void Player::removeShip(Ship *ship)
@@ -83,7 +93,14 @@ void Player::removeShip(Ship *ship)
     m_ships.remove(ship);
 }
 
-QSet<Player*> Player::getEnemies()
+Ship* Player::getRandomShip() const
+{
+    if (m_ships.isEmpty())
+        return NULL;
+    return *RandomUtil::randomElement(m_ships);
+}
+
+QSet<Player*> Player::getEnemies() const
 {
     QSet<Player*> enemies;
     foreach (Player *player, Canvas::Instance->players()) {
@@ -94,7 +111,15 @@ QSet<Player*> Player::getEnemies()
     return enemies;
 }
 
-QSet<Planet*> Player::getEnemyPlanets()
+Player* Player::getRandomEnemy() const
+{
+    QSet<Player*> enemies = getEnemies();
+    if (enemies.isEmpty())
+        return NULL;
+    return *RandomUtil::randomElement(enemies);
+}
+
+QSet<Planet*> Player::getEnemyPlanets() const
 {
     QSet<Planet*> planets;
     foreach (Player *player, getEnemies()) {
@@ -103,7 +128,15 @@ QSet<Planet*> Player::getEnemyPlanets()
     return planets;
 }
 
-QSet<Planet*> Player::getOtherPlanets()
+Planet* Player::getRandomEnemyPlanet() const
+{
+    QSet<Planet*> enemyPlanets = getEnemyPlanets();
+    if (enemyPlanets.isEmpty())
+        return NULL;
+    return *RandomUtil::randomElement(enemyPlanets);
+}
+
+QSet<Planet*> Player::getOtherPlanets() const
 {
     QSet<Planet*> planets;
     foreach (Planet *planet, Canvas::Instance->planets()) {
@@ -112,4 +145,12 @@ QSet<Planet*> Player::getOtherPlanets()
         }
     }
     return planets;
+}
+
+Planet* Player::getRandomOtherPlanet() const
+{
+    QSet<Planet*> otherPlanets = getOtherPlanets();
+    if (otherPlanets.isEmpty())
+        return NULL;
+    return *RandomUtil::randomElement(otherPlanets);
 }

@@ -16,8 +16,12 @@ Space RTS game.
  - **Random.randomReal**(min : *float*, max : *float*) : *float*
 
 - **Game** : *Canvas*
-  - **Game.getAllPlayers**() : *Array[Player]*
-  - **Game.getAllPlanets**() : *Array[Planet]*
+  - **Game.playerCount** : *int* [readonly]
+  - **Game.getPlayers**() : *Array[Player]*
+  - **Game.getRandomPlayer**() : *Player*
+  - **Game.planetCount** : *int* [readonly]
+  - **Game.getPlanets**() : *Array[Planet]*
+  - **Game.getRandomPlanet**() : *Planet*
 
 - **Game.Time** : *GameTime*
   - **Game.Time.total** : *int*  -- milliseconds since the game start
@@ -49,19 +53,27 @@ See [QColor](http://qt-project.org/doc/qt-4.8/qcolor.html#setNamedColor) named c
   - **color** : *Color*
   - **resourceFactor** : *float*
   - **human** : *bool* [readonly]
-  - **computer** : *bool* [readonly]
+  - **computer** : *bool* [readonly]  -- AI
+  - **planetCount** : *int* [readonly]
+  - **shipCount** : *int* [readonly]
 
 - **Functions**
   - **getPlanets**() : *Array[Planet]*
   - **addPlanet**(planet : *Planet*)
   - **addPlanet**(position : *Vector2*, radius : *float*, resources : *float*) : *Planet*
+  - **addPlanet**(xpos : *float*, ypos : *float*, radius : *float*, resources : *float*) : *Planet*
   - **removePlanet**(planet : *Planet*)
+  - **getRandomPlanet**() : *Planet*
   - **getShips**() : *Array[Ship]*
-  - **addShip**(origin : *Planet*, target : *Planet*[, resourceFactor: *float*]) : *Ship*
+  - **addShip**(ship : *Ship*)
   - **removeShip**(ship : *Ship*)
+  - **getRandomShip**() : *Ship*
   - **getEnemies**() : *Array[Player]*
+  - **getRandomEnemy**() : *Player*
   - **getEnemyPlanets**() : *Array[Planet]*
+  - **getRandomEnemyPlanet**() : *Planet*
   - **getOtherPlanets**() : *Array[Planet]*  -- enemy and neutral planets
+  - **getRandomOtherPlanet**() : *Planet*
 
 - **Signals**
   - **nameChanged**(oldName : *string*, newName : *string*)
@@ -76,6 +88,9 @@ See [QColor](http://qt-project.org/doc/qt-4.8/qcolor.html#setNamedColor) named c
   - **radius** : *float*
   - **productionFactor** : *float*
   - **neutral** : *bool* [readonly]
+
+- **Functions**
+  - **transferResourcesTo**(target : *Planet*[, resourceFactor: *float*]) : *Ship*
 
 #### Ship
 

@@ -17,7 +17,7 @@ public:
     Ship(const QVector2D& position, Planet *target, qreal resources, const QColor &color, Player *parent = NULL);
 
     inline Planet* target() const { return m_target; }
-    inline void setTarget(Planet *target) { m_target = target; }
+    void setTarget(Planet *target);
 
     inline qreal speed() const { return m_speed; }
     inline void setSpeed(qreal speed) { m_speed = speed; }

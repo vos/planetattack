@@ -339,6 +339,37 @@ Player* Canvas::getRandomPlayer()
     return *RandomUtil::randomElement(m_players);
 }
 
+void Canvas::addPlanet(Planet *planet)
+{
+    if (planet == NULL) {
+        qDebug("Canvas::addPlanet() planet cannot be null");
+        return;
+    }
+    m_planets.insert(planet);
+}
+
+Planet* Canvas::addPlanet(const QVector2D &position, qreal radius, qreal resources)
+{
+    Planet *planet = new Planet(position, radius, resources);
+    m_planets.insert(planet);
+    return planet;
+}
+
+Planet* Canvas::addPlanet(qreal xpos, qreal ypos, qreal radius, qreal resources)
+{
+    return addPlanet(QVector2D(xpos, ypos), radius, resources);
+}
+
+void Canvas::removePlanet(Planet *planet)
+{
+    if (planet == NULL)
+        return;
+    if (planet->hasPlayer())
+        planet->player()->removePlanet(planet);
+    m_planets.remove(planet);
+    delete planet;
+}
+
 Planet* Canvas::getRandomPlanet()
 {
     if (m_planets.isEmpty())

@@ -55,6 +55,10 @@ public:
 
     inline int planetCount() const { return m_planets.count(); }
     Q_INVOKABLE QSet<Planet*> getPlanets() { return m_planets; }
+    Q_INVOKABLE void addPlanet(Planet *planet);
+    Q_INVOKABLE Planet* addPlanet(const QVector2D &position, qreal radius = 50.0, qreal resources = 0.0);
+    Q_INVOKABLE Planet* addPlanet(qreal xpos, qreal ypos, qreal radius = 50.0, qreal resources = 0.0);
+    Q_INVOKABLE void removePlanet(Planet *planet);
     Q_INVOKABLE Planet* getRandomPlanet();
 
 signals:

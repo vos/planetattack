@@ -22,6 +22,7 @@ public:
 private slots:
     void on_applyButton_clicked();
     void on_openScriptFileButton_clicked();
+    void on_showDebugOutputButton_clicked();
 
 private:
     Ui::ScriptWindow *ui;

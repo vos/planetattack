@@ -27,25 +27,30 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="JSEdit" name="scriptEditor">
-     <property name="font">
-      <font>
-       <family>Courier</family>
-       <pointsize>10</pointsize>
-      </font>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-     <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
-     </property>
-     <property name="lineWrapMode">
-      <enum>QPlainTextEdit::NoWrap</enum>
-     </property>
-     <property name="plainText">
-      <string notr="true"/>
-     </property>
-     <property name="tabStopWidth">
-      <number>4</number>
-     </property>
+     <widget class="JSEdit" name="scriptEditor">
+      <property name="font">
+       <font>
+        <family>Courier</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="lineWrapMode">
+       <enum>QPlainTextEdit::NoWrap</enum>
+      </property>
+      <property name="plainText">
+       <string notr="true"/>
+      </property>
+      <property name="tabStopWidth">
+       <number>4</number>
+      </property>
+     </widget>
     </widget>
    </item>
    <item>
@@ -74,6 +79,26 @@
      </property>
      <item>
       <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="showDebugOutputButton">
+       <property name="text">
+        <string>Show Debug Output</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>

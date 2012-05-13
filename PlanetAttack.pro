@@ -9,6 +9,7 @@ QT += core gui opengl script scripttools
 TARGET = PlanetAttack
 TEMPLATE = app
 
+include(jsedit/jsedit.pri)
 
 HEADERS += \
     mainwindow.h \

@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QPushButton>
 
+
 #include "canvas.h"
 #include "computerplayer.h"
 #include "stringpropertyeditor.h"
@@ -16,6 +17,7 @@
 #include "playerintelligencepropertyeditor.h"
 
 #include <QDebug>
+#include <QScriptEngineDebugger>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -27,8 +29,8 @@ MainWindow::MainWindow(QWidget *parent) :
     setCentralWidget(m_canvas);
     setWindowTitle(m_canvas->windowTitle());
 
-    ui->menuBar->addMenu(m_canvas->scriptEngineDebugger().createStandardMenu());
-    addToolBar(Qt::TopToolBarArea, m_canvas->scriptEngineDebugger().createStandardToolBar());
+    ui->menuBar->addMenu(m_canvas->scriptEngineDebugger()->createStandardMenu());
+    addToolBar(Qt::TopToolBarArea, m_canvas->scriptEngineDebugger()->createStandardToolBar());
 
     ui->modeComboBox->addItem(Canvas::modeString(Canvas::EditorMode));
     ui->modeComboBox->addItem(Canvas::modeString(Canvas::GameMode));

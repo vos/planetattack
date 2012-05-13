@@ -3,12 +3,12 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QTimer>
+#include <QScriptEngine>
 
 #include <QDebug>
-#include <QAction>
+#include <QScriptEngineDebugger>
 
-#include "scripttemplates.h"
-#include "randomutil.h"
+#include "scriptextensions.h"
 
 #include "humanplayer.h"
 #include "computerplayer.h"
@@ -46,23 +46,10 @@ Canvas::Canvas(QWidget *parent) :
     m_selectedPlanet = NULL;
 
     // scripting
-    scriptRegisterQObjectMetaType<RandomUtil*>(&m_scriptEngine);
-    scriptRegisterQObjectMetaType<GameTime*>(&m_scriptEngine);
-    scriptRegisterQObjectMetaType<Player*>(&m_scriptEngine);
-    scriptRegisterContainerMetaType<QSet<Player*> >(&m_scriptEngine);
-    scriptRegisterQObjectMetaType<Planet*>(&m_scriptEngine);
-    scriptRegisterContainerMetaType<QSet<Planet*> >(&m_scriptEngine);
-    scriptRegisterQObjectMetaType<Ship*>(&m_scriptEngine);
-    scriptRegisterContainerMetaType<QSet<Ship*> >(&m_scriptEngine);
-    scriptRegisterQObjectMetaType<PlayerIntelligence*>(&m_scriptEngine);
-
-    QScriptValue globalObject = m_scriptEngine.globalObject();
-    globalObject.setProperty("Random", m_scriptEngine.newQObject(new RandomUtil(this)));
-    QScriptValue gameObject = m_scriptEngine.newQObject(this);
-    gameObject.setProperty("Time", m_scriptEngine.newQObject(&m_gameTime));
-    globalObject.setProperty("Game", gameObject);
-
-    m_scriptEngineDebugger.attachTo(&m_scriptEngine);
+    m_scriptEngine = new QScriptEngine(this);
+    m_scriptEngineDebugger = new QScriptEngineDebugger(this);
+    addScriptExtentions(this);
+    m_scriptEngineDebugger->attachTo(m_scriptEngine);
 
     // add neutral planets
     m_planets.insert(new Planet(QVector2D(400, 100), 40, 40));
@@ -73,7 +60,7 @@ Canvas::Canvas(QWidget *parent) :
     m_players.insert(m_activePlayer);
 
     // TEST AI 1
-    ScriptedPlayerIntelligence *playerAI = new ScriptedPlayerIntelligence(&m_scriptEngine);
+    ScriptedPlayerIntelligence *playerAI = new ScriptedPlayerIntelligence(m_scriptEngine);
     playerAI->setIntelligenceProgramFile("scripts/random_ai.js");
     ComputerPlayer *computerPlayer = new ComputerPlayer("GLaDOS", Qt::red, playerAI, this);
     computerPlayer->addPlanet(QVector2D(750, 250), 100, 100);

@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+QT_FORWARD_DECLARE_CLASS(QStatusBar)
+
 namespace Ui {
 class ScriptWindow;
 }
@@ -23,6 +25,7 @@ private slots:
 
 private:
     Ui::ScriptWindow *ui;
+    QStatusBar *m_statusBar;
     ScriptedPlayerIntelligence *m_playerIntelligence;
 
 };

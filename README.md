@@ -32,11 +32,21 @@ Space RTS game.
 
 ### Introduced Types
 
+#### Vector2
+
+- **Properties**
+  - **x** : *float* [readonly\*]
+  - **y** : *float* [readonly\*]
+
+#### Color : *string*
+
+See [QColor](http://qt-project.org/doc/qt-4.8/qcolor.html#setNamedColor) named colors.
+
 #### Player
 
 - **Properties**
   - **name** : *string*
-  - **color** : *QColor*
+  - **color** : *Color*
   - **resourceFactor** : *float*
   - **human** : *bool* [readonly]
   - **computer** : *bool* [readonly]
@@ -44,7 +54,7 @@ Space RTS game.
 - **Functions**
   - **getPlanets**() : *Array[Planet]*
   - **addPlanet**(planet : *Planet*)
-  - **addPlanet**(position : *QVector2D*, radius : *float*, resources : *float*) : *Planet*
+  - **addPlanet**(position : *Vector2*, radius : *float*, resources : *float*) : *Planet*
   - **removePlanet**(planet : *Planet*)
   - **getShips**() : *Array[Ship]*
   - **addShip**(origin : *Planet*, target : *Planet*[, resourceFactor: *float*]) : *Ship*
@@ -59,9 +69,9 @@ Space RTS game.
 #### Planet
 
 - **Properties**
-  - **position** : *QVector2D*
+  - **position** : *Vector2*
   - **resources** : *float*
-  - **color** : *QColor*
+  - **color** : *Color*
   - **player** : *Player*
   - **radius** : *float*
   - **productionFactor** : *float*
@@ -70,9 +80,9 @@ Space RTS game.
 #### Ship
 
 - **Properties**
-  - **position** : *QVector2D*
+  - **position** : *Vector2*
   - **resources** : *float*
-  - **color** : *QColor*
+  - **color** : *Color*
   - **player** : *Player*
   - **target** : *Player*
   - **speed** : *float*  -- pixels per second

@@ -5,11 +5,14 @@
 #include <QPainter>
 #include <QSet>
 #include <QElapsedTimer>
-#include <QScriptEngine>
-#include <QScriptEngineDebugger>
 
 #include "gametime.h"
 #include "player.h"
+
+QT_BEGIN_NAMESPACE
+class QScriptEngine;
+class QScriptEngineDebugger;
+QT_END_NAMESPACE
 
 class Canvas : public QGLWidget
 {
@@ -30,6 +33,8 @@ public:
     static inline const QString& modeString(Mode mode) { return ModeStrings[mode]; }
     inline void setMode(Mode mode) { if (mode == m_mode) return; m_mode = mode; emit modeChanged(); }
 
+    inline GameTime& gameTime() { return m_gameTime; }
+
     inline QSet<Player*>& players() { return m_players; }
     inline Player* activePlayer() const { return m_activePlayer; }
     inline void setActivePlayer(Player *player) { m_activePlayer = player; }
@@ -39,8 +44,8 @@ public:
 
     inline QSet<Planet*>& planets() { return m_planets; }
 
-    QScriptEngine& scriptEngine() { return m_scriptEngine; }
-    QScriptEngineDebugger& scriptEngineDebugger() { return m_scriptEngineDebugger; }
+    QScriptEngine* scriptEngine() { return m_scriptEngine; }
+    QScriptEngineDebugger* scriptEngineDebugger() { return m_scriptEngineDebugger; }
 
     Q_INVOKABLE QSet<Player*> getAllPlayers() { return m_players; }
     Q_INVOKABLE QSet<Planet*> getAllPlanets() { return m_planets; }
@@ -73,8 +78,8 @@ private:
     QSet<Planet*> m_planets;
     Planet *m_selectedPlanet;
 
-    QScriptEngine m_scriptEngine;
-    QScriptEngineDebugger m_scriptEngineDebugger;
+    QScriptEngine *m_scriptEngine;
+    QScriptEngineDebugger *m_scriptEngineDebugger;
 
     void resizeEvent(QResizeEvent *resizeEvent);
     void timerEvent(QTimerEvent *timerEvent);

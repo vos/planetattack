@@ -54,7 +54,7 @@ void PlayerIntelligencePropertyEditor::comboBox_currentIndexChanged(int index)
         break;
     case 1:
         if (className != "ScriptedPlayerIntelligence")
-            m_playerIntelligence = new ScriptedPlayerIntelligence(&Canvas::Instance->scriptEngine());
+            m_playerIntelligence = new ScriptedPlayerIntelligence(Canvas::Instance->scriptEngine());
         break;
     }
     m_scriptButton.setVisible(index == 1);

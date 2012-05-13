@@ -31,7 +31,8 @@ HEADERS += \
     scripttemplates.h \
     scriptedplayerintelligence.h \
     randomutil.h \
-    scriptwindow.h
+    scriptwindow.h \
+    scriptextensions.h
 
 SOURCES += main.cpp \
     mainwindow.cpp \

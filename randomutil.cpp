@@ -1,6 +1,7 @@
 #include "randomutil.h"
 
 #include <QTime>
+#include <cstdlib>
 
 RandomUtil::RandomUtil(QObject *parent) :
     QObject(parent)

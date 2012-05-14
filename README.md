@@ -103,5 +103,5 @@ See [QColor](http://qt-project.org/doc/qt-4.8/qcolor.html#setNamedColor) named c
   - **resources** : *float*
   - **color** : *Color*
   - **player** : *Player*
-  - **target** : *Player*
+  - **target** : *Planet*
   - **speed** : *float*  -- pixels per second

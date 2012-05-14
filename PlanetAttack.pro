@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT += core gui opengl script scripttools
+QT += core gui opengl script scripttools xml
 
 TARGET = PlanetAttack
 TEMPLATE = app
@@ -33,7 +33,9 @@ HEADERS += \
     scriptedplayerintelligence.h \
     randomutil.h \
     scriptwindow.h \
-    scriptextensions.h
+    scriptextensions.h \
+    scenarioserializer.h \
+    xmlscenarioserializer.h
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -54,7 +56,8 @@ SOURCES += main.cpp \
     playerpropertyeditor.cpp \
     scriptedplayerintelligence.cpp \
     randomutil.cpp \
-    scriptwindow.cpp
+    scriptwindow.cpp \
+    xmlscenarioserializer.cpp
 
 FORMS += mainwindow.ui \
     scriptwindow.ui

@@ -365,6 +365,8 @@ void Canvas::removePlanet(Planet *planet)
         return;
     if (planet->hasPlayer())
         planet->player()->removePlanet(planet);
+    if (planet == m_selectedPlanet)
+        m_selectedPlanet = NULL;
     m_planets.remove(planet);
     delete planet;
 }

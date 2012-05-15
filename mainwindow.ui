@@ -27,6 +27,7 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="action_newScenario"/>
     <addaction name="action_openScenario"/>
     <addaction name="action_saveScenario"/>
     <addaction name="action_saveScenarioAs"/>
@@ -124,6 +125,14 @@
   <action name="action_saveScenarioAs">
    <property name="text">
     <string>Save Scenario As...</string>
+   </property>
+  </action>
+  <action name="action_newScenario">
+   <property name="text">
+    <string>&amp;New Scenario</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
  </widget>

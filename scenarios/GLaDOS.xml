@@ -1,0 +1,13 @@
+<scenario activePlayer="0">
+    <players>
+        <player resourceFactor="0.5" id="0" name="Alex" color="#0000ff"/>
+        <player resourceFactor="0.5" intelligence="scripts/random_ai.js" id="1" name="GLaDOS" color="#ff0000"/>
+    </players>
+    <planets>
+        <planet radius="50" positionX="666" positionY="400" productionFactor="0.1" color="#ff0000" resources="250" player="1"/>
+        <planet radius="50" positionX="200" positionY="250" productionFactor="0.5" color="#808080" resources="50"/>
+        <planet radius="75" positionX="300" positionY="125" productionFactor="0.2" color="#808080" resources="75"/>
+        <planet radius="100" positionX="550" positionY="200" productionFactor="0.25" color="#ff0000" resources="500" player="1"/>
+        <planet radius="75" positionX="250" positionY="450" productionFactor="0.2" color="#0000ff" resources="750" player="0"/>
+    </planets>
+</scenario>

@@ -25,7 +25,7 @@ const QString Canvas::ModeStrings[] = {
 Canvas::Canvas(QWidget *parent) :
     QGLWidget(parent)
 {
-    setWindowTitle("PlanetAttack 0.1 alpha - © 2012 Alexander Vos");
+    setWindowTitle("PlanetAttack 0.2 alpha - © 2012 Alexander Vos");
     Canvas::Instance = this;
 
     m_painter.begin(this);
@@ -107,7 +107,6 @@ void Canvas::timerEvent(QTimerEvent *timerEvent)
                 ship->update(m_gameTime);
                 if (ship->target() == NULL) {
                     player->removeShip(ship);
-                    delete ship;
                 }
             }
         }
@@ -230,13 +229,7 @@ void Canvas::keyReleaseEvent(QKeyEvent *keyEvent)
         if (m_mode == EditorMode) {
             emit selectionChanged(NULL);
             foreach (Planet *planet, m_activePlayer->selectedPlanets()) {
-                foreach (Player *player, m_players) {
-                    player->removePlanet(planet);
-                }
-                m_planets.remove(planet);
-                if (m_selectedPlanet == planet)
-                    m_selectedPlanet = NULL;
-                delete planet;
+                removePlanet(planet);
             }
         }
         break;
@@ -365,8 +358,17 @@ void Canvas::removePlanet(Planet *planet)
 {
     if (planet == NULL)
         return;
-    if (planet->hasPlayer())
-        planet->player()->removePlanet(planet);
+    foreach (Player *player, m_players) {
+        if (player->target() == planet) {
+            player->setTarget(NULL);
+        }
+        foreach (Ship *ship, player->ships()) {
+            if (ship->target() == planet) {
+                player->removeShip(ship);
+            }
+        }
+        player->removePlanet(planet);
+    }
     if (planet == m_selectedPlanet)
         m_selectedPlanet = NULL;
     m_planets.remove(planet);

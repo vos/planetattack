@@ -70,8 +70,6 @@ Planet* Player::addPlanet(qreal xpos, qreal ypos, qreal radius, qreal resources)
 
 void Player::removePlanet(Planet *planet)
 {
-    if (planet == m_target)
-        m_target = NULL;
     m_selectedPlanets.remove(planet);
     m_planets.remove(planet);
 }
@@ -95,6 +93,7 @@ void Player::addShip(Ship *ship)
 void Player::removeShip(Ship *ship)
 {
     m_ships.remove(ship);
+    delete ship;
 }
 
 Ship* Player::getRandomShip() const

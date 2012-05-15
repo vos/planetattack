@@ -253,11 +253,12 @@ void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
     } else {
         QSet<Planet*> &selectedPlanets = m_activePlayer->selectedPlanets();
         QSet<Planet*> &planets = m_globalAccess ? m_planets : m_activePlayer->planets();
+        QVector2D mousePos(mouseEvent->pos());
         if (mouseEvent->button() == Qt::LeftButton) {
             m_selectedPlanet = NULL;
             foreach (Planet *planet, planets) {
-                qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
-                if (len <= planet->radius()) {
+                QVector2D mouseDiff(planet->position() - mousePos);
+                if (mouseDiff.length() <= planet->radius()) {
                     if (selectedPlanets.contains(planet)) {
                         selectedPlanets.remove(planet);
                     } else {
@@ -266,6 +267,7 @@ void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
                     if (m_selectedPlanet == NULL) {
                         emit selectionChanged(planet);
                         m_selectedPlanet = planet;
+                        m_mouseClickDiff = mouseDiff;
                     }
                 }
             }
@@ -275,14 +277,14 @@ void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
             }
         } else if (mouseEvent->button() == Qt::RightButton) {
             if (m_mode == EditorMode) {
-                m_selectedPlanet = m_activePlayer->addPlanet(QVector2D(mouseEvent->pos()));
+                m_selectedPlanet = m_activePlayer->addPlanet(mousePos);
                 selectedPlanets.insert(m_selectedPlanet);
                 emit selectionChanged(m_selectedPlanet);
             } else if (m_mode == GameMode) {
                 m_activePlayer->setTarget(NULL);
                 if (!selectedPlanets.isEmpty()) {
                     foreach (Planet *planet, m_planets) {
-                        qreal len = (planet->position() - QVector2D(mouseEvent->pos())).length();
+                        qreal len = (planet->position() - mousePos).length();
                         if (len <= planet->radius()) {
                             foreach (Planet *selectedPlanet, selectedPlanets) {
                                 if (selectedPlanet != planet) {
@@ -318,7 +320,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *mouseEvent)
                 m_selectedPlanet->setRadius(int(len));
                 emit selectionChanged(m_selectedPlanet);
             } else {
-                m_selectedPlanet->setPosition(QVector2D(mouseEvent->pos()));
+                m_selectedPlanet->setPosition(QVector2D(mouseEvent->pos()) + m_mouseClickDiff);
                 emit selectionChanged(m_selectedPlanet);
             }
         }

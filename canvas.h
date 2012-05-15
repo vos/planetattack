@@ -89,6 +89,7 @@ private:
 
     QSet<Planet*> m_planets;
     Planet *m_selectedPlanet;
+    QVector2D m_mouseClickDiff;
 
     QScriptEngine *m_scriptEngine;
     QScriptEngineDebugger *m_scriptEngineDebugger;

@@ -15,6 +15,10 @@ Player::Player(const QString &name, const QColor &color, bool human, QObject *pa
 
 Player::~Player()
 {
+    foreach (Planet *planet, m_planets) {
+        planet->setPlayer(NULL);
+    }
+
     qDeleteAll(m_ships);
 }
 

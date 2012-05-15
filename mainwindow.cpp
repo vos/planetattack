@@ -7,7 +7,7 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QPushButton>
-
+#include <QMessageBox>
 
 #include "canvas.h"
 #include "computerplayer.h"
@@ -15,6 +15,8 @@
 #include "vector2dpropertyeditor.h"
 #include "playerpropertyeditor.h"
 #include "playerintelligencepropertyeditor.h"
+
+#include "xmlscenarioserializer.h"
 
 #include <QDebug>
 #include <QScriptEngineDebugger>
@@ -194,4 +196,35 @@ void MainWindow::on_addPlayerButton_clicked()
 void MainWindow::on_globalAccessCheckBox_toggled(bool checked)
 {
     m_canvas->setGlobalAccess(checked);
+}
+
+void MainWindow::on_action_openScenario_triggered()
+{
+    QString fileName("scenario0.xml");
+    XmlScenarioSerializer serializer;
+    ScenarioSerializer::Scenario scenario;
+    if (serializer.deserialize(fileName, scenario)) {
+        // TODO set active scenario to canvas
+//        qDeleteAll(m_canvas->players());
+//        qDeleteAll(m_canvas->planets());
+        statusBar()->showMessage(QString("Scenario \"%1\" successfully loaded").arg(fileName));
+    } else {
+        QMessageBox::warning(this, "Open Scenario Error", QString("Cannot open scenario file \"%1\"").arg(fileName));
+    }
+}
+
+void MainWindow::on_action_saveScenario_triggered()
+{
+    QString fileName("scenario0.xml");
+    XmlScenarioSerializer serializer;
+    ScenarioSerializer::Scenario scenario = {
+        m_canvas->players(),
+        m_canvas->activePlayer(),
+        m_canvas->planets()
+    };
+    if (serializer.serialize(scenario, fileName)) {
+        statusBar()->showMessage(QString("Scenario successfully saved as \"%1\"").arg(fileName));
+    } else {
+        QMessageBox::warning(this, "Save Scenario Error", QString("Cannot save scenario file \"%1\"").arg(fileName));
+    }
 }

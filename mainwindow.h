@@ -30,6 +30,9 @@ private slots:
     void on_addPlayerButton_clicked();
     void on_globalAccessCheckBox_toggled(bool checked);
 
+    void on_action_openScenario_triggered();
+    void on_action_saveScenario_triggered();
+
 private:
     Ui::MainWindow *ui;
     Canvas *m_canvas;

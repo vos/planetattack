@@ -12,6 +12,7 @@ class ScenarioSerializer
 public:
     struct Scenario {
         QSet<Player*> players;
+        Player *activePlayer;
         QSet<Planet*> planets;
     };
 

@@ -23,6 +23,14 @@
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_openScenario"/>
+    <addaction name="action_saveScenario"/>
+   </widget>
+   <addaction name="menu_File"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -31,6 +39,9 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="action_openScenario"/>
+   <addaction name="action_saveScenario"/>
+   <addaction name="separator"/>
    <addaction name="action_setFocus"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -81,6 +92,22 @@
   <action name="action_setFocus">
    <property name="text">
     <string>Set Focus</string>
+   </property>
+  </action>
+  <action name="action_openScenario">
+   <property name="text">
+    <string>&amp;Open Scenario</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="action_saveScenario">
+   <property name="text">
+    <string>&amp;Save Scenario</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
  </widget>

@@ -81,8 +81,8 @@ Canvas::Canvas(QWidget *parent) :
 
 Canvas::~Canvas()
 {
-    qDeleteAll(m_planets);
     qDeleteAll(m_players);
+    qDeleteAll(m_planets);
 }
 
 void Canvas::resizeEvent(QResizeEvent *resizeEvent)

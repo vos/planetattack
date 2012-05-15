@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QMessageBox>
+#include <QFileDialog>
 
 #include "canvas.h"
 #include "computerplayer.h"
@@ -41,19 +42,13 @@ MainWindow::MainWindow(QWidget *parent) :
     QLayout *layout = new QVBoxLayout;
     ui->editorWidget->setLayout(layout);
 
-    foreach (Player *player, m_canvas->players()) {
-        QVariant playerVar;
-        playerVar.setValue(player);
-        ui->playerComboBox->addItem(player->name(), playerVar);
-        connect(player, SIGNAL(nameChanged(QString,QString)), SLOT(player_nameChanged(QString,QString)));
-    }
-    ui->playerComboBox->setCurrentIndex(ui->playerComboBox->findText(m_canvas->activePlayer()->name()));
-
     connect(m_canvas, SIGNAL(modeChanged()), SLOT(canvas_modeChanged()));
     connect(m_canvas, SIGNAL(selectionChanged(QObject*)), SLOT(canvas_selectionChanged(QObject*)));
 
     m_canvas->setFocus();
     connect(ui->action_setFocus, SIGNAL(triggered()), m_canvas, SLOT(setFocus()));
+
+    updatePlayerComboBox();
 }
 
 MainWindow::~MainWindow()
@@ -173,11 +168,36 @@ void MainWindow::on_modeComboBox_currentIndexChanged(int index)
     m_canvas->setMode((Canvas::Mode)index);
 }
 
+void MainWindow::updatePlayerComboBox() {
+    ui->playerComboBox->clear();
+    foreach (Player *player, m_canvas->players()) {
+        QVariant playerVar;
+        playerVar.setValue(player);
+        ui->playerComboBox->addItem(player->name(), playerVar);
+        connect(player, SIGNAL(nameChanged(QString,QString)), SLOT(player_nameChanged(QString,QString)));
+    }
+    QVariant playerVar;
+    playerVar.setValue(m_canvas->activePlayer());
+    ui->playerComboBox->setCurrentIndex(ui->playerComboBox->findData(playerVar));
+}
+
 void MainWindow::on_playerComboBox_activated(int index)
 {
     Player *player = ui->playerComboBox->itemData(index).value<Player*>();
     m_canvas->setActivePlayer(player);
     canvas_selectionChanged(player);
+}
+
+void MainWindow::on_removePlayerButton_clicked()
+{
+    int index = ui->playerComboBox->currentIndex();
+    Player *player = ui->playerComboBox->itemData(index).value<Player*>();
+    if (m_selectedObject == player) {
+        canvas_selectionChanged(NULL);
+    }
+    if (m_canvas->removePlayer(player)) {
+        ui->playerComboBox->removeItem(index);
+    }
 }
 
 void MainWindow::on_addPlayerButton_clicked()
@@ -200,31 +220,53 @@ void MainWindow::on_globalAccessCheckBox_toggled(bool checked)
 
 void MainWindow::on_action_openScenario_triggered()
 {
-    QString fileName("scenario0.xml");
-    XmlScenarioSerializer serializer;
-    ScenarioSerializer::Scenario scenario;
-    if (serializer.deserialize(fileName, scenario)) {
-        // TODO set active scenario to canvas
-//        qDeleteAll(m_canvas->players());
-//        qDeleteAll(m_canvas->planets());
-        statusBar()->showMessage(QString("Scenario \"%1\" successfully loaded").arg(fileName));
-    } else {
-        QMessageBox::warning(this, "Open Scenario Error", QString("Cannot open scenario file \"%1\"").arg(fileName));
+    QString fileName = QFileDialog::getOpenFileName(this, "Open Scenario File", QString(), "Scenario Files (*.xml);;All Files (*.*)");
+    if (!fileName.isEmpty()) {
+        XmlScenarioSerializer serializer;
+        ScenarioSerializer::Scenario scenario;
+        if (serializer.deserialize(fileName, scenario)) {
+            canvas_selectionChanged(NULL);
+            qDeleteAll(m_canvas->players());
+            qDeleteAll(m_canvas->planets());
+            m_canvas->players().clear();
+            m_canvas->planets().clear();
+            m_canvas->players().unite(scenario.players);
+            m_canvas->planets().unite(scenario.planets);
+            m_canvas->setActivePlayer(scenario.activePlayer);
+            updatePlayerComboBox();
+            canvas_selectionChanged(m_canvas->activePlayer());
+            statusBar()->showMessage(QString("Scenario \"%1\" successfully loaded").arg(fileName));
+            m_scenarioFileName = fileName;
+        } else {
+            QMessageBox::warning(this, "Open Scenario Error", QString("Cannot open scenario file \"%1\".").arg(fileName));
+        }
     }
 }
 
 void MainWindow::on_action_saveScenario_triggered()
 {
-    QString fileName("scenario0.xml");
+    if (m_scenarioFileName.isEmpty()) {
+        on_action_saveScenarioAs_triggered();
+        return;
+    }
     XmlScenarioSerializer serializer;
     ScenarioSerializer::Scenario scenario = {
         m_canvas->players(),
         m_canvas->activePlayer(),
         m_canvas->planets()
     };
-    if (serializer.serialize(scenario, fileName)) {
-        statusBar()->showMessage(QString("Scenario successfully saved as \"%1\"").arg(fileName));
+    if (serializer.serialize(scenario, m_scenarioFileName)) {
+        statusBar()->showMessage(QString("Scenario successfully saved as \"%1\"").arg(m_scenarioFileName));
     } else {
-        QMessageBox::warning(this, "Save Scenario Error", QString("Cannot save scenario file \"%1\"").arg(fileName));
+        QMessageBox::warning(this, "Save Scenario Error", QString("Cannot save scenario file \"%1\".").arg(m_scenarioFileName));
     }
+}
+
+void MainWindow::on_action_saveScenarioAs_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, "Save Scenario", QString(), "Scenario Files (*.xml)");
+    if (fileName.isEmpty())
+        return;
+    m_scenarioFileName = fileName;
+    on_action_saveScenario_triggered();
 }

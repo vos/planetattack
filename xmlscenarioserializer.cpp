@@ -120,14 +120,14 @@ bool XmlScenarioSerializer::deserialize(const QString &fileName, XmlScenarioSeri
     if (idPlayerMap.contains(activePlayerId)) {
         scenario.activePlayer = idPlayerMap.value(activePlayerId);
     } else {
-        qWarning("active player id not found in player list: " + activePlayerId);
+        qWarning("active player id not found in player list: %d", activePlayerId);
         scenario.activePlayer = NULL;
     }
 
     QDomElement planetsElement = scenarioElement.elementsByTagName("planets").item(0).toElement();
     QDomNodeList planetNodeList = planetsElement.elementsByTagName("planet");
     for (uint i = 0; i < planetNodeList.length(); ++i) {
-        QDomElement planetElement = playerNodeList.item(i).toElement();
+        QDomElement planetElement = planetNodeList.item(i).toElement();
         int positionX = planetElement.attribute("positionX").toInt();
         int positionY = planetElement.attribute("positionY").toInt();
         int radius = planetElement.attribute("radius").toInt();
@@ -141,9 +141,9 @@ bool XmlScenarioSerializer::deserialize(const QString &fileName, XmlScenarioSeri
             int id = planetElement.attribute("player").toInt(&ok);
             if (ok && idPlayerMap.contains(id)) {
                 Player *player = idPlayerMap.value(id);
-                planet->setPlayer(player);
+                player->addPlanet(planet);
             } else {
-                qWarning("player id invalid or not found in player list: " + id);
+                qWarning("player id invalid or not found in player list: %d", id);
             }
         }
         scenario.planets.insert(planet);

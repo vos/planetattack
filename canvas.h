@@ -51,6 +51,7 @@ public:
 
     inline int playerCount() const { return m_players.count(); }
     Q_INVOKABLE QSet<Player*> getPlayers() { return m_players; }
+    bool removePlayer(Player *player);
     Q_INVOKABLE Player* getRandomPlayer();
 
     inline int planetCount() const { return m_planets.count(); }

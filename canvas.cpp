@@ -43,6 +43,9 @@ Canvas::Canvas(QWidget *parent) :
     m_factorSelectionActive = false;
     m_backgroundImage = QImage("background.jpg");
 
+    m_activePlayer = new HumanPlayer("Alex", Qt::blue, this);
+    m_players.insert(m_activePlayer);
+
     m_globalAccess = false;
     m_selectedPlanet = NULL;
 
@@ -51,27 +54,6 @@ Canvas::Canvas(QWidget *parent) :
     m_scriptEngineDebugger = new QScriptEngineDebugger(this);
     addScriptExtentions(this);
     m_scriptEngineDebugger->attachTo(m_scriptEngine);
-
-    // add neutral planets
-    m_planets.insert(new Planet(QVector2D(400, 100), 40, 40));
-    m_planets.insert(new Planet(QVector2D(350, 225), 50, 50));
-    m_planets.insert(new Planet(QVector2D(500, 200), 60, 60));
-
-    m_activePlayer = new HumanPlayer("Alex", Qt::blue, this);
-    m_players.insert(m_activePlayer);
-
-    // TEST AI 1
-    ScriptedPlayerIntelligence *playerAI = new ScriptedPlayerIntelligence(m_scriptEngine);
-    playerAI->setIntelligenceProgramFile("scripts/random_ai.js");
-    ComputerPlayer *computerPlayer = new ComputerPlayer("GLaDOS", Qt::red, playerAI, this);
-    computerPlayer->addPlanet(QVector2D(750, 250), 100, 100);
-    m_players.insert(computerPlayer);
-
-    // TEST AI 2
-    ComputerPlayer *computerPlayer2 = new ComputerPlayer("Kai", Qt::darkGreen, NULL, this);
-    computerPlayer2->addPlanet(QVector2D(500, 500), 75, 75);
-    computerPlayer2->addPlanet(QVector2D(650, 600), 25, 25);
-    m_players.insert(computerPlayer2);
 
     m_gameTime.start();
     m_FPSTimer.start();
@@ -83,6 +65,23 @@ Canvas::~Canvas()
 {
     qDeleteAll(m_players);
     qDeleteAll(m_planets);
+}
+
+bool Canvas::removePlayer(Player *player)
+{
+    if (player == NULL || m_players.count() <= 1) // don't remove the last player
+        return false;
+    if (player == m_activePlayer) {
+        foreach (Player *p, m_players) {
+            if (p != m_activePlayer) {
+                m_activePlayer = p;
+                break;
+            }
+        }
+    }
+    m_players.remove(player);
+    delete player;
+    return true;
 }
 
 void Canvas::resizeEvent(QResizeEvent *resizeEvent)

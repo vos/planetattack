@@ -1,2 +1,2 @@
-HEADERS += jsedit/jsedit.h
-SOURCES += jsedit/jsedit.cpp
+HEADERS += $$PWD/jsedit.h
+SOURCES += $$PWD/jsedit.cpp

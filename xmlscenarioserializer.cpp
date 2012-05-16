@@ -2,6 +2,7 @@
 
 #include <QDomDocument>
 #include <QFile>
+#include <QApplication>
 
 #include "canvas.h"
 #include "humanplayer.h"
@@ -39,7 +40,20 @@ bool XmlScenarioSerializer::serialize(const XmlScenarioSerializer::Scenario &sce
                 PlayerIntelligence *intelligence = computerPlayer->intelligence();
                 ScriptedPlayerIntelligence *scriptedIntelligence = dynamic_cast<ScriptedPlayerIntelligence*>(intelligence);
                 if (scriptedIntelligence != NULL && !scriptedIntelligence->intelligenceProgram().isNull()) {
-                    playerElement.setAttribute("intelligence", scriptedIntelligence->intelligenceProgram().fileName());
+                    const QScriptProgram &intelligenceProgram = scriptedIntelligence->intelligenceProgram();
+                    QString fileName = intelligenceProgram.fileName();
+                    if (!fileName.isEmpty() && QFile::exists(fileName)) {
+                        QString appPath = QApplication::applicationDirPath();
+                        if (fileName.contains(appPath)) {
+                            // cut absolute path off
+                            fileName.remove(appPath);
+                        }
+                        playerElement.setAttribute("intelligence", fileName);
+                    }  else {
+                        QDomElement intelligenceElement = doc.createElement("intelligence");
+                        intelligenceElement.appendChild(doc.createCDATASection(intelligenceProgram.sourceCode()));
+                        playerElement.appendChild(intelligenceElement);
+                    }
                 }
             }
         }
@@ -95,7 +109,7 @@ bool XmlScenarioSerializer::deserialize(const QString &fileName, XmlScenarioSeri
     QDomElement scenarioElement = doc.documentElement();
     QHash<int, Player*> idPlayerMap;
 
-    QDomElement playersElement = scenarioElement.elementsByTagName("players").item(0).toElement();
+    QDomElement playersElement = scenarioElement.firstChildElement("players");
     QDomNodeList playerNodeList = playersElement.elementsByTagName("player");
     for (uint i = 0; i < playerNodeList.length(); ++i) {
         QDomElement playerElement = playerNodeList.item(i).toElement();
@@ -108,7 +122,15 @@ bool XmlScenarioSerializer::deserialize(const QString &fileName, XmlScenarioSeri
             intelligence->setIntelligenceProgramFile(intelligenceFileName);
             player = new ComputerPlayer(name, color, intelligence, Canvas::Instance);
         } else {
-            player = new HumanPlayer(name, color, Canvas::Instance);
+            QDomElement intelligenceElement = playerElement.firstChildElement("intelligence");
+            if (!intelligenceElement.isNull()) {
+                QDomCDATASection intelligenceData = intelligenceElement.firstChild().toCDATASection();
+                ScriptedPlayerIntelligence *intelligence = new ScriptedPlayerIntelligence(Canvas::Instance->scriptEngine());
+                intelligence->setIntelligenceProgram(intelligenceData.data());
+                player = new ComputerPlayer(name, color, intelligence, Canvas::Instance);
+            } else {
+                player = new HumanPlayer(name, color, Canvas::Instance);
+            }
         }
         player->setResourceFactor(playerElement.attribute("resourceFactor").toDouble());
         int id = playerElement.attribute("id").toInt();
@@ -124,7 +146,7 @@ bool XmlScenarioSerializer::deserialize(const QString &fileName, XmlScenarioSeri
         scenario.activePlayer = NULL;
     }
 
-    QDomElement planetsElement = scenarioElement.elementsByTagName("planets").item(0).toElement();
+    QDomElement planetsElement = scenarioElement.firstChildElement("planets");
     QDomNodeList planetNodeList = planetsElement.elementsByTagName("planet");
     for (uint i = 0; i < planetNodeList.length(); ++i) {
         QDomElement planetElement = planetNodeList.item(i).toElement();

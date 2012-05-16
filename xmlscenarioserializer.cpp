@@ -45,8 +45,8 @@ bool XmlScenarioSerializer::serialize(const XmlScenarioSerializer::Scenario &sce
                     if (!fileName.isEmpty() && QFile::exists(fileName)) {
                         QString appPath = QApplication::applicationDirPath();
                         if (fileName.contains(appPath)) {
-                            // cut absolute path off
-                            fileName.remove(appPath);
+                            // convert absolute path to relative path
+                            fileName.replace(appPath, ".");
                         }
                         playerElement.setAttribute("intelligence", fileName);
                     }  else {

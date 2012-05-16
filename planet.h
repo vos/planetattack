@@ -39,6 +39,10 @@ private:
     qreal m_radius;
     qreal m_productionFactor;
 
+    // animation
+    qreal m_angle;
+    qreal m_velocity;
+
 };
 
 Q_DECLARE_METATYPE(Planet*)

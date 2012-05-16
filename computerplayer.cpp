@@ -14,3 +14,10 @@ void ComputerPlayer::setIntelligence(PlayerIntelligence *intelligence)
     if (m_intelligence)
         m_intelligence->setPlayer(this);
 }
+
+void ComputerPlayer::think(const GameTime &gameTime)
+{
+    if (hasIntelligence()) {
+        m_intelligence->think(gameTime);
+    }
+}

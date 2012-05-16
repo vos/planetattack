@@ -93,21 +93,19 @@ void Canvas::timerEvent(QTimerEvent *timerEvent)
 {
     Q_UNUSED(timerEvent)
     if (m_mode == GameMode) {
+        foreach (Planet *planet, m_planets) {
+            planet->update(m_gameTime);
+        }
         foreach (Player *player, m_players) {
-            if (player->isComputer()) {
-                ComputerPlayer *computerPlayer = static_cast<ComputerPlayer*>(player);
-                if (computerPlayer->hasIntelligence()) {
-                    computerPlayer->intelligence()->think(m_gameTime);
-                }
-            }
-            foreach (Planet *planet, player->planets()) {
-                planet->update(m_gameTime);
-            }
             foreach (Ship *ship, player->ships()) {
                 ship->update(m_gameTime);
                 if (ship->target() == NULL) {
                     player->removeShip(ship);
                 }
+            }
+            if (player->isComputer()) {
+                ComputerPlayer *computerPlayer = static_cast<ComputerPlayer*>(player);
+                computerPlayer->think(m_gameTime);
             }
         }
     }
@@ -141,20 +139,20 @@ void Canvas::paintEvent(QPaintEvent *paintEvent)
         planet->draw(m_painter);
     }
 
-    // target and ships
+    // target
+    if (m_activePlayer->target() != NULL) {
+        m_painter.setPen(Qt::transparent);
+        QRadialGradient radialGradient(m_activePlayer->target()->position().toPoint(), m_activePlayer->target()->radius() * 0.85);
+        radialGradient.setColorAt(0.8, Qt::transparent);
+        radialGradient.setColorAt(0.9, Qt::red);
+        radialGradient.setColorAt(1.0, Qt::transparent);
+        m_painter.setBrush(radialGradient);
+        m_painter.drawEllipse(m_activePlayer->target()->rect());
+    }
+
+    // ships
     int shipCount = 0;
     foreach (Player *player, m_players) {
-        // target
-        if (player->target() != NULL) {
-            m_painter.setPen(Qt::transparent);
-            QRadialGradient radialGradient(player->target()->position().toPoint(), player->target()->radius());
-            radialGradient.setColorAt(0.8, Qt::transparent);
-            radialGradient.setColorAt(0.9, Qt::red);
-            radialGradient.setColorAt(1.0, Qt::transparent);
-            m_painter.setBrush(radialGradient);
-            m_painter.drawEllipse(player->target()->rect());
-        }
-        // ships
         foreach (Ship *ship, player->ships()) {
             ship->draw(m_painter);
             shipCount++;
@@ -272,6 +270,7 @@ void Canvas::mousePressEvent(QMouseEvent *mouseEvent)
             if (m_mode == EditorMode) {
                 m_selectedPlanet = m_activePlayer->addPlanet(mousePos);
                 selectedPlanets.insert(m_selectedPlanet);
+                m_mouseClickDiff = QVector2D();
                 emit selectionChanged(m_selectedPlanet);
             } else if (m_mode == GameMode) {
                 m_activePlayer->setTarget(NULL);

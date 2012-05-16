@@ -10,6 +10,8 @@ Planet::Planet(const QVector2D& position, qreal radius, qreal resources, const Q
 {
     m_radius = radius;
     m_productionFactor = 0.1; // default factor
+    m_angle = 0.0;
+    m_velocity = -90.0; // degrees per second
 }
 
 bool Planet::setPlayer(Player *p)
@@ -61,7 +63,11 @@ QRect Planet::rect() const
 
 void Planet::update(const GameTime &gameTime)
 {
-    m_resources += m_radius * m_productionFactor * gameTime.elapsedSeconds();
+    if (!isNeutral()) {
+        m_resources += m_radius * m_productionFactor * gameTime.elapsedSeconds();
+    }
+    m_angle += m_velocity * m_productionFactor * gameTime.elapsedSeconds();
+    if (m_angle > 360) m_angle = 0.0;
 }
 
 void Planet::draw(QPainter &painter)
@@ -81,7 +87,10 @@ void Planet::draw(QPainter &painter)
         selectionGradient.setColorAt(0.9, m_color.lighter());
         selectionGradient.setColorAt(1.0, Qt::transparent);
         painter.setBrush(selectionGradient);
-        painter.drawEllipse(boundingRect);
+        painter.drawPie(boundingRect, m_angle / 360 * 5760, 5600);
+        selectionGradient.setColorAt(0.9, m_color.darker(150));
+        painter.setBrush(selectionGradient);
+        painter.drawPie(boundingRect, m_angle / 360 * 5760 - 160, 160);
     }
 
     QString text = QString("%1\n%2").arg(hasPlayer() ? player()->name() : "<neutral>").arg(int(m_resources));

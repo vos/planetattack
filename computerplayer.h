@@ -16,6 +16,8 @@ public:
     void setIntelligence(PlayerIntelligence *intelligence = NULL);
     inline bool hasIntelligence() const { return m_intelligence != NULL; }
 
+    void think(const GameTime &gameTime);
+
 private:
     PlayerIntelligence *m_intelligence;
 

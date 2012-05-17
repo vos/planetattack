@@ -58,7 +58,7 @@ void Player::addPlanet(Planet *planet)
 Planet *Player::addPlanet(const QVector2D &position, qreal radius, qreal resources)
 {
     Planet *planet = new Planet(position, radius, resources, m_color, this);
-    Canvas::Instance->planets().insert(planet);
+    Canvas::Instance->addPlanet(planet);
     m_planets.insert(planet);
     return planet;
 }

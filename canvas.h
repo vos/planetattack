@@ -38,6 +38,11 @@ public:
     inline GameTime& gameTime() { return m_gameTime; }
 
     inline QSet<Player*>& players() { return m_players; }
+    inline int playerCount() const { return m_players.count(); }
+    void addPlayer(Player *player);
+    bool removePlayer(Player *player);
+    void clearPlayers();
+
     inline Player* activePlayer() const { return m_activePlayer; }
     inline void setActivePlayer(Player *player) { m_activePlayer = player; }
 
@@ -45,25 +50,33 @@ public:
     inline void setGlobalAccess(bool access = false) { m_globalAccess = access; }
 
     inline QSet<Planet*>& planets() { return m_planets; }
-
-    QScriptEngine* scriptEngine() { return m_scriptEngine; }
-    QScriptEngineDebugger* scriptEngineDebugger() { return m_scriptEngineDebugger; }
-
-    inline int playerCount() const { return m_players.count(); }
-    Q_INVOKABLE QSet<Player*> getPlayers() { return m_players; }
-    bool removePlayer(Player *player);
-    Q_INVOKABLE Player* getRandomPlayer();
-
     inline int planetCount() const { return m_planets.count(); }
-    Q_INVOKABLE QSet<Planet*> getPlanets() { return m_planets; }
     Q_INVOKABLE void addPlanet(Planet *planet);
     Q_INVOKABLE Planet* addPlanet(const QVector2D &position, qreal radius = 50.0, qreal resources = 0.0);
     Q_INVOKABLE Planet* addPlanet(qreal xpos, qreal ypos, qreal radius = 50.0, qreal resources = 0.0);
     Q_INVOKABLE void removePlanet(Planet *planet);
+    void clearPlanets();
+
+    QScriptEngine* scriptEngine() { return m_scriptEngine; }
+    QScriptEngineDebugger* scriptEngineDebugger() { return m_scriptEngineDebugger; }
+
+    // script helpers
+    Q_INVOKABLE QSet<Player*> getPlayers() { return m_players; }
+    Q_INVOKABLE Player* getRandomPlayer();
+
+    Q_INVOKABLE QSet<Planet*> getPlanets() { return m_planets; }
     Q_INVOKABLE Planet* getRandomPlanet();
 
 signals:
     void modeChanged();
+    void playerAdded(Player *player);
+    void playerRemoving(Player *player);
+    void playersCleared();
+    void playerChanged(Player *player); // TODO: emit signal
+    void planetAdded(Planet *planet);
+    void planetRemoving(Planet *planet);
+    void planetsCleared();
+    void planetChanged(Planet *planet); // TODO: emit signal
     void selectionChanged(QObject *o);
 
 private:

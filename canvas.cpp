@@ -44,7 +44,7 @@ Canvas::Canvas(QWidget *parent) :
     m_backgroundImage = QImage("background.jpg");
 
     m_activePlayer = new HumanPlayer("Alex", Qt::blue, this);
-    m_players.insert(m_activePlayer);
+    addPlayer(m_activePlayer);
 
     m_globalAccess = false;
     m_selectedPlanet = NULL;
@@ -65,23 +65,6 @@ Canvas::~Canvas()
 {
     qDeleteAll(m_players);
     qDeleteAll(m_planets);
-}
-
-bool Canvas::removePlayer(Player *player)
-{
-    if (player == NULL || m_players.count() <= 1) // don't remove the last player
-        return false;
-    if (player == m_activePlayer) {
-        foreach (Player *p, m_players) {
-            if (p != m_activePlayer) {
-                m_activePlayer = p;
-                break;
-            }
-        }
-    }
-    m_players.remove(player);
-    delete player;
-    return true;
 }
 
 void Canvas::resizeEvent(QResizeEvent *resizeEvent)
@@ -310,11 +293,11 @@ void Canvas::mouseMoveEvent(QMouseEvent *mouseEvent)
             if (mouseEvent->modifiers() & Qt::AltModifier) {
                 qreal len = (m_selectedPlanet->position() - QVector2D(mouseEvent->pos())).length();
                 m_selectedPlanet->setRadius(int(len));
-                emit selectionChanged(m_selectedPlanet);
             } else {
                 m_selectedPlanet->setPosition(QVector2D(mouseEvent->pos()) + m_mouseClickDiff);
-                emit selectionChanged(m_selectedPlanet);
             }
+            emit planetChanged(m_selectedPlanet);
+            emit selectionChanged(m_selectedPlanet);
         }
     }
 }
@@ -325,11 +308,39 @@ void Canvas::mouseReleaseEvent(QMouseEvent *mouseEvent)
     m_factorSelectionActive = false;
 }
 
-Player* Canvas::getRandomPlayer()
+void Canvas::addPlayer(Player *player)
 {
-    if (m_players.isEmpty())
-        return NULL;
-    return *RandomUtil::randomElement(m_players);
+    if (player == NULL) {
+        qDebug("Canvas::addPlayer() player cannot be null");
+        return;
+    }
+    m_players.insert(player);
+    emit playerAdded(player);
+}
+
+bool Canvas::removePlayer(Player *player)
+{
+    if (player == NULL || m_players.count() <= 1) // don't remove the last player
+        return false;
+    if (player == m_activePlayer) {
+        foreach (Player *p, m_players) {
+            if (p != m_activePlayer) {
+                m_activePlayer = p;
+                break;
+            }
+        }
+    }
+    m_players.remove(player);
+    emit playerRemoving(player); // emit synchronous
+    delete player;
+    return true;
+}
+
+void Canvas::clearPlayers()
+{
+    qDeleteAll(m_players);
+    m_players.clear();
+    emit playersCleared();
 }
 
 void Canvas::addPlanet(Planet *planet)
@@ -339,12 +350,13 @@ void Canvas::addPlanet(Planet *planet)
         return;
     }
     m_planets.insert(planet);
+    emit planetAdded(planet);
 }
 
 Planet* Canvas::addPlanet(const QVector2D &position, qreal radius, qreal resources)
 {
     Planet *planet = new Planet(position, radius, resources);
-    m_planets.insert(planet);
+    addPlanet(planet);
     return planet;
 }
 
@@ -370,8 +382,23 @@ void Canvas::removePlanet(Planet *planet)
     }
     if (planet == m_selectedPlanet)
         m_selectedPlanet = NULL;
-    m_planets.remove(planet);
+    m_planets.remove(planet); // emit synchronous
+    emit planetRemoving(planet);
     delete planet;
+}
+
+void Canvas::clearPlanets()
+{
+    qDeleteAll(m_planets);
+    m_planets.clear();
+    emit planetsCleared();
+}
+
+Player* Canvas::getRandomPlayer()
+{
+    if (m_players.isEmpty())
+        return NULL;
+    return *RandomUtil::randomElement(m_players);
 }
 
 Planet* Canvas::getRandomPlanet()

@@ -203,7 +203,7 @@ void MainWindow::on_removePlayerButton_clicked()
 void MainWindow::on_addPlayerButton_clicked()
 {
     Player *player = new ComputerPlayer("Player", Qt::white, NULL, m_canvas);
-    m_canvas->players().insert(player);
+    m_canvas->addPlayer(player);
     m_canvas->setActivePlayer(player);
     QVariant playerVar;
     playerVar.setValue(player);
@@ -240,12 +240,14 @@ void MainWindow::on_action_openScenario_triggered()
         ScenarioSerializer::Scenario scenario;
         if (serializer.deserialize(fileName, scenario)) {
             canvas_selectionChanged(NULL);
-            qDeleteAll(m_canvas->players());
-            qDeleteAll(m_canvas->planets());
-            m_canvas->players().clear();
-            m_canvas->planets().clear();
-            m_canvas->players().unite(scenario.players);
-            m_canvas->planets().unite(scenario.planets);
+            m_canvas->clearPlayers();
+            m_canvas->clearPlanets();
+            foreach (Player *player, scenario.players) {
+                m_canvas->addPlayer(player);
+            }
+            foreach (Planet *planet, scenario.planets) {
+                m_canvas->addPlanet(planet);
+            }
             m_canvas->setActivePlayer(scenario.activePlayer);
             updatePlayerComboBox();
             canvas_selectionChanged(m_canvas->activePlayer());

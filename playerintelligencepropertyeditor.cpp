@@ -46,7 +46,7 @@ void PlayerIntelligencePropertyEditor::setValue(const QVariant &value)
 
 void PlayerIntelligencePropertyEditor::comboBox_currentIndexChanged(int index)
 {
-    // TODO handle "memory leaks"
+    // FIXME: handle "memory leaks"
     const QString className(m_playerIntelligence ? m_playerIntelligence->metaObject()->className() : "");
     switch (index) {
     case 0:

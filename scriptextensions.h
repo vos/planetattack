@@ -60,7 +60,7 @@ void colorFromScriptValue(const QScriptValue &obj, QColor &c)
     if (QColor::isValidColor(colorName)) {
         c.setNamedColor(colorName);
     } else {
-        // TODO QScriptContext::throwError
+        // TODO: QScriptContext::throwError
         qWarning("'%s' is not a valid color name!", qPrintable(colorName));
     }
 }

@@ -18,11 +18,11 @@ public:
     Q_INVOKABLE static qreal randomReal(); // between 0.0 and 1.0
     Q_INVOKABLE static qreal randomReal(qreal min, qreal max);
 
-    // TODO move to cpp!
+    // TODO: move to cpp!
     template <typename Container>
     static typename Container::const_iterator randomElement(const Container &container) {
         if (container.isEmpty()) {
-            return container.constEnd(); // TODO return invalid iterator?
+            return container.constEnd(); // TODO: return invalid iterator?
         }
         int rnd = RandomUtil::randomInt(0, container.count());
         return container.constBegin() + rnd;

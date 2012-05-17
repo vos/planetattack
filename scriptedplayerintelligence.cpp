@@ -83,7 +83,7 @@ void ScriptedPlayerIntelligence::think(const GameTime &gameTime)
         m_scriptEngine->globalObject().setProperty("Player", m_this);
         QScriptValue result = m_scriptEngine->evaluate(m_intelligenceProgram);
         if (result.isError()) {
-            // TODO send error to log window when there is no debugger attached
+            // TODO: send error to log window when there is no debugger attached
             qCritical() << QString::fromLatin1("%0:%1: %2")
                            .arg(m_intelligenceProgram.fileName())
                            .arg(result.property("lineNumber").toInt32())

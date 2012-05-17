@@ -14,7 +14,7 @@ public:
     Intelligence(const Intelligence &);
 
 public slots:
-    virtual void think(const GameTime &gameTime) { Q_UNUSED(gameTime) } // TODO abstract not possible with Qt Meta System
+    virtual void think(const GameTime &gameTime) { Q_UNUSED(gameTime) } // NOTE: abstract not possible with Qt Meta System
 
 };
 

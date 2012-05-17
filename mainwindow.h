@@ -44,6 +44,8 @@ private:
     QObject *m_selectedObject;
     QHash<QString, PropertyEditor*> m_propertyEditorMap;
 
+    void updateTitle(const QString &subTitle);
+
 };
 
 #endif // MAINWINDOW_H

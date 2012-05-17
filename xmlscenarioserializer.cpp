@@ -2,7 +2,7 @@
 
 #include <QDomDocument>
 #include <QFile>
-#include <QApplication>
+#include <QDir>
 
 #include "canvas.h"
 #include "humanplayer.h"
@@ -43,10 +43,8 @@ bool XmlScenarioSerializer::serialize(const XmlScenarioSerializer::Scenario &sce
                     const QScriptProgram &intelligenceProgram = scriptedIntelligence->intelligenceProgram();
                     QString fileName = intelligenceProgram.fileName();
                     if (!fileName.isEmpty() && QFile::exists(fileName)) {
-                        QString appPath = QApplication::applicationDirPath();
-                        if (fileName.contains(appPath)) {
-                            // convert absolute path to relative path
-                            fileName.replace(appPath, ".");
+                        if (!QDir::isRelativePath(fileName)) {
+                            fileName = QDir::current().relativeFilePath(fileName);
                         }
                         playerElement.setAttribute("intelligence", fileName);
                     }  else {

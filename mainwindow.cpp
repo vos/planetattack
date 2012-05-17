@@ -226,12 +226,15 @@ void MainWindow::on_action_newScenario_triggered()
         m_canvas->removePlanet(planet);
     }
     m_scenarioFileName.clear();
+    updateTitle("<unsaved scenario>");
     statusBar()->showMessage("New Scenario created", 5000);
 }
 
 void MainWindow::on_action_openScenario_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, "Open Scenario File", QString(), "Scenario Files (*.xml);;All Files (*.*)");
+    QString fileName = QFileDialog::getOpenFileName(this, "Open Scenario File",
+                                                    QDir::current().filePath("scenarios"),
+                                                    "Scenario Files (*.xml);;All Files (*.*)");
     if (!fileName.isEmpty()) {
         XmlScenarioSerializer serializer;
         ScenarioSerializer::Scenario scenario;
@@ -246,7 +249,9 @@ void MainWindow::on_action_openScenario_triggered()
             m_canvas->setActivePlayer(scenario.activePlayer);
             updatePlayerComboBox();
             canvas_selectionChanged(m_canvas->activePlayer());
-            statusBar()->showMessage(QString("Scenario \"%1\" successfully loaded").arg(fileName), 5000);
+            QString relativeFilePath = QDir::current().relativeFilePath(fileName);
+            updateTitle(relativeFilePath);
+            statusBar()->showMessage(QString("Scenario \"%1\" successfully loaded").arg(relativeFilePath), 5000);
             m_scenarioFileName = fileName;
         } else {
             QMessageBox::warning(this, "Open Scenario Error", QString("Cannot open scenario file \"%1\".").arg(fileName));
@@ -267,7 +272,9 @@ void MainWindow::on_action_saveScenario_triggered()
         m_canvas->planets()
     };
     if (serializer.serialize(scenario, m_scenarioFileName)) {
-        statusBar()->showMessage(QString("Scenario successfully saved as \"%1\"").arg(m_scenarioFileName), 5000);
+        QString relativeFilePath = QDir::current().relativeFilePath(m_scenarioFileName);
+        updateTitle(relativeFilePath);
+        statusBar()->showMessage(QString("Scenario successfully saved as \"%1\"").arg(relativeFilePath), 5000);
     } else {
         QMessageBox::warning(this, "Save Scenario Error", QString("Cannot save scenario file \"%1\".").arg(m_scenarioFileName));
     }
@@ -275,9 +282,16 @@ void MainWindow::on_action_saveScenario_triggered()
 
 void MainWindow::on_action_saveScenarioAs_triggered()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, "Save Scenario", QString(), "Scenario Files (*.xml)");
+    QString fileName = QFileDialog::getSaveFileName(this, "Save Scenario",
+                                                    QDir::current().filePath("scenarios"),
+                                                    "Scenario Files (*.xml)");
     if (fileName.isEmpty())
         return;
     m_scenarioFileName = fileName;
     on_action_saveScenario_triggered();
+}
+
+void MainWindow::updateTitle(const QString &subTitle)
+{
+    setWindowTitle(QString(m_canvas->windowTitle() + " - %1").arg(subTitle));
 }

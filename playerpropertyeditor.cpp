@@ -1,6 +1,7 @@
 #include "playerpropertyeditor.h"
 
-#include "canvas.h"
+#include "game.h"
+#include "player.h"
 
 PlayerPropertyEditor::PlayerPropertyEditor(QWidget *parent) :
     QComboBox(parent)
@@ -8,7 +9,7 @@ PlayerPropertyEditor::PlayerPropertyEditor(QWidget *parent) :
     QVariant var;
     var.setValue<Player*>(NULL);
     addItem("<null>", var);
-    foreach (Player *player, Canvas::Instance->players()) {
+    foreach (Player *player, Game::instance()->players()) {
         QVariant var;
         var.setValue(player);
         addItem(player->name(), var);

@@ -3,10 +3,12 @@
 
 #include <QObject>
 #include <QSet>
+#include <QColor>
 #include <QMetaType>
 
-#include "planet.h"
-#include "ship.h"
+class Game;
+class Planet;
+class Ship;
 
 class Player : public QObject
 {
@@ -20,7 +22,7 @@ class Player : public QObject
     Q_PROPERTY(int shipCount READ shipCount DESIGNABLE false)
 
 public:
-    Player(const QString &name, const QColor &color, bool human = true, QObject *parent = NULL);
+    Player(const QString &name, const QColor &color, bool human = true, Game *parent = NULL);
     virtual ~Player();
 
     inline const QString& name() const { return m_name; }
@@ -37,12 +39,10 @@ public:
 
     inline int planetCount() const { return m_planets.count(); }
     inline QSet<Planet*>& planets() { return m_planets; }
-    Q_INVOKABLE QSet<Planet*> getPlanets() { return m_planets; }
-    Q_INVOKABLE void addPlanet(Planet *planet);
-    Q_INVOKABLE Planet* addPlanet(const QVector2D &position, qreal radius = 50.0, qreal resources = 0.0);
-    Q_INVOKABLE Planet* addPlanet(qreal xpos, qreal ypos, qreal radius = 50.0, qreal resources = 0.0);
-    Q_INVOKABLE void removePlanet(Planet *planet);
-    Q_INVOKABLE Planet* getRandomPlanet() const;
+    void addPlanet(Planet *planet);
+    Planet* addPlanet(const QVector2D &position, qreal radius = 50.0, qreal resources = 0.0);
+    Planet* addPlanet(qreal xpos, qreal ypos, qreal radius = 50.0, qreal resources = 0.0);
+    void removePlanet(Planet *planet);
 
     inline QSet<Planet*>& selectedPlanets() { return m_selectedPlanets; }
 
@@ -51,9 +51,14 @@ public:
 
     inline int shipCount() const { return m_ships.count(); }
     inline QSet<Ship*>& ships() { return m_ships; }
-    Q_INVOKABLE QSet<Ship*> getShips() { return m_ships; }
-    Q_INVOKABLE void addShip(Ship *ship);
-    Q_INVOKABLE void removeShip(Ship *ship);
+    void addShip(Ship *ship);
+    void removeShip(Ship *ship);
+
+    // script helpers and functions
+    Q_INVOKABLE QSet<Planet*> getPlanets() const { return m_planets; }
+    Q_INVOKABLE Planet* getRandomPlanet() const;
+
+    Q_INVOKABLE QSet<Ship*> getShips() const { return m_ships; }
     Q_INVOKABLE Ship* getRandomShip() const;
 
     Q_INVOKABLE QSet<Player*> getEnemies() const;
@@ -77,6 +82,8 @@ protected:
     Planet *m_target;
 
     QSet<Ship*> m_ships;
+
+    inline Game* game() const { return (Game*)parent(); }
 
 };
 

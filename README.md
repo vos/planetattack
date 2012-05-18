@@ -15,16 +15,12 @@ Space RTS game.
  - **Random.randomReal**() : *float*  -- between 0.0 and 1.0
  - **Random.randomReal**(min : *float*, max : *float*) : *float*
 
-- **Game** : *Canvas*
+- **Game** : *Game*
   - **Game.playerCount** : *int* [readonly]
   - **Game.getPlayers**() : *Array[Player]*
   - **Game.getRandomPlayer**() : *Player*
   - **Game.planetCount** : *int* [readonly]
   - **Game.getPlanets**() : *Array[Planet]*
-  - **Game.addPlanet**(planet : *Planet*)
-  - **Game.addPlanet**(position : *Vector2*[, radius : *float*, resources : *float*]) : *Planet*
-  - **Game.addPlanet**(xpos : *float*, ypos : *float*[, radius : *float*, resources : *float*]) : *Planet*
-  - **Game.removePlanet**(planet : *Planet*)
   - **Game.getRandomPlanet**() : *Planet*
 
 - **Game.Time** : *GameTime*
@@ -63,14 +59,8 @@ See [QColor](http://qt-project.org/doc/qt-4.8/qcolor.html#setNamedColor) named c
 
 - **Functions**
   - **getPlanets**() : *Array[Planet]*
-  - **addPlanet**(planet : *Planet*)
-  - **addPlanet**(position : *Vector2*[, radius : *float*, resources : *float*]) : *Planet*
-  - **addPlanet**(xpos : *float*, ypos : *float*[, radius : *float*, resources : *float*]) : *Planet*
-  - **removePlanet**(planet : *Planet*)
   - **getRandomPlanet**() : *Planet*
   - **getShips**() : *Array[Ship]*
-  - **addShip**(ship : *Ship*)
-  - **removeShip**(ship : *Ship*)
   - **getRandomShip**() : *Ship*
   - **getEnemies**() : *Array[Player]*
   - **getRandomEnemy**() : *Player*

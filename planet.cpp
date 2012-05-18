@@ -3,6 +3,7 @@
 #include <QRadialGradient>
 
 #include "player.h"
+#include "ship.h"
 #include "canvas.h"
 
 Planet::Planet(const QVector2D& position, qreal radius, qreal resources, const QColor &color, Player *parent) :
@@ -81,7 +82,7 @@ void Planet::draw(QPainter &painter)
     QRect boundingRect = rect();
     painter.drawEllipse(boundingRect);
 
-    if (Canvas::Instance->activePlayer()->selectedPlanets().contains(this)) {
+    if (Canvas::instance()->activePlayer()->selectedPlanets().contains(this)) {
         QRadialGradient selectionGradient(m_position.toPoint(), m_radius);
         selectionGradient.setColorAt(0.8, Qt::transparent);
         selectionGradient.setColorAt(0.9, m_color.lighter());

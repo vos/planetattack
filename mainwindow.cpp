@@ -11,6 +11,7 @@
 #include <QFileDialog>
 
 #include "canvas.h"
+#include "game.h"
 #include "computerplayer.h"
 #include "stringpropertyeditor.h"
 #include "vector2dpropertyeditor.h"
@@ -29,20 +30,21 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     m_canvas = new Canvas(this);
+    m_game = m_canvas->game();
     setCentralWidget(m_canvas);
     setWindowTitle(m_canvas->windowTitle());
 
-    ui->menuBar->addMenu(m_canvas->scriptEngineDebugger()->createStandardMenu());
-    addToolBar(Qt::TopToolBarArea, m_canvas->scriptEngineDebugger()->createStandardToolBar());
+    ui->menuBar->addMenu(m_game->scriptEngineDebugger()->createStandardMenu());
+    addToolBar(Qt::TopToolBarArea, m_game->scriptEngineDebugger()->createStandardToolBar());
 
-    ui->modeComboBox->addItem(Canvas::modeString(Canvas::EditorMode));
-    ui->modeComboBox->addItem(Canvas::modeString(Canvas::GameMode));
-    ui->modeComboBox->setCurrentIndex(m_canvas->mode());
+    ui->modeComboBox->addItem(Game::modeString(Game::EditorMode));
+    ui->modeComboBox->addItem(Game::modeString(Game::GameMode));
+    ui->modeComboBox->setCurrentIndex(m_game->mode());
 
     QLayout *layout = new QVBoxLayout;
     ui->editorWidget->setLayout(layout);
 
-    connect(m_canvas, SIGNAL(modeChanged()), SLOT(canvas_modeChanged()));
+    connect(m_game, SIGNAL(modeChanged()), SLOT(game_modeChanged()));
     connect(m_canvas, SIGNAL(selectionChanged(QObject*)), SLOT(canvas_selectionChanged(QObject*)));
 
     m_canvas->setFocus();
@@ -58,25 +60,31 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::canvas_modeChanged()
+void MainWindow::game_modeChanged()
 {
-    if (ui->modeComboBox->currentIndex() == m_canvas->mode())
+    if (ui->modeComboBox->currentIndex() == m_game->mode())
         return;
-    ui->modeComboBox->setCurrentIndex(m_canvas->mode());
+    ui->modeComboBox->setCurrentIndex(m_game->mode());
+}
+
+void MainWindow::clearPropertyEditor()
+{
+    QVBoxLayout *layout = (QVBoxLayout*)ui->editorWidget->layout();
+    // delete all widgets
+    QLayoutItem *item;
+    while ((item = layout->takeAt(0)) != NULL) {
+        delete item->widget();
+        delete item;
+    }
+    // FIXME: qDeleteAll(m_propertyEditorMap.values()); // crash!?
+    m_propertyEditorMap.clear();
 }
 
 void MainWindow::canvas_selectionChanged(QObject *o)
 {
     if (!o) {
         // selection set to NULL -> clear editor
-        QVBoxLayout *layout = (QVBoxLayout*)ui->editorWidget->layout();
-        // delete all widgets
-        m_propertyEditorMap.clear();
-        QLayoutItem *item;
-        while ((item = layout->takeAt(0)) != NULL) {
-            delete item->widget();
-            delete item;
-        }
+        clearPropertyEditor();
         m_selectedObject = NULL;
         return;
     }
@@ -84,14 +92,8 @@ void MainWindow::canvas_selectionChanged(QObject *o)
     const QMetaObject *metaObject = o->metaObject();
     if (m_selectedObject == NULL || m_selectedObject->metaObject() != metaObject) {
         // type has changed -> create new view
+        clearPropertyEditor();
         QVBoxLayout *layout = (QVBoxLayout*)ui->editorWidget->layout();
-        // delete all widgets
-        m_propertyEditorMap.clear();
-        QLayoutItem *item;
-        while ((item = layout->takeAt(0)) != NULL) {
-            delete item->widget();
-            delete item;
-        }
         layout->addWidget(new QLabel(metaObject->className()));
         for (int i = 1; i < metaObject->propertyCount(); ++i) {
             QMetaProperty property = metaObject->property(i);
@@ -165,12 +167,12 @@ void MainWindow::player_nameChanged(const QString &oldName, const QString &newNa
 
 void MainWindow::on_modeComboBox_currentIndexChanged(int index)
 {
-    m_canvas->setMode((Canvas::Mode)index);
+    m_game->setMode((Game::Mode)index);
 }
 
 void MainWindow::updatePlayerComboBox() {
     ui->playerComboBox->clear();
-    foreach (Player *player, m_canvas->players()) {
+    foreach (Player *player, m_game->players()) {
         QVariant playerVar;
         playerVar.setValue(player);
         ui->playerComboBox->addItem(player->name(), playerVar);
@@ -195,15 +197,15 @@ void MainWindow::on_removePlayerButton_clicked()
     if (m_selectedObject == player) {
         canvas_selectionChanged(NULL);
     }
-    if (m_canvas->removePlayer(player)) {
+    if (m_game->removePlayer(player)) {
         ui->playerComboBox->removeItem(index);
     }
 }
 
 void MainWindow::on_addPlayerButton_clicked()
 {
-    Player *player = new ComputerPlayer("Player", Qt::white, NULL, m_canvas);
-    m_canvas->addPlayer(player);
+    Player *player = new ComputerPlayer("Player", Qt::white, NULL, m_game);
+    m_game->addPlayer(player);
     m_canvas->setActivePlayer(player);
     QVariant playerVar;
     playerVar.setValue(player);
@@ -220,10 +222,10 @@ void MainWindow::on_globalAccessCheckBox_toggled(bool checked)
 
 void MainWindow::on_action_newScenario_triggered()
 {
-    foreach (Planet *planet, m_canvas->planets()) {
-        if (planet == m_selectedObject)
+    foreach (Planet *planet, m_game->planets()) {
+        if ((QObject*)planet == m_selectedObject)
             canvas_selectionChanged(NULL);
-        m_canvas->removePlanet(planet);
+        m_game->removePlanet(planet);
     }
     m_scenarioFileName.clear();
     updateTitle("<unsaved scenario>");
@@ -240,13 +242,13 @@ void MainWindow::on_action_openScenario_triggered()
         ScenarioSerializer::Scenario scenario;
         if (serializer.deserialize(fileName, scenario)) {
             canvas_selectionChanged(NULL);
-            m_canvas->clearPlayers();
-            m_canvas->clearPlanets();
+            m_game->clearPlayers();
+            m_game->clearPlanets();
             foreach (Player *player, scenario.players) {
-                m_canvas->addPlayer(player);
+                m_game->addPlayer(player);
             }
             foreach (Planet *planet, scenario.planets) {
-                m_canvas->addPlanet(planet);
+                m_game->addPlanet(planet);
             }
             m_canvas->setActivePlayer(scenario.activePlayer);
             updatePlayerComboBox();
@@ -269,9 +271,9 @@ void MainWindow::on_action_saveScenario_triggered()
     }
     XmlScenarioSerializer serializer;
     ScenarioSerializer::Scenario scenario = {
-        m_canvas->players(),
+        m_game->players(),
         m_canvas->activePlayer(),
-        m_canvas->planets()
+        m_game->planets()
     };
     if (serializer.serialize(scenario, m_scenarioFileName)) {
         QString relativeFilePath = QDir::current().relativeFilePath(m_scenarioFileName);

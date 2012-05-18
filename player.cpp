@@ -1,9 +1,11 @@
 #include "player.h"
 
-#include "canvas.h"
+#include "game.h"
+#include "planet.h"
+#include "ship.h"
 #include "randomutil.h"
 
-Player::Player(const QString &name, const QColor &color, bool human, QObject *parent) :
+Player::Player(const QString &name, const QColor &color, bool human, Game *parent) :
     QObject(parent)
 {
     m_name = name;
@@ -58,7 +60,7 @@ void Player::addPlanet(Planet *planet)
 Planet *Player::addPlanet(const QVector2D &position, qreal radius, qreal resources)
 {
     Planet *planet = new Planet(position, radius, resources, m_color, this);
-    Canvas::Instance->addPlanet(planet);
+    game()->addPlanet(planet);
     m_planets.insert(planet);
     return planet;
 }
@@ -106,7 +108,7 @@ Ship* Player::getRandomShip() const
 QSet<Player*> Player::getEnemies() const
 {
     QSet<Player*> enemies;
-    foreach (Player *player, Canvas::Instance->players()) {
+    foreach (Player *player, game()->players()) {
         if (player != this) {
             enemies.insert(player);
         }
@@ -142,7 +144,7 @@ Planet* Player::getRandomEnemyPlanet() const
 QSet<Planet*> Player::getOtherPlanets() const
 {
     QSet<Planet*> planets;
-    foreach (Planet *planet, Canvas::Instance->planets()) {
+    foreach (Planet *planet, game()->planets()) {
         if (planet->player() != this) {
             planets.insert(planet);
         }

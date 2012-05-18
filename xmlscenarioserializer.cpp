@@ -4,10 +4,11 @@
 #include <QFile>
 #include <QDir>
 
-#include "canvas.h"
+#include "game.h"
 #include "humanplayer.h"
 #include "computerplayer.h"
 #include "scriptedplayerintelligence.h"
+#include "planet.h"
 
 bool XmlScenarioSerializer::serialize(const XmlScenarioSerializer::Scenario &scenario, const QString &fileName)
 {
@@ -116,18 +117,18 @@ bool XmlScenarioSerializer::deserialize(const QString &fileName, XmlScenarioSeri
         QColor color(playerElement.attribute("color"));
         QString intelligenceFileName = playerElement.attribute("intelligence");
         if (!intelligenceFileName.isEmpty() && QFile::exists(intelligenceFileName)) {
-            ScriptedPlayerIntelligence *intelligence = new ScriptedPlayerIntelligence(Canvas::Instance->scriptEngine());
+            ScriptedPlayerIntelligence *intelligence = new ScriptedPlayerIntelligence(Game::instance()->scriptEngine());
             intelligence->setIntelligenceProgramFile(intelligenceFileName);
-            player = new ComputerPlayer(name, color, intelligence, Canvas::Instance);
+            player = new ComputerPlayer(name, color, intelligence, Game::instance());
         } else {
             QDomElement intelligenceElement = playerElement.firstChildElement("intelligence");
             if (!intelligenceElement.isNull()) {
                 QDomCDATASection intelligenceData = intelligenceElement.firstChild().toCDATASection();
-                ScriptedPlayerIntelligence *intelligence = new ScriptedPlayerIntelligence(Canvas::Instance->scriptEngine());
+                ScriptedPlayerIntelligence *intelligence = new ScriptedPlayerIntelligence(Game::instance()->scriptEngine());
                 intelligence->setIntelligenceProgram(intelligenceData.data());
-                player = new ComputerPlayer(name, color, intelligence, Canvas::Instance);
+                player = new ComputerPlayer(name, color, intelligence, Game::instance());
             } else {
-                player = new HumanPlayer(name, color, Canvas::Instance);
+                player = new HumanPlayer(name, color, Game::instance());
             }
         }
         player->setResourceFactor(playerElement.attribute("resourceFactor").toDouble());

@@ -3,7 +3,7 @@
 #include <QVBoxLayout>
 
 #include "scriptedplayerintelligence.h"
-#include "canvas.h"
+#include "game.h"
 #include "scriptwindow.h"
 
 PlayerIntelligencePropertyEditor::PlayerIntelligencePropertyEditor(QWidget *parent) :
@@ -54,7 +54,7 @@ void PlayerIntelligencePropertyEditor::comboBox_currentIndexChanged(int index)
         break;
     case 1:
         if (className != "ScriptedPlayerIntelligence")
-            m_playerIntelligence = new ScriptedPlayerIntelligence(Canvas::Instance->scriptEngine());
+            m_playerIntelligence = new ScriptedPlayerIntelligence(Game::instance()->scriptEngine());
         break;
     }
     m_scriptButton.setVisible(index == 1);

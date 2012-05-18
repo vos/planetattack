@@ -1,6 +1,6 @@
 #include "computerplayer.h"
 
-ComputerPlayer::ComputerPlayer(const QString &name, const QColor &color, PlayerIntelligence *intelligence, QObject *parent) :
+ComputerPlayer::ComputerPlayer(const QString &name, const QColor &color, PlayerIntelligence *intelligence, Game *parent) :
     Player(name, color, false, parent), m_intelligence(NULL)
 {
     setIntelligence(intelligence);

@@ -4,8 +4,9 @@
 #include <QMainWindow>
 #include <QHash>
 
-#include "canvas.h"
-#include "propertyeditor.h"
+class Canvas;
+class Game;
+class PropertyEditor;
 
 namespace Ui {
 class MainWindow;
@@ -20,7 +21,7 @@ public:
     ~MainWindow();
 
 private slots:
-    void canvas_modeChanged();
+    void game_modeChanged();
     void canvas_selectionChanged(QObject *o);
     void saveButton_clicked();
     void player_nameChanged(const QString &oldName, const QString &newName);
@@ -40,10 +41,12 @@ private slots:
 private:
     Ui::MainWindow *ui;
     Canvas *m_canvas;
+    Game *m_game;
     QString m_scenarioFileName;
     QObject *m_selectedObject;
     QHash<QString, PropertyEditor*> m_propertyEditorMap;
 
+    void clearPropertyEditor();
     void updateTitle(const QString &subTitle);
 
 };

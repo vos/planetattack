@@ -8,7 +8,7 @@
 #include "scriptedplayerintelligence.h"
 
 // debug
-#include "canvas.h"
+#include "game.h"
 #include <QScriptEngineDebugger>
 
 ScriptWindow::ScriptWindow(ScriptedPlayerIntelligence *spi, QWidget *parent) :
@@ -95,7 +95,7 @@ void ScriptWindow::on_saveScriptFileButton_clicked()
 
 void ScriptWindow::on_showDebugOutputButton_clicked()
 {
-    ui->splitter->addWidget(Canvas::Instance->scriptEngineDebugger()->widget(QScriptEngineDebugger::DebugOutputWidget));
+    ui->splitter->addWidget(Game::instance()->scriptEngineDebugger()->widget(QScriptEngineDebugger::DebugOutputWidget));
     ui->splitter->setSizes(QList<int>() << ui->splitter->height() << 100);
 }
 

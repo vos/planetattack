@@ -7,7 +7,7 @@
 #include <QColor>
 #include <QSet>
 
-#include "canvas.h"
+#include "game.h"
 #include "randomutil.h"
 #include "playerintelligence.h"
 
@@ -65,8 +65,8 @@ void colorFromScriptValue(const QScriptValue &obj, QColor &c)
     }
 }
 
-void addScriptExtentions(Canvas *canvas) {
-    QScriptEngine *engine = canvas->scriptEngine();
+void addScriptExtentions(Game *game) {
+    QScriptEngine *engine = game->scriptEngine();
 
     scriptRegisterQObjectMetaType<RandomUtil*>(engine);
     scriptRegisterQObjectMetaType<GameTime*>(engine);
@@ -80,10 +80,10 @@ void addScriptExtentions(Canvas *canvas) {
 
     // add global properties and functions
     QScriptValue globalObject = engine->globalObject();
-    globalObject.setProperty("Random", engine->newQObject(new RandomUtil(canvas)));
-    QScriptValue gameObject = engine->newQObject(canvas);
+    globalObject.setProperty("Random", engine->newQObject(new RandomUtil(game)));
+    QScriptValue gameObject = engine->newQObject(game);
     globalObject.setProperty("Game", gameObject);
-    gameObject.setProperty("Time", engine->newQObject(&canvas->gameTime()));
+    gameObject.setProperty("Time", engine->newQObject(&game->gameTime()));
 
     // Vector2
     qScriptRegisterMetaType(engine, vector2ToScriptValue, vector2FromScriptValue);

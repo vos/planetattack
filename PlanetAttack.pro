@@ -12,8 +12,9 @@ TEMPLATE = app
 include(jsedit/jsedit.pri)
 
 HEADERS += \
-    mainwindow.h \
+    game.h \
     canvas.h \
+    mainwindow.h \
     planet.h \
     ship.h \
     spaceobject.h \
@@ -38,8 +39,9 @@ HEADERS += \
     xmlscenarioserializer.h
 
 SOURCES += main.cpp \
-    mainwindow.cpp \
+    game.cpp \
     canvas.cpp \
+    mainwindow.cpp \
     planet.cpp \
     ship.cpp \
     spaceobject.cpp \

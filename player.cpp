@@ -95,6 +95,7 @@ void Player::addShip(Ship *ship)
         return;
     }
     m_ships.insert(ship);
+    emit game()->resourcesTransferInitiated(ship);
 }
 
 void Player::removeShip(Ship *ship)

@@ -76,6 +76,9 @@ signals:
     void planetAdded(Planet *planet);
     void planetRemoved(Planet *planet);
     void planetChanged(Planet *planet, Planet::ChangeType changeType);
+    void resourcesTransferInitiated(Ship *ship);
+
+    friend void Player::addShip(Ship *ship);
 
 public slots:
     void startGameLoop();

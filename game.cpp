@@ -8,7 +8,6 @@
 #include "scriptextensions.h"
 
 #include "computerplayer.h"
-#include "planet.h"
 #include "ship.h"
 #include "randomutil.h"
 
@@ -49,7 +48,7 @@ void Game::setMode(Game::Mode mode)
     if (mode == m_mode)
         return;
     m_mode = mode;
-    emit modeChanged();
+    emit modeChanged(mode);
 }
 
 void Game::setUpdateLimit(int fps)
@@ -62,22 +61,32 @@ void Game::setUpdateInterval(int msec)
     m_timer.setInterval(msec);
 }
 
-void Game::addPlayer(Player *player)
+bool Game::addPlayer(Player *player)
 {
     if (player == NULL) {
         qDebug("Game::addPlayer() player cannot be null");
-        return;
+        return false;
+    }
+    if (m_players.contains(player)) {
+        qDebug("Game::addPlayer() player already added: %s", qPrintable(player->name()));
+        return false;
     }
     m_players.insert(player);
+    connect(player, SIGNAL(changed(Player::ChangeType)), SLOT(player_changed(Player::ChangeType)), Qt::DirectConnection);
     emit playerAdded(player);
+    return true;
 }
 
 bool Game::removePlayer(Player *player)
 {
     if (player == NULL || m_players.count() <= 1) // don't remove the last player
         return false;
-    m_players.remove(player);
+    if (!m_players.remove(player)) {
+        qDebug("Game::removePlayer() player not removed: %s", qPrintable(player->name()));
+        return false;
+    }
     emit playerRemoved(player); // emit synchronous
+    disconnect(player);
     delete player;
     return true;
 }
@@ -86,19 +95,26 @@ void Game::clearPlayers()
 {
     foreach (Player *player, m_players) {
         emit playerRemoved(player); // emit synchronous
+        disconnect(player);
     }
     qDeleteAll(m_players);
     m_players.clear();
 }
 
-void Game::addPlanet(Planet *planet)
+bool Game::addPlanet(Planet *planet)
 {
     if (planet == NULL) {
         qDebug("Game::addPlanet() planet cannot be null");
-        return;
+        return false;
+    }
+    if (m_planets.contains(planet)) {
+        qDebug("Game::addPlanet() planet already added: position = %lf, %lf", planet->position().x(), planet->position().y());
+        return false;
     }
     m_planets.insert(planet);
+    connect(planet, SIGNAL(changed(Planet::ChangeType)), SLOT(planet_changed(Planet::ChangeType)), Qt::DirectConnection);
     emit planetAdded(planet);
+    return true;
 }
 
 Planet* Game::addPlanet(const QVector2D &position, qreal radius, qreal resources)
@@ -108,15 +124,10 @@ Planet* Game::addPlanet(const QVector2D &position, qreal radius, qreal resources
     return planet;
 }
 
-Planet* Game::addPlanet(qreal xpos, qreal ypos, qreal radius, qreal resources)
-{
-    return addPlanet(QVector2D(xpos, ypos), radius, resources);
-}
-
-void Game::removePlanet(Planet *planet)
+bool Game::removePlanet(Planet *planet)
 {
     if (planet == NULL)
-        return;
+        return false;
     foreach (Player *player, m_players) {
         if (player->target() == planet) {
             player->setTarget(NULL);
@@ -128,15 +139,21 @@ void Game::removePlanet(Planet *planet)
         }
         player->removePlanet(planet);
     }
-    m_planets.remove(planet); // emit synchronous
-    emit planetRemoved(planet);
+    if (!m_planets.remove(planet)) {
+        qDebug("Game::removePlanet() planet not removed: position = %lf, %lf", planet->position().x(), planet->position().y());
+        return false;
+    }
+    emit planetRemoved(planet); // emit synchronous
+    disconnect(planet);
     delete planet;
+    return true;
 }
 
 void Game::clearPlanets()
 {
     foreach (Planet *planet, m_planets) {
         emit planetRemoved(planet); // emit synchronous
+        disconnect(planet);
     }
     qDeleteAll(m_planets);
     m_planets.clear();
@@ -198,4 +215,20 @@ void Game::timer_timeout()
 
     m_gameTime.update();
     emit updated();
+}
+
+void Game::player_changed(Player::ChangeType changeType)
+{
+    Player *player = qobject_cast<Player*>(sender());
+    Q_ASSERT(player);
+//    qDebug("Game::player_changed() %s -> %d", qPrintable(player->name()), changeType);
+    emit playerChanged(player, changeType);
+}
+
+void Game::planet_changed(Planet::ChangeType changeType)
+{
+    Planet *planet = qobject_cast<Planet*>(sender());
+    Q_ASSERT(planet);
+//    qDebug("Game::planet_changed() %p -> %d", planet, changeType);
+    emit planetChanged(planet, changeType);
 }

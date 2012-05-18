@@ -30,6 +30,7 @@ void Player::setName(const QString &name)
         return;
     QString oldName = m_name;
     m_name = name;
+    emit changed(NameChange);
     emit nameChanged(oldName, name);
 }
 
@@ -44,6 +45,15 @@ void Player::setColor(const QColor &color)
     foreach (Ship *ship, m_ships) {
         ship->setColor(color);
     }
+    emit changed(ColorChange);
+}
+
+void Player::setResourceFactor(qreal factor)
+{
+    if (factor == m_resourceFactor) // TODO: use small epsilon?
+        return;
+    m_resourceFactor = qBound(0.0, factor, 1.0);
+    emit changed(ResourceFactorChange);
 }
 
 void Player::addPlanet(Planet *planet)
@@ -63,11 +73,6 @@ Planet *Player::addPlanet(const QVector2D &position, qreal radius, qreal resourc
     game()->addPlanet(planet);
     m_planets.insert(planet);
     return planet;
-}
-
-Planet* Player::addPlanet(qreal xpos, qreal ypos, qreal radius, qreal resources)
-{
-    return addPlanet(QVector2D(xpos, ypos), radius, resources);
 }
 
 void Player::removePlanet(Planet *planet)

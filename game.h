@@ -13,8 +13,8 @@ class QScriptEngine;
 class QScriptEngineDebugger;
 QT_END_NAMESPACE
 
-class Player;
-class Planet;
+#include "player.h"
+#include "planet.h"
 
 class Game : public QObject
 {
@@ -46,16 +46,15 @@ public:
 
     inline QSet<Player*>& players() { return m_players; }
     inline int playerCount() const { return m_players.count(); }
-    void addPlayer(Player *player);
+    bool addPlayer(Player *player);
     bool removePlayer(Player *player);
     void clearPlayers();
 
     inline QSet<Planet*>& planets() { return m_planets; }
     inline int planetCount() const { return m_planets.count(); }
-    void addPlanet(Planet *planet);
+    bool addPlanet(Planet *planet);
     Planet* addPlanet(const QVector2D &position, qreal radius = 50.0, qreal resources = 0.0);
-    Planet* addPlanet(qreal xpos, qreal ypos, qreal radius = 50.0, qreal resources = 0.0);
-    void removePlanet(Planet *planet);
+    bool removePlanet(Planet *planet);
     void clearPlanets();
 
     inline QScriptEngine* scriptEngine() const { return m_scriptEngine; }
@@ -70,13 +69,13 @@ public:
 
 signals:
     void updated(); // game logic updated
-    void modeChanged();
+    void modeChanged(Game::Mode mode);
     void playerAdded(Player *player);
     void playerRemoved(Player *player);
-    void playerChanged(Player *player); // TODO: emit signal
+    void playerChanged(Player *player, Player::ChangeType changeType);
     void planetAdded(Planet *planet);
     void planetRemoved(Planet *planet);
-    void planetChanged(Planet *planet); // TODO: emit signal
+    void planetChanged(Planet *planet, Planet::ChangeType changeType);
 
 public slots:
     void startGameLoop();
@@ -84,6 +83,8 @@ public slots:
 
 private slots:
     void timer_timeout();
+    void player_changed(Player::ChangeType changeType);
+    void planet_changed(Planet::ChangeType changeType);
 
 private:
     static const QString ModeStrings[];

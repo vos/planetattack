@@ -17,11 +17,15 @@ class Planet : public SpaceObject
 public:
     Planet(const QVector2D& position, qreal radius = 50.0, qreal resources = 0.0, const QColor &color = Qt::darkGray, Player *parent = NULL);
 
+    void setPosition(const QVector2D &position);
+    void setResources(qreal resources);
+    void setColor(const QColor &color = Qt::darkGray);
+
     inline qreal radius() const { return m_radius; }
-    inline void setRadius(qreal radius) { m_radius = radius; }
+    void setRadius(qreal radius);
 
     inline qreal productionFactor() const { return m_productionFactor; }
-    inline void setProductionFactor(qreal factor) { m_productionFactor = factor; }
+    void setProductionFactor(qreal factor);
 
     inline bool isNeutral() const { return !hasPlayer(); }
     bool setPlayer(Player *player);
@@ -30,6 +34,18 @@ public:
     Q_INVOKABLE Ship* transferResourcesTo(Planet *target);
 
     QRect rect() const;
+
+    enum ChangeType {
+        PositionChange,
+        RadiusChange,
+        ResourcesChange,
+        ColorChange,
+        ProductionFactorChange,
+        PlayerChange
+    };
+
+signals:
+    void changed(Planet::ChangeType changeType);
 
 public slots:
     void update(const GameTime &gameTime);

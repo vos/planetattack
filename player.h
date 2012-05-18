@@ -35,13 +35,12 @@ public:
     inline bool isComputer() const { return !m_human; }
 
     inline qreal resourceFactor() const { return m_resourceFactor; }
-    inline void setResourceFactor(qreal factor = 0.5) { m_resourceFactor = qBound(0.0, factor, 1.0); }
+    void setResourceFactor(qreal factor = 0.5);
 
     inline int planetCount() const { return m_planets.count(); }
     inline QSet<Planet*>& planets() { return m_planets; }
     void addPlanet(Planet *planet);
     Planet* addPlanet(const QVector2D &position, qreal radius = 50.0, qreal resources = 0.0);
-    Planet* addPlanet(qreal xpos, qreal ypos, qreal radius = 50.0, qreal resources = 0.0);
     void removePlanet(Planet *planet);
 
     inline QSet<Planet*>& selectedPlanets() { return m_selectedPlanets; }
@@ -68,7 +67,14 @@ public:
     Q_INVOKABLE QSet<Planet*> getOtherPlanets() const;
     Q_INVOKABLE Planet* getRandomOtherPlanet() const;
 
+    enum ChangeType {
+        NameChange,
+        ColorChange,
+        ResourceFactorChange
+    };
+
 signals:
+    void changed(Player::ChangeType changeType);
     void nameChanged(const QString &oldName, const QString &newName);
 
 protected:

@@ -4,8 +4,9 @@
 #include <QMainWindow>
 #include <QHash>
 
+#include "game.h"
+
 class Canvas;
-class Game;
 class PropertyEditor;
 
 namespace Ui {
@@ -21,7 +22,7 @@ public:
     ~MainWindow();
 
 private slots:
-    void game_modeChanged();
+    void game_modeChanged(Game::Mode mode);
     void canvas_selectionChanged(QObject *o);
     void saveButton_clicked();
     void player_nameChanged(const QString &oldName, const QString &newName);

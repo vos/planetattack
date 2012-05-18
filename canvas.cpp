@@ -19,7 +19,7 @@ Canvas::Canvas(QWidget *parent) :
     Canvas::s_instance = this;
 
     m_game = new Game(this);
-    connect(m_game, SIGNAL(updated()), SLOT(update()));
+    connect(m_game, SIGNAL(updated()), SLOT(repaint()));
     connect(m_game, SIGNAL(playerRemoved(Player*)), SLOT(game_playerRemoved(Player*)), Qt::DirectConnection);
     
     m_painter.begin(this);

@@ -15,6 +15,46 @@ Planet::Planet(const QVector2D& position, qreal radius, qreal resources, const Q
     m_velocity = -90.0; // degrees per second
 }
 
+void Planet::setPosition(const QVector2D &position)
+{
+    if (position == m_position)
+        return;
+    m_position = position;
+    emit changed(PositionChange);
+}
+
+void Planet::setResources(qreal resources)
+{
+    if (resources == m_resources)
+        return;
+    m_resources = resources;
+    emit changed(ResourcesChange);
+}
+
+void Planet::setColor(const QColor &color)
+{
+    if (color == m_color)
+        return;
+    m_color = color;
+    emit changed(ColorChange);
+}
+
+void Planet::setRadius(qreal radius)
+{
+    if (radius == m_radius)
+        return;
+    m_radius = radius;
+    emit changed(RadiusChange);
+}
+
+void Planet::setProductionFactor(qreal factor)
+{
+    if (factor == m_productionFactor)
+        return;
+    m_productionFactor = factor;
+    emit changed(ProductionFactorChange);
+}
+
 bool Planet::setPlayer(Player *p)
 {
     if (p == player())
@@ -27,6 +67,7 @@ bool Planet::setPlayer(Player *p)
         setParent(NULL);
         setColor();
     }
+    emit changed(PlayerChange);
     return true;
 }
 
@@ -44,7 +85,7 @@ Ship* Planet::transferResourcesTo(Planet *target, qreal resourceFactor)
     int res = m_resources * resourceFactor;
     if (res <= 0)
         return NULL;
-    m_resources -= res;
+    (void)subtractResources(res);
     Ship *ship = new Ship(m_position, target, res, m_color, owner);
     owner->addShip(ship);
     return ship;
@@ -65,7 +106,7 @@ QRect Planet::rect() const
 void Planet::update(const GameTime &gameTime)
 {
     if (!isNeutral()) {
-        m_resources += m_radius * m_productionFactor * gameTime.elapsedSeconds();
+        (void)addResources(m_radius * m_productionFactor * gameTime.elapsedSeconds());
     }
     m_angle += m_velocity * m_productionFactor * gameTime.elapsedSeconds();
     if (m_angle > 360) m_angle = 0.0;

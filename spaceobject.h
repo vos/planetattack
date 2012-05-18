@@ -20,15 +20,15 @@ public:
     SpaceObject(const QVector2D& position = QVector2D(), qreal resources = 0.0, const QColor &color = Qt::darkGray, Player *parent = NULL);
 
     inline const QVector2D& position() const { return m_position; }
-    inline void setPosition(const QVector2D &position) { m_position = position; }
+    virtual void setPosition(const QVector2D &position) { m_position = position; }
 
     inline qreal resources() const { return m_resources; }
-    inline void setResources(qreal resources) { m_resources = resources; }
-    inline qreal addResources(qreal resources) { m_resources += resources; return m_resources; }
-    inline qreal subtractResources(qreal resources) { m_resources -= resources; return m_resources; }
+    virtual void setResources(qreal resources) { m_resources = resources; }
+    inline qreal addResources(qreal resources) { setResources(m_resources + resources); return m_resources; }
+    inline qreal subtractResources(qreal resources) { setResources(m_resources - resources); return m_resources; }
 
     inline const QColor& color() const { return m_color; }
-    inline void setColor(const QColor &color = Qt::darkGray) { m_color = color; }
+    virtual void setColor(const QColor &color = Qt::darkGray) { m_color = color; }
 
     inline Player* player() const { return (Player*)parent(); }
     virtual bool setPlayer(Player *player);

@@ -11,7 +11,6 @@
 #include <QFileDialog>
 
 #include "canvas.h"
-#include "game.h"
 #include "computerplayer.h"
 #include "stringpropertyeditor.h"
 #include "vector2dpropertyeditor.h"
@@ -44,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QLayout *layout = new QVBoxLayout;
     ui->editorWidget->setLayout(layout);
 
-    connect(m_game, SIGNAL(modeChanged()), SLOT(game_modeChanged()));
+    connect(m_game, SIGNAL(modeChanged(Game::Mode)), SLOT(game_modeChanged(Game::Mode)));
     connect(m_canvas, SIGNAL(selectionChanged(QObject*)), SLOT(canvas_selectionChanged(QObject*)));
 
     m_canvas->setFocus();
@@ -60,11 +59,9 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::game_modeChanged()
+void MainWindow::game_modeChanged(Game::Mode mode)
 {
-    if (ui->modeComboBox->currentIndex() == m_game->mode())
-        return;
-    ui->modeComboBox->setCurrentIndex(m_game->mode());
+    ui->modeComboBox->setCurrentIndex(mode);
 }
 
 void MainWindow::clearPropertyEditor()

@@ -139,3 +139,24 @@ void Planet::draw(QPainter &painter)
     painter.setPen(Qt::white);
     painter.drawText(boundingRect, Qt::AlignCenter, text);
 }
+
+#ifndef QT_NO_DATASTREAM
+QDataStream& operator<<(QDataStream &stream, const Planet &planet)
+{
+    return stream << planet.m_position
+                  << planet.m_radius
+                  << planet.m_resources
+                  << planet.m_color
+                  << planet.m_productionFactor;
+}
+
+QDataStream& operator>>(QDataStream &stream, Planet &planet)
+{
+    return stream >> planet.m_position
+                  >> planet.m_radius
+                  >> planet.m_resources
+                  >> planet.m_color
+                  >> planet.m_productionFactor;
+}
+
+#endif

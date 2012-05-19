@@ -5,6 +5,7 @@
 
 class Game;
 class Player;
+class Planet;
 
 class MultiplayerClient : public QTcpSocket
 {
@@ -18,6 +19,8 @@ private slots:
     void socket_disconnected();
     void socket_readyRead();
     void socket_error(QAbstractSocket::SocketError error);
+
+    void game_planetAdded(Planet *planet);
 
 private:
     Game *m_game;

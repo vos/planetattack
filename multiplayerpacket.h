@@ -14,6 +14,7 @@ public:
         ConnectionRefused, // server -> client
         PlayerJoin, // client -> server
         PlayerDisconnect, // client -> server
+        PlanetAdded, // client -> server -> other clients
         IllegalPacketType
     };
     static QString typeString(PacketType type);

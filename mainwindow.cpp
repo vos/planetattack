@@ -62,6 +62,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    if (m_client != NULL)
+        delete m_client;
     if (m_server != NULL)
         delete m_server;
     qDeleteAll(m_propertyEditorMap.values());

@@ -13,6 +13,8 @@ MultiplayerClient::MultiplayerClient(Game *game, Player *player, QObject *parent
     connect(this, SIGNAL(disconnected()), SLOT(socket_disconnected()));
     connect(this, SIGNAL(readyRead()), SLOT(socket_readyRead()));
     connect(this, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(socket_error(QAbstractSocket::SocketError)));
+
+    connect(m_game, SIGNAL(planetAdded(Planet*)), SLOT(game_planetAdded(Planet*)));
 }
 
 void MultiplayerClient::socket_connected()
@@ -66,6 +68,11 @@ void MultiplayerClient::socket_readyRead()
         case MultiplayerPacket::ConnectionRefused:
             // TODO
             break;
+        case MultiplayerPacket::PlanetAdded: {
+            Planet *planet = new Planet;
+            in >> *planet;
+            m_game->addPlanet(planet);
+        }
         default:
             qWarning("MultiplayerClient::socket_readyRead(): Illegal PacketType %i", packetType);
             return;
@@ -78,4 +85,11 @@ void MultiplayerClient::socket_error(QAbstractSocket::SocketError error)
 #ifdef MULTIPLAYERCLIENT_DEBUG
     qDebug("MultiplayerClient::socket_error(%i) => %s", error, qPrintable(errorString()));
 #endif
+}
+
+void MultiplayerClient::game_planetAdded(Planet *planet)
+{
+    MultiplayerPacket packet(MultiplayerPacket::PlanetAdded);
+    packet.stream() << *planet;
+    packet.send(this);
 }

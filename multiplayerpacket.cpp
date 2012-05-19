@@ -7,6 +7,7 @@ const char* MultiplayerPacket::PacketTypeNames[] = {
     "ConnectionRefused",
     "PlayerJoin",
     "PlayerDisconnect",
+    "PlanetAdded",
     "IllegalPacketType"
 };
 

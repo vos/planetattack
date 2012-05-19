@@ -110,9 +110,28 @@ void MultiplayerServer::client_readyRead()
         case MultiplayerPacket::PlayerDisconnect:
             socket->disconnectFromHost();
             break;
+        case MultiplayerPacket::PlanetAdded: {
+            Planet *planet = new Planet;
+            in >> *planet;
+            m_game->addPlanet(planet);
+            // resend packet to all other clients
+            MultiplayerPacket packet(MultiplayerPacket::PlanetAdded);
+            packet.stream() << *planet;
+            sendPacketToOtherClients(packet, socket);
+            break;
+        }
         default:
             qWarning("MultiplayerServer::client_readyRead(): Illegal PacketType %i", packetType);
             return;
+        }
+    }
+}
+
+void MultiplayerServer::sendPacketToOtherClients(MultiplayerPacket &packet, const QTcpSocket *sender)
+{
+    foreach (QTcpSocket *client, m_clients.keys()) {
+        if (client != sender) {
+            packet.send(client);
         }
     }
 }

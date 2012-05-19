@@ -4,6 +4,8 @@
 #include <QTcpServer>
 #include <QHash>
 
+#include "multiplayerpacket.h"
+
 class Game;
 class Player;
 
@@ -31,6 +33,7 @@ private:
     QHash<QTcpSocket*, Client*> m_clients;
 
     void incomingConnection(int socketDescriptor);
+    void sendPacketToOtherClients(MultiplayerPacket &packet, const QTcpSocket *sender);
 
 };
 

@@ -15,7 +15,7 @@ class Planet : public SpaceObject
     Q_PROPERTY(bool neutral READ isNeutral DESIGNABLE false)
 
 public:
-    Planet(const QVector2D& position, qreal radius = 50.0, qreal resources = 0.0, const QColor &color = Qt::darkGray, Player *parent = NULL);
+    Planet(const QVector2D& position = QVector2D(), qreal radius = 50.0, qreal resources = 0.0, const QColor &color = Qt::darkGray, Player *parent = NULL);
 
     void setPosition(const QVector2D &position);
     void setResources(qreal resources);
@@ -44,6 +44,11 @@ public:
         PlayerChange
     };
 
+#ifndef QT_NO_DATASTREAM
+    friend QDataStream& operator<<(QDataStream &stream, const Planet &planet);
+    friend QDataStream& operator>>(QDataStream &stream, Planet &planet);
+#endif
+
 signals:
     void changed(Planet::ChangeType changeType);
 
@@ -60,6 +65,11 @@ private:
     qreal m_velocity;
 
 };
+
+#ifndef QT_NO_DATASTREAM
+QDataStream& operator<<(QDataStream &stream, const Planet &planet);
+QDataStream& operator>>(QDataStream &stream, Planet &planet);
+#endif
 
 Q_DECLARE_METATYPE(Planet*)
 Q_DECLARE_METATYPE(QSet<Planet*>)

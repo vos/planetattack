@@ -96,8 +96,8 @@ void Game::clearPlayers()
     foreach (Player *player, m_players) {
         emit playerRemoved(player); // emit synchronous
         disconnect(player);
+        delete player;
     }
-    qDeleteAll(m_players);
     m_players.clear();
 }
 
@@ -154,8 +154,8 @@ void Game::clearPlanets()
     foreach (Planet *planet, m_planets) {
         emit planetRemoved(planet); // emit synchronous
         disconnect(planet);
+        delete planet;
     }
-    qDeleteAll(m_planets);
     m_planets.clear();
 }
 
@@ -197,6 +197,7 @@ void Game::timer_timeout()
                 ship->update(m_gameTime);
                 if (ship->target() == NULL) {
                     player->removeShip(ship);
+                    emit resourcesTransferCompleted(ship);
                 }
             }
             if (player->isComputer()) {

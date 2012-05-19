@@ -77,6 +77,7 @@ signals:
     void planetRemoved(Planet *planet);
     void planetChanged(Planet *planet, Planet::ChangeType changeType);
     void resourcesTransferInitiated(Ship *ship);
+    void resourcesTransferCompleted(Ship *ship);
 
     friend void Player::addShip(Ship *ship);
 

@@ -3,12 +3,15 @@
 
 #include <QTcpSocket>
 
+class Game;
+class Player;
+
 class MultiplayerClient : public QTcpSocket
 {
     Q_OBJECT
 
 public:
-    explicit MultiplayerClient(QObject *parent = NULL);
+    explicit MultiplayerClient(Game *game, Player *player, QObject *parent = NULL);
 
 private slots:
     void socket_connected();
@@ -17,6 +20,8 @@ private slots:
     void socket_error(QAbstractSocket::SocketError error);
 
 private:
+    Game *m_game;
+    Player *m_player;
     quint32 m_packetSize;
 
 };

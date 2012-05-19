@@ -32,7 +32,7 @@ Canvas::Canvas(QWidget *parent) :
     m_factorSelectionActive = false;
     m_backgroundImage = QImage("background.jpg");
     
-    m_activePlayer = new HumanPlayer("Alex", Qt::blue, m_game);
+    m_activePlayer = new HumanPlayer("Alex", Qt::blue);
     m_game->addPlayer(m_activePlayer);
     
     m_globalAccess = false;

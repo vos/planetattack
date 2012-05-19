@@ -119,16 +119,16 @@ bool XmlScenarioSerializer::deserialize(const QString &fileName, XmlScenarioSeri
         if (!intelligenceFileName.isEmpty() && QFile::exists(intelligenceFileName)) {
             ScriptedPlayerIntelligence *intelligence = new ScriptedPlayerIntelligence(Game::instance()->scriptEngine());
             intelligence->setIntelligenceProgramFile(intelligenceFileName);
-            player = new ComputerPlayer(name, color, intelligence, Game::instance());
+            player = new ComputerPlayer(name, color, intelligence);
         } else {
             QDomElement intelligenceElement = playerElement.firstChildElement("intelligence");
             if (!intelligenceElement.isNull()) {
                 QDomCDATASection intelligenceData = intelligenceElement.firstChild().toCDATASection();
                 ScriptedPlayerIntelligence *intelligence = new ScriptedPlayerIntelligence(Game::instance()->scriptEngine());
                 intelligence->setIntelligenceProgram(intelligenceData.data());
-                player = new ComputerPlayer(name, color, intelligence, Game::instance());
+                player = new ComputerPlayer(name, color, intelligence);
             } else {
-                player = new HumanPlayer(name, color, Game::instance());
+                player = new HumanPlayer(name, color);
             }
         }
         player->setResourceFactor(playerElement.attribute("resourceFactor").toDouble());

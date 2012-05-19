@@ -71,6 +71,7 @@ bool Game::addPlayer(Player *player)
         qDebug("Game::addPlayer() player already added: %s", qPrintable(player->name()));
         return false;
     }
+    player->setParent(this);
     m_players.insert(player);
     connect(player, SIGNAL(changed(Player::ChangeType)), SLOT(player_changed(Player::ChangeType)), Qt::DirectConnection);
     emit playerAdded(player);

@@ -5,6 +5,8 @@
 const char* MultiplayerPacket::PacketTypeNames[] = {
     "ConnectionAccepted",
     "ConnectionRefused",
+    "PlayerJoin",
+    "PlayerDisconnect",
     "IllegalPacketType"
 };
 

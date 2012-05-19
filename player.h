@@ -5,6 +5,7 @@
 #include <QSet>
 #include <QColor>
 #include <QMetaType>
+#include <QDebug>
 
 class Game;
 class Planet;
@@ -22,7 +23,7 @@ class Player : public QObject
     Q_PROPERTY(int shipCount READ shipCount DESIGNABLE false)
 
 public:
-    Player(const QString &name, const QColor &color, bool human = true, Game *parent = NULL);
+    Player(const QString &name = QString(), const QColor &color = Qt::white, bool human = true, Game *parent = NULL);
     virtual ~Player();
 
     inline const QString& name() const { return m_name; }
@@ -73,6 +74,11 @@ public:
         ResourceFactorChange
     };
 
+#ifndef QT_NO_DATASTREAM
+    friend QDataStream& operator<<(QDataStream &stream, const Player &player);
+    friend QDataStream& operator>>(QDataStream &stream, Player &player);
+#endif
+
 signals:
     void changed(Player::ChangeType changeType);
     void nameChanged(const QString &oldName, const QString &newName);
@@ -92,6 +98,15 @@ protected:
     inline Game* game() const { return (Game*)parent(); }
 
 };
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug, const Player &player);
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QDataStream& operator<<(QDataStream &stream, const Player &player);
+QDataStream& operator>>(QDataStream &stream, Player &player);
+#endif
 
 Q_DECLARE_METATYPE(Player*)
 Q_DECLARE_METATYPE(QSet<Player*>)

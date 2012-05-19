@@ -7,14 +7,13 @@
 #include <QElapsedTimer>
 
 #include "gametime.h"
+#include "player.h"
+#include "planet.h"
 
 QT_BEGIN_NAMESPACE
 class QScriptEngine;
 class QScriptEngineDebugger;
 QT_END_NAMESPACE
-
-#include "player.h"
-#include "planet.h"
 
 class Game : public QObject
 {

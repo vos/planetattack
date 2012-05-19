@@ -2,10 +2,19 @@
 
 #include <QTcpSocket>
 #include "multiplayerpacket.h"
+#include "game.h"
 
-MultiplayerServer::MultiplayerServer(QObject *parent) :
-    QTcpServer(parent)
+MultiplayerServer::MultiplayerServer(Game *game, QObject *parent) :
+    QTcpServer(parent),
+    m_game(game)
 {
+}
+
+MultiplayerServer::~MultiplayerServer()
+{
+    foreach (QTcpSocket *socket, m_clients.keys()) {
+        socket->disconnectFromHost();
+    }
 }
 
 void MultiplayerServer::incomingConnection(int socketDescriptor)
@@ -38,12 +47,18 @@ void MultiplayerServer::client_disconnected()
     QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
     Q_ASSERT(socket);
 
+    Client *client = m_clients.value(socket);
+    Player *player = client->player;
+
 #ifdef MULTIPLAYERSERVER_DEBUG
-    qDebug("MultiplayerServer::client_disconnected(): %s:%i",
+    QString name = player ? player->name() : "[no player object]";
+    qDebug("MultiplayerServer::client_disconnected(): '%s' (%s:%i)", qPrintable(name),
            qPrintable(socket->peerAddress().toString()), socket->peerPort());
 #endif
 
-    Client *client = m_clients.value(socket);
+    if (player != NULL) {
+        m_game->removePlayer(player);
+    }
     m_clients.remove(socket);
     delete client;
 }
@@ -60,29 +75,45 @@ void MultiplayerServer::client_readyRead()
     Client *client = m_clients.value(socket);
     QDataStream in(socket);
     in.setVersion(QDataStream::Qt_4_8);
-    if (client->packetSize == 0) {
-        if (socket->bytesAvailable() < (int)sizeof(quint32)) // packet size
+    qint64 bytesAvailable;
+    while ((bytesAvailable = socket->bytesAvailable()) > 0) {
+        if (client->packetSize == 0) {
+            if (bytesAvailable < (int)sizeof(quint32)) // packet size
+                return;
+            in >> client->packetSize;
+        }
+        if (bytesAvailable < client->packetSize)
             return;
-        in >> client->packetSize;
-    }
-    if (socket->bytesAvailable() < client->packetSize)
-        return;
-    client->packetSize = 0; // reset packet size
+        client->packetSize = 0; // reset packet size
 
-    // read packet type
-    qint32 packetType; // MultiplayerPacket::PacketType value
-    in >> packetType;
+        // read packet type
+        qint32 packetType; // MultiplayerPacket::PacketType value
+        in >> packetType;
 
 #ifdef MULTIPLAYERSERVER_DEBUG
-    qDebug("PacketType %i (%s) from %s:%i", packetType,
-           qPrintable(MultiplayerPacket::typeString((MultiplayerPacket::PacketType)packetType)),
-           qPrintable(socket->peerAddress().toString()), socket->peerPort());
+        qDebug("PacketType %i (%s) from '%s' (%s:%i)", packetType,
+               qPrintable(MultiplayerPacket::typeString((MultiplayerPacket::PacketType)packetType)),
+               qPrintable(client->player ? client->player->name() : "[no player object]"),
+               qPrintable(socket->peerAddress().toString()), socket->peerPort());
 #endif
 
-    // TODO: read packet data
-    switch ((MultiplayerPacket::PacketType)packetType) {
-    default:
-        qWarning("MultiplayerServer::client_readyRead(): Illegal PacketType %i", packetType);
+        // read and handle packet data
+        switch ((MultiplayerPacket::PacketType)packetType) {
+        case MultiplayerPacket::PlayerJoin: {
+            Player *player = new Player;
+            in >> *player;
+            if (m_game->addPlayer(player)) {
+                client->player = player;
+            }
+            break;
+        }
+        case MultiplayerPacket::PlayerDisconnect:
+            socket->disconnectFromHost();
+            break;
+        default:
+            qWarning("MultiplayerServer::client_readyRead(): Illegal PacketType %i", packetType);
+            return;
+        }
     }
 }
 

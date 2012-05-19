@@ -165,3 +165,26 @@ Planet* Player::getRandomOtherPlanet() const
         return NULL;
     return *RandomUtil::randomElement(otherPlanets);
 }
+
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const Player &player)
+{
+    dbg.nospace() << "Player(name = " << player.name()
+                  << ", color = " << player.color()
+                  << ", resourceFactor = " << player.resourceFactor() << ')';
+    return dbg.space();
+}
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QDataStream& operator<<(QDataStream &stream, const Player &player)
+{
+    return stream << player.m_name << player.m_color << player.m_resourceFactor;
+}
+
+QDataStream& operator>>(QDataStream &stream, Player &player)
+{
+    return stream >> player.m_name >> player.m_color >> player.m_resourceFactor;
+}
+#endif

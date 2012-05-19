@@ -3,12 +3,14 @@
 
 #include <QMainWindow>
 #include <QHash>
+#include <QAbstractSocket>
 
 #include "game.h"
 
 class Canvas;
 class PropertyEditor;
 class MultiplayerServer;
+class MultiplayerClient;
 
 namespace Ui {
 class MainWindow;
@@ -24,6 +26,9 @@ public:
 
 private slots:
     void game_modeChanged(Game::Mode mode);
+    void game_playerAdded(Player *player);
+    void game_playerRemoved(Player *player);
+
     void canvas_selectionChanged(QObject *o);
     void saveButton_clicked();
     void player_nameChanged(const QString &oldName, const QString &newName);
@@ -43,12 +48,17 @@ private slots:
     void on_action_createServer_triggered();
     void on_action_ConnectToServer_triggered();
 
+    void client_connected();
+    void client_disconnected();
+    void client_error(QAbstractSocket::SocketError error);
+
 private:
     Ui::MainWindow *ui;
     Canvas *m_canvas;
     Game *m_game;
     QString m_scenarioFileName;
     MultiplayerServer *m_server;
+    MultiplayerClient *m_client;
     QObject *m_selectedObject;
     QHash<QString, PropertyEditor*> m_propertyEditorMap;
 

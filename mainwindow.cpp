@@ -9,6 +9,7 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QInputDialog>
 
 #include "canvas.h"
 #include "computerplayer.h"
@@ -28,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     m_server(NULL),
+    m_client(NULL),
     m_selectedObject(NULL)
 {
     ui->setupUi(this);
@@ -47,6 +49,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->editorWidget->setLayout(layout);
 
     connect(m_game, SIGNAL(modeChanged(Game::Mode)), SLOT(game_modeChanged(Game::Mode)));
+    connect(m_game, SIGNAL(playerAdded(Player*)), SLOT(game_playerAdded(Player*)));
+    connect(m_game, SIGNAL(playerRemoved(Player*)), SLOT(game_playerRemoved(Player*)));
+
     connect(m_canvas, SIGNAL(selectionChanged(QObject*)), SLOT(canvas_selectionChanged(QObject*)));
 
     m_canvas->setFocus();
@@ -57,6 +62,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    if (m_server != NULL)
+        delete m_server;
     qDeleteAll(m_propertyEditorMap.values());
     delete m_canvas;
     delete ui;
@@ -65,6 +72,29 @@ MainWindow::~MainWindow()
 void MainWindow::game_modeChanged(Game::Mode mode)
 {
     ui->modeComboBox->setCurrentIndex(mode);
+}
+
+void MainWindow::game_playerAdded(Player *player)
+{
+    QVariant playerVar;
+    playerVar.setValue(player);
+    ui->playerComboBox->addItem(player->name(), playerVar);
+    connect(player, SIGNAL(nameChanged(QString,QString)), SLOT(player_nameChanged(QString,QString)));
+
+    m_canvas->setActivePlayer(player);
+    ui->playerComboBox->setCurrentIndex(ui->playerComboBox->count()-1);
+    canvas_selectionChanged(player);
+}
+
+void MainWindow::game_playerRemoved(Player *player)
+{
+    QVariant playerVar;
+    playerVar.setValue(player);
+    int index = ui->playerComboBox->findData(playerVar);
+    ui->playerComboBox->removeItem(index);
+    if (m_selectedObject == player) {
+        canvas_selectionChanged(NULL);
+    }
 }
 
 void MainWindow::clearPropertyEditor()
@@ -194,25 +224,13 @@ void MainWindow::on_removePlayerButton_clicked()
 {
     int index = ui->playerComboBox->currentIndex();
     Player *player = ui->playerComboBox->itemData(index).value<Player*>();
-    if (m_selectedObject == player) {
-        canvas_selectionChanged(NULL);
-    }
-    if (m_game->removePlayer(player)) {
-        ui->playerComboBox->removeItem(index);
-    }
+    m_game->removePlayer(player);
 }
 
 void MainWindow::on_addPlayerButton_clicked()
 {
-    Player *player = new ComputerPlayer("Player", Qt::white, NULL, m_game);
+    Player *player = new ComputerPlayer("Player");
     m_game->addPlayer(player);
-    m_canvas->setActivePlayer(player);
-    QVariant playerVar;
-    playerVar.setValue(player);
-    ui->playerComboBox->addItem(player->name(), playerVar);
-    connect(player, SIGNAL(nameChanged(QString,QString)), SLOT(player_nameChanged(QString,QString)));
-    ui->playerComboBox->setCurrentIndex(ui->playerComboBox->count()-1);
-    canvas_selectionChanged(player);
 }
 
 void MainWindow::on_globalAccessCheckBox_toggled(bool checked)
@@ -297,22 +315,71 @@ void MainWindow::on_action_saveScenarioAs_triggered()
 
 void MainWindow::on_action_createServer_triggered()
 {
-    m_server = new MultiplayerServer(this);
-    if (m_server->listen(QHostAddress::Any, 54321)) {
-        qDebug("The server is listening on interface %s, port %i",
-               qPrintable(m_server->serverAddress().toString()), m_server->serverPort());
+    if (m_server == NULL) {
+        m_server = new MultiplayerServer(m_game, this);
+        if (m_server->listen(QHostAddress::Any, 54321)) {
+            statusBar()->showMessage(QString("The server is listening on interface %1, port %2")
+                                     .arg(m_server->serverAddress().toString())
+                                     .arg(m_server->serverPort()));
+            ui->action_createServer->setText("Close Server");
+        } else {
+            qCritical("Failed to start the server on interface %s, port %i: %s (error code %i)",
+                      qPrintable(m_server->serverAddress().toString()), m_server->serverPort(),
+                      qPrintable(m_server->errorString()), m_server->serverError());
+        }
     } else {
-        qCritical("Failed to start the server on interface %s, port %i: %s (error code %i)",
-                  qPrintable(m_server->serverAddress().toString()), m_server->serverPort(),
-                  qPrintable(m_server->errorString()), m_server->serverError());
+        if (m_server->isListening()) {
+            m_server->close();
+            delete m_server;
+            statusBar()->showMessage("Multiplayer server closed", 5000);
+        }
+        m_server = NULL;
+        ui->action_createServer->setText("Create Server");
     }
 }
 
 void MainWindow::on_action_ConnectToServer_triggered()
 {
-    MultiplayerClient *client = new MultiplayerClient(this);
-    connect(client, SIGNAL(disconnected()), client, SLOT(deleteLater()));
-    client->connectToHost("127.0.0.1", 54321);
+    if (m_client == NULL) {
+        bool ok;
+        QString hostAddress = QInputDialog::getText(this, "Connect to Server", "Host Address", QLineEdit::Normal, "127.0.0.1", &ok);
+        if (ok) {
+            m_client = new MultiplayerClient(m_game, m_canvas->activePlayer(), this);
+            connect(m_client, SIGNAL(connected()), SLOT(client_connected()));
+            connect(m_client, SIGNAL(disconnected()), SLOT(client_disconnected()));
+            connect(m_client, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(client_error(QAbstractSocket::SocketError)));
+            ui->action_ConnectToServer->setText("Connecting...");
+            ui->action_ConnectToServer->setEnabled(false);
+            m_client->connectToHost(hostAddress, 54321);
+        }
+    } else {
+        if (m_client->isOpen()) {
+            ui->action_ConnectToServer->setText("Disconnecting...");
+            ui->action_ConnectToServer->setEnabled(false);
+            m_client->disconnectFromHost(); // TODO: send proper packet
+        }
+    }
+}
+
+void MainWindow::client_connected()
+{
+    ui->action_ConnectToServer->setText("Disconnect from Server");
+    ui->action_ConnectToServer->setEnabled(true);
+}
+
+void MainWindow::client_disconnected()
+{
+    m_client->deleteLater();
+    m_client = NULL;
+    ui->action_ConnectToServer->setText("Connect to Server");
+    ui->action_ConnectToServer->setEnabled(true);
+}
+
+void MainWindow::client_error(QAbstractSocket::SocketError error)
+{
+    Q_UNUSED(error)
+    QMessageBox::warning(this, "Connect to Server Error", QString("Error while connecting to the multiplayer server:\n%1").arg(m_client->errorString()));
+    client_disconnected();
 }
 
 void MainWindow::updateTitle(const QString &subTitle)

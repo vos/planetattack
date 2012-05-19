@@ -10,8 +10,10 @@ class MultiplayerPacket
 {
 public:
     enum PacketType {
-        ConnectionAccepted,
-        ConnectionRefused,
+        ConnectionAccepted, // server -> client
+        ConnectionRefused, // server -> client
+        PlayerJoin, // client -> server
+        PlayerDisconnect, // client -> server
         IllegalPacketType
     };
     static QString typeString(PacketType type);

@@ -1,9 +1,12 @@
 #include "multiplayerclient.h"
 
 #include "multiplayerpacket.h"
+#include "game.h"
 
-MultiplayerClient::MultiplayerClient(QObject *parent) :
+MultiplayerClient::MultiplayerClient(Game *game, Player *player, QObject *parent) :
     QTcpSocket(parent),
+    m_game(game),
+    m_player(player),
     m_packetSize(0)
 {
     connect(this, SIGNAL(connected()), SLOT(socket_connected()));
@@ -34,34 +37,39 @@ void MultiplayerClient::socket_readyRead()
 
     QDataStream in(this);
     in.setVersion(QDataStream::Qt_4_8);
-    if (m_packetSize == 0) {
-        if (bytesAvailable() < (int)sizeof(quint32)) // packet size
+    while (bytesAvailable() > 0) {
+        if (m_packetSize == 0) {
+            if (bytesAvailable() < (int)sizeof(quint32)) // packet size
+                return;
+            in >> m_packetSize;
+        }
+        if (bytesAvailable() < m_packetSize)
             return;
-        in >> m_packetSize;
-    }
-    if (bytesAvailable() < m_packetSize)
-        return;
-    m_packetSize = 0; // reset packet size
+        m_packetSize = 0; // reset packet size
 
-    // read packet type
-    qint32 packetType; // MultiplayerPacket::PacketType value
-    in >> packetType;
+        // read packet type
+        qint32 packetType; // MultiplayerPacket::PacketType value
+        in >> packetType;
 
-#ifdef DEBUG
-    qDebug("PacketType = %i (%s)", packetType, qPrintable(MultiplayerPacket::typeString((MultiplayerPacket::PacketType)packetType)));
+#ifdef MULTIPLAYERCLIENT_DEBUG
+        qDebug("PacketType %i (%s)", packetType, qPrintable(MultiplayerPacket::typeString((MultiplayerPacket::PacketType)packetType)));
 #endif
 
-    // TODO: read packet data
-    switch ((MultiplayerPacket::PacketType)packetType) {
-    case MultiplayerPacket::ConnectionAccepted:
-        // TODO
-        disconnectFromHost();
-        break;
-    case MultiplayerPacket::ConnectionRefused:
-        // TODO
-        break;
-    default:
-        qWarning("MultiplayerClient::socket_readyRead(): Illegal PacketType %i", packetType);
+        // read and handle packet data
+        switch ((MultiplayerPacket::PacketType)packetType) {
+        case MultiplayerPacket::ConnectionAccepted: {
+            MultiplayerPacket packet(MultiplayerPacket::PlayerJoin);
+            packet.stream() << *m_player;
+            packet.send(this);
+            break;
+        }
+        case MultiplayerPacket::ConnectionRefused:
+            // TODO
+            break;
+        default:
+            qWarning("MultiplayerClient::socket_readyRead(): Illegal PacketType %i", packetType);
+            return;
+        }
     }
 }
 

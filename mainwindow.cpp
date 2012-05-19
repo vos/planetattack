@@ -18,6 +18,8 @@
 #include "playerintelligencepropertyeditor.h"
 
 #include "xmlscenarioserializer.h"
+#include "multiplayerserver.h"
+#include "multiplayerclient.h"
 
 #include <QDebug>
 #include <QScriptEngineDebugger>
@@ -25,6 +27,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
+    m_server(NULL),
     m_selectedObject(NULL)
 {
     ui->setupUi(this);
@@ -290,6 +293,26 @@ void MainWindow::on_action_saveScenarioAs_triggered()
         return;
     m_scenarioFileName = fileName;
     on_action_saveScenario_triggered();
+}
+
+void MainWindow::on_action_createServer_triggered()
+{
+    m_server = new MultiplayerServer(this);
+    if (m_server->listen(QHostAddress::Any, 54321)) {
+        qDebug("The server is listening on interface %s, port %i",
+               qPrintable(m_server->serverAddress().toString()), m_server->serverPort());
+    } else {
+        qCritical("Failed to start the server on interface %s, port %i: %s (error code %i)",
+                  qPrintable(m_server->serverAddress().toString()), m_server->serverPort(),
+                  qPrintable(m_server->errorString()), m_server->serverError());
+    }
+}
+
+void MainWindow::on_action_ConnectToServer_triggered()
+{
+    MultiplayerClient *client = new MultiplayerClient(this);
+    connect(client, SIGNAL(disconnected()), client, SLOT(deleteLater()));
+    client->connectToHost("127.0.0.1", 54321);
 }
 
 void MainWindow::updateTitle(const QString &subTitle)

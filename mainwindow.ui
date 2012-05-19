@@ -32,7 +32,15 @@
     <addaction name="action_saveScenario"/>
     <addaction name="action_saveScenarioAs"/>
    </widget>
+   <widget class="QMenu" name="menu_Multiplayer">
+    <property name="title">
+     <string>&amp;Multiplayer</string>
+    </property>
+    <addaction name="action_createServer"/>
+    <addaction name="action_ConnectToServer"/>
+   </widget>
    <addaction name="menu_File"/>
+   <addaction name="menu_Multiplayer"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -43,6 +51,9 @@
    </attribute>
    <addaction name="action_openScenario"/>
    <addaction name="action_saveScenario"/>
+   <addaction name="separator"/>
+   <addaction name="action_createServer"/>
+   <addaction name="action_ConnectToServer"/>
    <addaction name="separator"/>
    <addaction name="action_setFocus"/>
   </widget>
@@ -133,6 +144,19 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="action_createServer">
+   <property name="text">
+    <string>Create &amp;Server</string>
+   </property>
+  </action>
+  <action name="action_ConnectToServer">
+   <property name="text">
+    <string>&amp;Connect to Server</string>
+   </property>
+   <property name="toolTip">
+    <string>Connect to Server</string>
    </property>
   </action>
  </widget>

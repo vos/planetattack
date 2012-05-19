@@ -8,6 +8,7 @@
 
 class Canvas;
 class PropertyEditor;
+class MultiplayerServer;
 
 namespace Ui {
 class MainWindow;
@@ -39,11 +40,15 @@ private slots:
     void on_action_saveScenario_triggered();
     void on_action_saveScenarioAs_triggered();
 
+    void on_action_createServer_triggered();
+    void on_action_ConnectToServer_triggered();
+
 private:
     Ui::MainWindow *ui;
     Canvas *m_canvas;
     Game *m_game;
     QString m_scenarioFileName;
+    MultiplayerServer *m_server;
     QObject *m_selectedObject;
     QHash<QString, PropertyEditor*> m_propertyEditorMap;
 

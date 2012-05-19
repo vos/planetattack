@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT += core gui opengl script scripttools xml
+QT += core gui network opengl script scripttools xml
 
 TARGET = PlanetAttack
 TEMPLATE = app
@@ -36,7 +36,10 @@ HEADERS += \
     scriptwindow.h \
     scriptextensions.h \
     scenarioserializer.h \
-    xmlscenarioserializer.h
+    xmlscenarioserializer.h \
+    multiplayerserver.h \
+    multiplayerclient.h \
+    multiplayerpacket.h
 
 SOURCES += main.cpp \
     game.cpp \
@@ -59,10 +62,15 @@ SOURCES += main.cpp \
     scriptedplayerintelligence.cpp \
     randomutil.cpp \
     scriptwindow.cpp \
-    xmlscenarioserializer.cpp
+    xmlscenarioserializer.cpp \
+    multiplayerserver.cpp \
+    multiplayerclient.cpp \
+    multiplayerpacket.cpp
 
 FORMS += mainwindow.ui \
     scriptwindow.ui
 
 OTHER_FILES += README.md \
     scripts/random_ai.js
+
+Debug:DEFINES += DEBUG MULTIPLAYERSERVER_DEBUG MULTIPLAYERCLIENT_DEBUG

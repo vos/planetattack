@@ -12,8 +12,12 @@ public:
     enum PacketType {
         ConnectionAccepted, // server -> client
         ConnectionRefused, // server -> client
-        PlayerJoin, // client -> server
+        PlayerConnect, // client -> server
+        PlayerConnectAccepted, // server -> client
+        PlayerConnectDenied, // server -> client
+        PlayerConnected, // server -> other clients
         PlayerDisconnect, // client -> server
+        PlayerDisconnected, // server -> other clients
         PlanetAdded, // client -> server -> other clients
         IllegalPacketType
     };

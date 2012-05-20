@@ -2,10 +2,13 @@
 #define MULTIPLAYERCLIENT_H
 
 #include <QTcpSocket>
+#include <QHash>
 
 class Game;
 class Player;
 class Planet;
+
+typedef quint8 PlayerID;
 
 class MultiplayerClient : public QTcpSocket
 {
@@ -26,6 +29,9 @@ private:
     Game *m_game;
     Player *m_player;
     quint32 m_packetSize;
+
+    PlayerID m_playerId;
+    QHash<PlayerID, Player*> m_idPlayerMap;
 
 };
 

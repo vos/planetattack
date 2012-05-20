@@ -7,7 +7,8 @@ MultiplayerClient::MultiplayerClient(Game *game, Player *player, QObject *parent
     QTcpSocket(parent),
     m_game(game),
     m_player(player),
-    m_packetSize(0)
+    m_packetSize(0),
+    m_playerId(-1)
 {
     connect(this, SIGNAL(connected()), SLOT(socket_connected()));
     connect(this, SIGNAL(disconnected()), SLOT(socket_disconnected()));
@@ -60,7 +61,7 @@ void MultiplayerClient::socket_readyRead()
         // read and handle packet data
         switch ((MultiplayerPacket::PacketType)packetType) {
         case MultiplayerPacket::ConnectionAccepted: {
-            MultiplayerPacket packet(MultiplayerPacket::PlayerJoin);
+            MultiplayerPacket packet(MultiplayerPacket::PlayerConnect);
             packet.stream() << *m_player;
             packet.send(this);
             break;
@@ -68,6 +69,33 @@ void MultiplayerClient::socket_readyRead()
         case MultiplayerPacket::ConnectionRefused:
             // TODO
             break;
+        case MultiplayerPacket::PlayerConnectAccepted: {
+            in >> m_playerId;
+            qDebug("playerId = %d", m_playerId);
+            break;
+        }
+        case MultiplayerPacket::PlayerConnectDenied:
+            // TODO
+            break;
+        case MultiplayerPacket::PlayerConnected: {
+            PlayerID playerId;
+            Player *player = new Player;
+            in >> playerId >> *player;
+            if (m_game->addPlayer(player)) {
+                m_idPlayerMap.insert(playerId, player);
+                qDebug("playerId = %d, name = %s", playerId, qPrintable(player->name()));
+            }
+            break;
+        }
+        case MultiplayerPacket::PlayerDisconnected: {
+            PlayerID playerId;
+            in >> playerId;
+            Player *player = m_idPlayerMap.value(playerId);
+            m_idPlayerMap.remove(playerId);
+            m_game->removePlayer(player);
+            qDebug("playerId = %d, name = %s", playerId, qPrintable(player->name()));
+            break;
+        }
         case MultiplayerPacket::PlanetAdded: {
             Planet *planet = new Planet;
             in >> *planet;

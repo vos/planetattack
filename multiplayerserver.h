@@ -9,6 +9,8 @@
 class Game;
 class Player;
 
+typedef quint8 PlayerID; // uint8 enough?
+
 class MultiplayerServer : public QTcpServer
 {
     Q_OBJECT
@@ -26,11 +28,15 @@ private:
     Game *m_game;
 
     struct Client {
-        explicit inline Client(Player *p = NULL) : player(p), packetSize(0) { }
+        explicit inline Client(Player *p = NULL) : player(p), id(-1), packetSize(0) { }
         Player *player;
+        PlayerID id;
         quint32 packetSize;
+        inline bool isConnected() const { return player != NULL; }
     };
     QHash<QTcpSocket*, Client*> m_clients;
+
+    PlayerID m_nextPlayerId;
 
     void incomingConnection(int socketDescriptor);
     void sendPacketToOtherClients(MultiplayerPacket &packet, const QTcpSocket *sender);

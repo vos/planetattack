@@ -6,7 +6,8 @@
 
 MultiplayerServer::MultiplayerServer(Game *game, QObject *parent) :
     QTcpServer(parent),
-    m_game(game)
+    m_game(game),
+    m_nextPlayerId(1)
 {
 }
 
@@ -56,8 +57,12 @@ void MultiplayerServer::client_disconnected()
            qPrintable(socket->peerAddress().toString()), socket->peerPort());
 #endif
 
-    if (player != NULL) {
+    if (client->isConnected()) {
         m_game->removePlayer(player);
+
+        MultiplayerPacket playerDisconnectedPacket(MultiplayerPacket::PlayerDisconnected);
+        playerDisconnectedPacket.stream() << client->id;
+        sendPacketToOtherClients(playerDisconnectedPacket, socket);
     }
     m_clients.remove(socket);
     delete client;
@@ -99,11 +104,33 @@ void MultiplayerServer::client_readyRead()
 
         // read and handle packet data
         switch ((MultiplayerPacket::PacketType)packetType) {
-        case MultiplayerPacket::PlayerJoin: {
+        case MultiplayerPacket::PlayerConnect: {
             Player *player = new Player;
             in >> *player;
             if (m_game->addPlayer(player)) {
                 client->player = player;
+                client->id = m_nextPlayerId++;
+
+                // accept the player
+                MultiplayerPacket connectAcceptedPacket(MultiplayerPacket::PlayerConnectAccepted);
+                connectAcceptedPacket.stream() << client->id;
+                connectAcceptedPacket.send(socket);
+
+                // send the client the other players data
+                foreach (Client *otherClient, m_clients.values()) {
+                    if (otherClient != client && otherClient->isConnected()) {
+                        MultiplayerPacket otherPlayerPacket(MultiplayerPacket::PlayerConnected); // send PlayerList in one packet?
+                        otherPlayerPacket.stream() << otherClient->id << *otherClient->player;
+                        otherPlayerPacket.send(socket);
+                    }
+                }
+
+                // inform the other clients about the new player
+                MultiplayerPacket playerConnectedPacket(MultiplayerPacket::PlayerConnected);
+                playerConnectedPacket.stream() << client->id << *player;
+                sendPacketToOtherClients(playerConnectedPacket, socket);
+            } else {
+                MultiplayerPacket(MultiplayerPacket::PlayerConnectDenied).send(socket);
             }
             break;
         }
@@ -113,11 +140,12 @@ void MultiplayerServer::client_readyRead()
         case MultiplayerPacket::PlanetAdded: {
             Planet *planet = new Planet;
             in >> *planet;
-            m_game->addPlanet(planet);
-            // resend packet to all other clients
-            MultiplayerPacket packet(MultiplayerPacket::PlanetAdded);
-            packet.stream() << *planet;
-            sendPacketToOtherClients(packet, socket);
+            if (m_game->addPlanet(planet)) {
+                // resend packet to all other clients
+                MultiplayerPacket packet(MultiplayerPacket::PlanetAdded);
+                packet.stream() << *planet;
+                sendPacketToOtherClients(packet, socket);
+            }
             break;
         }
         default:

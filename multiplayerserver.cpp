@@ -1,13 +1,13 @@
 #include "multiplayerserver.h"
 
 #include <QTcpSocket>
-#include "multiplayerpacket.h"
 #include "game.h"
 
 MultiplayerServer::MultiplayerServer(Game *game, QObject *parent) :
     QTcpServer(parent),
     m_game(game),
-    m_nextPlayerId(1)
+    m_nextPlayerId(1),
+    m_nextPlanetId(1)
 {
 }
 
@@ -49,6 +49,7 @@ void MultiplayerServer::client_disconnected()
     Q_ASSERT(socket);
 
     Client *client = m_clients.value(socket);
+    Q_ASSERT(client);
     Player *player = client->player;
 
 #ifdef MULTIPLAYERSERVER_DEBUG
@@ -73,11 +74,13 @@ void MultiplayerServer::client_readyRead()
     QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
     Q_ASSERT(socket);
 
+    Client *client = m_clients.value(socket);
+    Q_ASSERT(client);
+
 #ifdef MULTIPLAYERSERVER_DEBUG
     qDebug("MultiplayerServer::client_readyRead(): %li bytes available", (long)socket->bytesAvailable());
 #endif
 
-    Client *client = m_clients.value(socket);
     QDataStream in(socket);
     in.setVersion(QDataStream::Qt_4_8);
     qint64 bytesAvailable;
@@ -138,13 +141,20 @@ void MultiplayerServer::client_readyRead()
             socket->disconnectFromHost();
             break;
         case MultiplayerPacket::PlanetAdded: {
+            PlanetID tempPlanetId;
             Planet *planet = new Planet;
-            in >> *planet;
+            in >> tempPlanetId >> *planet;
             if (m_game->addPlanet(planet)) {
-                // resend packet to all other clients
-                MultiplayerPacket packet(MultiplayerPacket::PlanetAdded);
-                packet.stream() << *planet;
-                sendPacketToOtherClients(packet, socket);
+                PlanetID planetId = m_nextPlanetId++;
+                // TODO: save id -> planet map
+                // send real id to the creator
+                MultiplayerPacket planetIdPacket(MultiplayerPacket::PlanetId);
+                planetIdPacket.stream() << tempPlanetId << planetId;
+                planetIdPacket.send(socket);
+                // add id and resend packet to all other clients
+                MultiplayerPacket planetAddedPacket(MultiplayerPacket::PlanetAdded);
+                planetAddedPacket.stream() << planetId << *planet;
+                sendPacketToOtherClients(planetAddedPacket, socket); // FIXME: network loop!?
             }
             break;
         }

@@ -4,11 +4,7 @@
 #include <QTcpSocket>
 #include <QHash>
 
-class Game;
-class Player;
-class Planet;
-
-typedef quint8 PlayerID;
+#include "multiplayer.h"
 
 class MultiplayerClient : public QTcpSocket
 {
@@ -29,9 +25,17 @@ private:
     Game *m_game;
     Player *m_player;
     quint32 m_packetSize;
+    PlayerID m_playerId; // own player id
 
-    PlayerID m_playerId;
+    // bimap wrapper?
     QHash<PlayerID, Player*> m_idPlayerMap;
+    QHash<Player*, PlayerID> m_playerIdMap;
+
+    QHash<PlanetID, Planet*> m_idPlanetMap;
+    QHash<Planet*, PlanetID> m_planetIdMap;
+
+    PlanetID m_nextTempPlanetId;
+    QHash<PlanetID, Planet*> m_tempIdPlanetMap;
 
 };
 

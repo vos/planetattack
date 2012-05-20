@@ -37,6 +37,7 @@ HEADERS += \
     scriptextensions.h \
     scenarioserializer.h \
     xmlscenarioserializer.h \
+    multiplayer.h \
     multiplayerserver.h \
     multiplayerclient.h \
     multiplayerpacket.h

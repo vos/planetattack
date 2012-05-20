@@ -4,12 +4,7 @@
 #include <QTcpServer>
 #include <QHash>
 
-#include "multiplayerpacket.h"
-
-class Game;
-class Player;
-
-typedef quint8 PlayerID; // uint8 enough?
+#include "multiplayer.h"
 
 class MultiplayerServer : public QTcpServer
 {
@@ -37,6 +32,7 @@ private:
     QHash<QTcpSocket*, Client*> m_clients;
 
     PlayerID m_nextPlayerId;
+    PlanetID m_nextPlanetId;
 
     void incomingConnection(int socketDescriptor);
     void sendPacketToOtherClients(MultiplayerPacket &packet, const QTcpSocket *sender);

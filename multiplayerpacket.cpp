@@ -12,6 +12,7 @@ const char* MultiplayerPacket::PacketTypeNames[] = {
     "PlayerDisconnect",
     "PlayerDisconnected",
     "PlanetAdded",
+    "PlanetId",
     "IllegalPacketType"
 };
 

@@ -19,6 +19,7 @@ public:
         PlayerDisconnect, // client -> server
         PlayerDisconnected, // server -> other clients
         PlanetAdded, // client -> server -> other clients
+        PlanetId, // server -> client
         IllegalPacketType
     };
     static QString typeString(PacketType type);

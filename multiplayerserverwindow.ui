@@ -13,7 +13,20 @@
   <property name="windowTitle">
    <string>PlanetAttack Dedicated Server 0.1 alpha - © 2012 Alexander Vos</string>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <widget class="QPlainTextEdit" name="console">
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="inputLineEdit"/>
+    </item>
+   </layout>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -33,6 +46,21 @@
    <addaction name="menu_Server"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="playerDockWidget">
+   <property name="windowTitle">
+    <string>Players</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QListView" name="playerListView"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="action_toggleListening">
    <property name="text">
     <string>&amp;Start listening</string>

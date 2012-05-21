@@ -80,7 +80,7 @@ bool Game::addPlayer(Player *player)
 
 bool Game::removePlayer(Player *player)
 {
-    if (player == NULL || m_players.count() <= 1) // don't remove the last player
+    if (player == NULL)
         return false;
     if (!m_players.remove(player)) {
         qDebug("Game::removePlayer() player not removed: %s", qPrintable(player->name()));

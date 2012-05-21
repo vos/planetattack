@@ -224,6 +224,10 @@ void MainWindow::on_playerComboBox_activated(int index)
 
 void MainWindow::on_removePlayerButton_clicked()
 {
+    if (m_game->playerCount() <= 1) {
+        qDebug("the last player cannot be removed");
+        return;
+    }
     int index = ui->playerComboBox->currentIndex();
     Player *player = ui->playerComboBox->itemData(index).value<Player*>();
     m_game->removePlayer(player);

@@ -92,7 +92,7 @@ bool MultiplayerServerWindow::startListening(const QHostAddress &address, quint1
         ui->action_toggleListening->setText("&Stop listening");
     } else {
         m_statusLabel->setText(QString("Failed to start the server on interface %1, port %2: %3")
-                               .arg(m_server->serverAddress().toString()).arg(m_server->serverPort())
+                               .arg(address.toString()).arg(port)
                                .arg(m_server->errorString()));
     }
     qLog(m_statusLabel->text());

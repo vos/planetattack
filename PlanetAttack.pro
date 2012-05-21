@@ -40,7 +40,8 @@ HEADERS += \
     multiplayer.h \
     multiplayerserver.h \
     multiplayerclient.h \
-    multiplayerpacket.h
+    multiplayerpacket.h \
+    multiplayerserverwindow.h
 
 SOURCES += main.cpp \
     game.cpp \
@@ -66,10 +67,12 @@ SOURCES += main.cpp \
     xmlscenarioserializer.cpp \
     multiplayerserver.cpp \
     multiplayerclient.cpp \
-    multiplayerpacket.cpp
+    multiplayerpacket.cpp \
+    multiplayerserverwindow.cpp
 
 FORMS += mainwindow.ui \
-    scriptwindow.ui
+    scriptwindow.ui \
+    multiplayerserverwindow.ui
 
 OTHER_FILES += README.md \
     scripts/random_ai.js

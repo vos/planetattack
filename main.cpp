@@ -5,7 +5,7 @@
 #include "randomutil.h"
 #include "canvas.h"
 #include "playerintelligence.h"
-#include "multiplayerserver.h"
+#include "multiplayerserverwindow.h"
 
 const quint16 DEFAULT_PORT = 54321;
 
@@ -47,20 +47,9 @@ int main(int argc, char *argv[])
         QHostAddress adress = QHostAddress::Any;
         quint16 port = readUShort(arguments, "-port", DEFAULT_PORT);
 
-        w = new QWidget; // TODO: replace with dedicated server class
-        w->setWindowTitle("Dedicated Server (placeholder)");
-
-        Game *game = new Game(w);
-        MultiplayerServer *server = new MultiplayerServer(game, game);
-        if (server->listen(adress, port)) {
-            qDebug("The server is listening on interface %s, port %i",
-                   qPrintable(server->serverAddress().toString()), server->serverPort());
-//            game->startGameLoop();
-        } else {
-            qCritical("Failed to start the server on interface %s, port %i: %s (error code %i)",
-                      qPrintable(adress.toString()), port, qPrintable(server->errorString()), server->serverError());
-            return 1;
-        }
+        MultiplayerServerWindow *server = new MultiplayerServerWindow;
+        server->startListening(adress, port);
+        w = server;
     } else {
         if (arguments.contains("-noui")) {
             w = new Canvas;

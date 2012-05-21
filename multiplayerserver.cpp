@@ -53,8 +53,8 @@ void MultiplayerServer::client_disconnected()
     Player *player = client->player;
 
 #ifdef MULTIPLAYERSERVER_DEBUG
-    QString name = player ? QString("%1 (%2)").arg(player->name()).arg(client->id) : "[no player object]";
-    qDebug("MultiplayerServer::client_disconnected(): '%s' (%s:%i)", qPrintable(name),
+    qDebug("MultiplayerServer::client_disconnected(): %s (%s:%i)",
+           qPrintable(player ? QString("'%1' (%2)").arg(player->name()).arg(client->id) : "[no player object]"),
            qPrintable(socket->peerAddress().toString()), socket->peerPort());
 #endif
 
@@ -101,9 +101,9 @@ void MultiplayerServer::client_readyRead()
         in >> packetType;
 
 #ifdef MULTIPLAYERSERVER_DEBUG
-        qDebug("PacketType %i (%s) from '%s' (%s:%i)", packetType,
+        qDebug("PacketType %i (%s) from %s (%s:%i)", packetType,
                qPrintable(MultiplayerPacket::typeString((MultiplayerPacket::PacketType)packetType)),
-               qPrintable(client->player ? QString("%1 (%2)").arg(client->player->name()).arg(client->id) : "[no player object]"),
+               qPrintable(client->player ? QString("'%1' (%2)").arg(client->player->name()).arg(client->id) : "[no player object]"),
                qPrintable(socket->peerAddress().toString()), socket->peerPort());
 #endif
 

@@ -95,9 +95,9 @@ void MultiplayerClient::socket_readyRead()
             in >> playerId;
             Player *player = m_idPlayerMap.take(playerId);
             Q_ASSERT(player);
+            qDebug("playerId = %d, name = %s", playerId, qPrintable(player->name()));
             m_playerIdMap.remove(player);
             m_game->removePlayer(player);
-            qDebug("playerId = %d, name = %s", playerId, qPrintable(player->name()));
             break;
         }
         case MultiplayerPacket::PlanetAdded: {

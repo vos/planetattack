@@ -14,6 +14,9 @@ public:
     explicit MultiplayerServer(Game *game, QObject *parent = NULL);
     ~MultiplayerServer();
 
+    inline PlayerID playerId(Player *player) const { return m_playerIdMap.value(player); }
+    inline Player* player(PlayerID id) const { return m_idPlayerMap.value(id); }
+
 private slots:
     void client_disconnected();
     void client_readyRead();
@@ -23,7 +26,7 @@ private:
     Game *m_game;
 
     struct Client {
-        explicit inline Client(Player *p = NULL) : player(p), id(-1), packetSize(0) { }
+        explicit inline Client(Player *p = NULL) : player(p), id(0), packetSize(0) { }
         Player *player;
         PlayerID id;
         quint32 packetSize;
@@ -33,6 +36,9 @@ private:
 
     PlayerID m_nextPlayerId;
     PlanetID m_nextPlanetId;
+
+    QHash<PlayerID, Player*> m_idPlayerMap;
+    QHash<Player*, PlayerID> m_playerIdMap;
 
     void incomingConnection(int socketDescriptor);
     void sendPacketToOtherClients(MultiplayerPacket &packet, const QTcpSocket *sender);

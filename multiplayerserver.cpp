@@ -53,13 +53,15 @@ void MultiplayerServer::client_disconnected()
     Player *player = client->player;
 
 #ifdef MULTIPLAYERSERVER_DEBUG
-    QString name = player ? player->name() : "[no player object]";
+    QString name = player ? QString("%1 (%2)").arg(player->name()).arg(client->id) : "[no player object]";
     qDebug("MultiplayerServer::client_disconnected(): '%s' (%s:%i)", qPrintable(name),
            qPrintable(socket->peerAddress().toString()), socket->peerPort());
 #endif
 
     if (client->isConnected()) {
         m_game->removePlayer(player);
+        m_idPlayerMap.remove(client->id);
+        m_playerIdMap.remove(player);
 
         MultiplayerPacket playerDisconnectedPacket(MultiplayerPacket::PlayerDisconnected);
         playerDisconnectedPacket.stream() << client->id;
@@ -101,7 +103,7 @@ void MultiplayerServer::client_readyRead()
 #ifdef MULTIPLAYERSERVER_DEBUG
         qDebug("PacketType %i (%s) from '%s' (%s:%i)", packetType,
                qPrintable(MultiplayerPacket::typeString((MultiplayerPacket::PacketType)packetType)),
-               qPrintable(client->player ? client->player->name() : "[no player object]"),
+               qPrintable(client->player ? QString("%1 (%2)").arg(client->player->name()).arg(client->id) : "[no player object]"),
                qPrintable(socket->peerAddress().toString()), socket->peerPort());
 #endif
 
@@ -113,6 +115,8 @@ void MultiplayerServer::client_readyRead()
             if (m_game->addPlayer(player)) {
                 client->player = player;
                 client->id = m_nextPlayerId++;
+                m_idPlayerMap.insert(client->id, client->player);
+                m_playerIdMap.insert(client->player, client->id);
 
                 // accept the player
                 MultiplayerPacket connectAcceptedPacket(MultiplayerPacket::PlayerConnectAccepted);

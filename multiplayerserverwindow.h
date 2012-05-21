@@ -3,9 +3,9 @@
 
 #include <QMainWindow>
 #include <QLabel>
-#include "multiplayerserver.h"
-
 #include <QAbstractListModel>
+
+#include "multiplayerserver.h"
 
 class PlayerListModel;
 
@@ -45,13 +45,12 @@ private:
 };
 
 
-// TODO: extract to own file
 class PlayerListModel : public QAbstractListModel
 {
     Q_OBJECT
 
 public:
-    explicit PlayerListModel(QObject *parent = NULL);
+    explicit PlayerListModel(MultiplayerServer *server, QObject *parent = NULL);
 
     inline int rowCount(const QModelIndex & = QModelIndex()) const {
         return m_playerList.count();
@@ -65,6 +64,7 @@ public slots:
 
 private:
     QList<Player*> m_playerList;
+    MultiplayerServer *m_server;
 
 };
 

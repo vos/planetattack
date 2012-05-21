@@ -4,45 +4,6 @@
 #include "game.h"
 #include "qlog.h"
 
-PlayerListModel::PlayerListModel(QObject *parent) :
-    QAbstractListModel(parent)
-{
-}
-
-QVariant PlayerListModel::data(const QModelIndex &index, int role) const
-{
-    if (!index.isValid() || index.row() >= m_playerList.count())
-        return QVariant();
-    switch (role) {
-    case Qt::DisplayRole:
-        return m_playerList.at(index.row())->name();
-        break;
-    }
-    return QVariant();
-}
-
-int PlayerListModel::addPlayer(Player *player)
-{
-    int index = m_playerList.count();
-    beginInsertRows(QModelIndex(), index, index);
-    m_playerList.append(player);
-    endInsertRows();
-    qLog(QString("Player joined: \"%1\"").arg(player->name()));
-    return index;
-}
-
-int PlayerListModel::removePlayer(Player *player)
-{
-    int index = m_playerList.indexOf(player);
-    if (index < 0)
-        return index;
-    beginRemoveRows(QModelIndex(), index, index);
-    m_playerList.removeAt(index);
-    endRemoveRows();
-    qLog(QString("Player left: \"%1\"").arg(player->name()));
-    return index;
-}
-
 MultiplayerServerWindow::MultiplayerServerWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MultiplayerServerWindow),
@@ -58,7 +19,7 @@ MultiplayerServerWindow::MultiplayerServerWindow(QWidget *parent) :
     m_game = new Game(this);
     m_server = new MultiplayerServer(m_game, this);
 
-    m_playerListModel = new PlayerListModel(this);
+    m_playerListModel = new PlayerListModel(m_server, this);
     connect(m_game, SIGNAL(playerAdded(Player*)), m_playerListModel, SLOT(addPlayer(Player*)));
     connect(m_game, SIGNAL(playerRemoved(Player*)), m_playerListModel, SLOT(removePlayer(Player*)), Qt::DirectConnection);
     ui->playerListView->setModel(m_playerListModel);
@@ -123,4 +84,50 @@ void MultiplayerServerWindow::on_inputLineEdit_returnPressed()
     // TODO: proccess command
     qLog(command, Qt::blue);
     ui->inputLineEdit->clear();
+}
+
+
+PlayerListModel::PlayerListModel(MultiplayerServer *server, QObject *parent) :
+    QAbstractListModel(parent),
+    m_server(server)
+{
+}
+
+QVariant PlayerListModel::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid() || index.row() >= m_playerList.count())
+        return QVariant();
+    switch (role) {
+    case Qt::DisplayRole: {
+        Player *player = m_playerList.at(index.row());
+        return QString("%1 (%2)").arg(player->name()).arg(m_server->playerId(player));
+        break;
+    }
+    case Qt::DecorationRole:
+        return m_playerList.at(index.row())->color();
+        break;
+    }
+    return QVariant();
+}
+
+int PlayerListModel::addPlayer(Player *player)
+{
+    int index = m_playerList.count();
+    beginInsertRows(QModelIndex(), index, index);
+    m_playerList.append(player);
+    endInsertRows();
+    qLog(QString("Player joined: \"%1\"").arg(player->name()));
+    return index;
+}
+
+int PlayerListModel::removePlayer(Player *player)
+{
+    int index = m_playerList.indexOf(player);
+    if (index < 0)
+        return index;
+    beginRemoveRows(QModelIndex(), index, index);
+    m_playerList.removeAt(index);
+    endRemoveRows();
+    qLog(QString("Player left: \"%1\"").arg(player->name()));
+    return index;
 }

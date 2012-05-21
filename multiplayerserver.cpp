@@ -151,7 +151,7 @@ void MultiplayerServer::client_readyRead()
             MultiplayerPacket chatPacket(MultiplayerPacket::Chat);
             chatPacket.stream() << msg;
             chatPacket.pack();
-            sendPacketToAllClients(chatPacket);
+            sendPacketToOtherClients(chatPacket, socket);
             break;
         }
         case MultiplayerPacket::PlanetAdded: {

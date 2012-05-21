@@ -6,6 +6,8 @@
 
 QT_FORWARD_DECLARE_CLASS(QTcpSocket)
 
+typedef quint32 PacketSize;
+
 class MultiplayerPacket
 {
 public:
@@ -18,20 +20,27 @@ public:
         PlayerConnected, // server -> other clients
         PlayerDisconnect, // client -> server
         PlayerDisconnected, // server -> other clients
+        Chat, // client -> server -> other clients, server -> all clients
         PlanetAdded, // client -> server -> other clients
         PlanetId, // server -> client
         IllegalPacketType
     };
-    static QString typeString(PacketType type);
+    inline static QString typeString(PacketType type) { return MultiplayerPacket::PacketTypeNames[type]; }
+    static const int StreamVersion = QDataStream::Qt_4_8;
 
     MultiplayerPacket(PacketType type);
+    MultiplayerPacket(PacketType type, const QByteArray &data);
 
     inline PacketType type() const { return m_type; }
     inline QString typeString() const { return MultiplayerPacket::PacketTypeNames[m_type]; }
     inline QByteArray& data() { return m_data; }
     inline QDataStream& stream() { return m_stream; }
-    inline int size() const { return m_data.size() - (int)sizeof(quint32); }
-    bool send(QTcpSocket *socket);
+    inline int size() const { return m_data.size() - (int)sizeof(PacketSize); }
+
+    const MultiplayerPacket& pack(); // NOTE: don't change the data after pack (or use reopen)
+    bool send(QTcpSocket *socket) const; // NOTE: pack before send (packets without extra data can be send directly)!
+    inline bool packAndSend(QTcpSocket *socket) { return pack().send(socket); }
+    MultiplayerPacket& reopen();
 
 private:
     static const char *PacketTypeNames[];

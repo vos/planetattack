@@ -81,8 +81,14 @@ bool MultiplayerServerWindow::toggleListening()
 void MultiplayerServerWindow::on_inputLineEdit_returnPressed()
 {
     QString command = ui->inputLineEdit->text();
+    if (command.isEmpty())
+        return;
     // TODO: proccess command
     qLog(command, Qt::blue);
+    MultiplayerPacket packet(MultiplayerPacket::Chat);
+    packet.stream() << command;
+    packet.pack();
+    m_server->sendPacketToAllClients(packet);
     ui->inputLineEdit->clear();
 }
 

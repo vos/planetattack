@@ -24,7 +24,7 @@ private slots:
 private:
     Game *m_game;
     Player *m_player;
-    quint32 m_packetSize;
+    PacketSize m_packetSize;
     PlayerID m_playerId; // own player id
 
     // bimap wrapper?

@@ -17,6 +17,8 @@ public:
     inline PlayerID playerId(Player *player) const { return m_playerIdMap.value(player); }
     inline Player* player(PlayerID id) const { return m_idPlayerMap.value(id); }
 
+    inline void sendPacketToAllClients(const MultiplayerPacket &packet) { sendPacketToOtherClients(packet, NULL); }
+
 private slots:
     void client_disconnected();
     void client_readyRead();
@@ -29,7 +31,7 @@ private:
         explicit inline Client(Player *p = NULL) : player(p), id(0), packetSize(0) { }
         Player *player;
         PlayerID id;
-        quint32 packetSize;
+        PacketSize packetSize;
         inline bool isConnected() const { return player != NULL; }
     };
     QHash<QTcpSocket*, Client*> m_clients;
@@ -41,7 +43,7 @@ private:
     QHash<Player*, PlayerID> m_playerIdMap;
 
     void incomingConnection(int socketDescriptor);
-    void sendPacketToOtherClients(MultiplayerPacket &packet, const QTcpSocket *sender);
+    void sendPacketToOtherClients(const MultiplayerPacket &packet, const QTcpSocket *sender);
 
 };
 

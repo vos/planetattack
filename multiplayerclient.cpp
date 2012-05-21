@@ -7,7 +7,7 @@ MultiplayerClient::MultiplayerClient(Game *game, Player *player, QObject *parent
     m_game(game),
     m_player(player),
     m_packetSize(0),
-    m_playerId(-1),
+    m_playerId(0),
     m_nextTempPlanetId(1)
 {
     connect(this, SIGNAL(connected()), SLOT(socket_connected()));
@@ -39,10 +39,10 @@ void MultiplayerClient::socket_readyRead()
 #endif
 
     QDataStream in(this);
-    in.setVersion(QDataStream::Qt_4_8);
+    in.setVersion(MultiplayerPacket::StreamVersion);
     while (bytesAvailable() > 0) {
         if (m_packetSize == 0) {
-            if (bytesAvailable() < (int)sizeof(quint32)) // packet size
+            if (bytesAvailable() < (int)sizeof(PacketSize))
                 return;
             in >> m_packetSize;
         }
@@ -63,7 +63,7 @@ void MultiplayerClient::socket_readyRead()
         case MultiplayerPacket::ConnectionAccepted: {
             MultiplayerPacket packet(MultiplayerPacket::PlayerConnect);
             packet.stream() << *m_player;
-            packet.send(this);
+            packet.packAndSend(this);
             break;
         }
         case MultiplayerPacket::ConnectionRefused:
@@ -98,6 +98,13 @@ void MultiplayerClient::socket_readyRead()
             qDebug("playerId = %d, name = %s", playerId, qPrintable(player->name()));
             m_playerIdMap.remove(player);
             m_game->removePlayer(player);
+            break;
+        }
+        case MultiplayerPacket::Chat: {
+            QString msg;
+            in >> msg;
+            // TODO: display chat
+            qDebug("chat msg = \"%s\"", qPrintable(msg));
             break;
         }
         case MultiplayerPacket::PlanetAdded: {
@@ -142,6 +149,6 @@ void MultiplayerClient::game_planetAdded(Planet *planet)
         m_planetIdMap.insert(planet, tempPlanetId);
         MultiplayerPacket packet(MultiplayerPacket::PlanetAdded);
         packet.stream() << tempPlanetId << *planet;
-        packet.send(this);
+        packet.packAndSend(this);
     }
 }

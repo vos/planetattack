@@ -42,8 +42,6 @@ private:
     MultiplayerServer *m_server;
     PlayerListModel *m_playerListModel;
 
-    friend void msgHandler(QtMsgType type, const char *msg);
-
 };
 
 

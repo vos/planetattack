@@ -2,6 +2,7 @@
 #include "ui_multiplayerserverwindow.h"
 
 #include "game.h"
+#include "qlog.h"
 
 PlayerListModel::PlayerListModel(QObject *parent) :
     QAbstractListModel(parent)
@@ -26,6 +27,7 @@ int PlayerListModel::addPlayer(Player *player)
     beginInsertRows(QModelIndex(), index, index);
     m_playerList.append(player);
     endInsertRows();
+    qLog(QString("Player joined: \"%1\"").arg(player->name()));
     return index;
 }
 
@@ -37,26 +39,8 @@ int PlayerListModel::removePlayer(Player *player)
     beginRemoveRows(QModelIndex(), index, index);
     m_playerList.removeAt(index);
     endRemoveRows();
+    qLog(QString("Player left: \"%1\"").arg(player->name()));
     return index;
-}
-
-MultiplayerServerWindow *g_serverWindowInstance = NULL;
-void msgHandler(QtMsgType type, const char *msg)
-{
-    switch (type) {
-    case QtDebugMsg:
-        g_serverWindowInstance->ui->console->appendPlainText(msg);
-        break;
-    case QtWarningMsg:
-        fprintf(stderr, "Warning: %s\n", msg);
-        break;
-    case QtCriticalMsg:
-        fprintf(stderr, "Critical: %s\n", msg);
-        break;
-    case QtFatalMsg:
-        fprintf(stderr, "Fatal: %s\n", msg);
-        abort();
-    }
 }
 
 MultiplayerServerWindow::MultiplayerServerWindow(QWidget *parent) :
@@ -69,8 +53,7 @@ MultiplayerServerWindow::MultiplayerServerWindow(QWidget *parent) :
     m_statusLabel = new QLabel;
     ui->statusbar->addWidget(m_statusLabel);
 
-    g_serverWindowInstance = this;
-    qInstallMsgHandler(msgHandler);
+    qRegisterLogView(ui->logView);
 
     m_game = new Game(this);
     m_server = new MultiplayerServer(m_game, this);
@@ -79,6 +62,8 @@ MultiplayerServerWindow::MultiplayerServerWindow(QWidget *parent) :
     connect(m_game, SIGNAL(playerAdded(Player*)), m_playerListModel, SLOT(addPlayer(Player*)));
     connect(m_game, SIGNAL(playerRemoved(Player*)), m_playerListModel, SLOT(removePlayer(Player*)), Qt::DirectConnection);
     ui->playerListView->setModel(m_playerListModel);
+
+    qLog("Dedicated Multiplayer Server started");
 }
 
 MultiplayerServerWindow::~MultiplayerServerWindow()
@@ -102,22 +87,23 @@ bool MultiplayerServerWindow::startListening(const QHostAddress &address, quint1
     m_port = port;
     bool listening = m_server->listen(address, port);
     if (listening) {
-        m_statusLabel->setText(QString("Server is listening on interface %1, port %2.")
+        m_statusLabel->setText(QString("Server is listening on interface %1, port %2")
                                .arg(m_server->serverAddress().toString()).arg(m_server->serverPort()));
         ui->action_toggleListening->setText("&Stop listening");
     } else {
-        m_statusLabel->setText(QString("Failed to start the server on interface %1, port %2: %3.")
+        m_statusLabel->setText(QString("Failed to start the server on interface %1, port %2: %3")
                                .arg(m_server->serverAddress().toString()).arg(m_server->serverPort())
                                .arg(m_server->errorString()));
     }
+    qLog(m_statusLabel->text());
     return listening;
 }
 
 void MultiplayerServerWindow::stopListening()
 {
     m_server->close();
-    m_statusLabel->setText("Server is not listening.");
-    statusBar()->showMessage("Server stopped listening.");
+    qLog("Server stopped listening");
+    m_statusLabel->setText("Server is not listening");
     ui->action_toggleListening->setText("&Start listening");
 }
 
@@ -134,7 +120,7 @@ bool MultiplayerServerWindow::toggleListening()
 void MultiplayerServerWindow::on_inputLineEdit_returnPressed()
 {
     QString command = ui->inputLineEdit->text();
-    // TODO: handle command
-    ui->console->appendPlainText(command);
+    // TODO: proccess command
+    qLog(command, Qt::blue);
     ui->inputLineEdit->clear();
 }

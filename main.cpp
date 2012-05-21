@@ -44,11 +44,11 @@ int main(int argc, char *argv[])
 
     QWidget *w;
     if (arguments.contains("-server")) {
-        QHostAddress adress = QHostAddress::Any;
+        QHostAddress address = QHostAddress::Any;
         quint16 port = readUShort(arguments, "-port", DEFAULT_PORT);
 
         MultiplayerServerWindow *server = new MultiplayerServerWindow;
-        server->startListening(adress, port);
+        server->startListening(address, port);
         w = server;
     } else {
         if (arguments.contains("-noui")) {

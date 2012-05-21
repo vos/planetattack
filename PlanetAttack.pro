@@ -41,7 +41,8 @@ HEADERS += \
     multiplayerserver.h \
     multiplayerclient.h \
     multiplayerpacket.h \
-    multiplayerserverwindow.h
+    multiplayerserverwindow.h \
+    qlog.h
 
 SOURCES += main.cpp \
     game.cpp \

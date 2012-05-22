@@ -8,6 +8,7 @@
 #include "game.h"
 
 class Canvas;
+class PlayerListModel;
 class PropertyEditor;
 class MultiplayerServer;
 class MultiplayerClient;
@@ -31,10 +32,8 @@ private slots:
 
     void canvas_selectionChanged(QObject *o);
     void saveButton_clicked();
-    void player_nameChanged(const QString &oldName, const QString &newName);
 
     void on_modeComboBox_currentIndexChanged(int index);
-    void updatePlayerComboBox();
     void on_playerComboBox_activated(int index);
     void on_removePlayerButton_clicked();
     void on_addPlayerButton_clicked();
@@ -56,6 +55,7 @@ private:
     Ui::MainWindow *ui;
     Canvas *m_canvas;
     Game *m_game;
+    PlayerListModel *m_playerListModel;
     QString m_scenarioFileName;
     MultiplayerServer *m_server;
     MultiplayerClient *m_client;

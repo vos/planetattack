@@ -19,7 +19,7 @@ MultiplayerServerWindow::MultiplayerServerWindow(QWidget *parent) :
     m_game = new Game(this);
     m_server = new MultiplayerServer(m_game, this);
 
-    m_playerListModel = new PlayerListModel(m_server, this);
+    m_playerListModel = new ServerPlayerListModel(m_server, this);
     connect(m_game, SIGNAL(playerAdded(Player*)), m_playerListModel, SLOT(addPlayer(Player*)));
     connect(m_game, SIGNAL(playerRemoved(Player*)), m_playerListModel, SLOT(removePlayer(Player*)), Qt::DirectConnection);
     ui->playerListView->setModel(m_playerListModel);
@@ -93,47 +93,31 @@ void MultiplayerServerWindow::on_inputLineEdit_returnPressed()
 }
 
 
-PlayerListModel::PlayerListModel(MultiplayerServer *server, QObject *parent) :
-    QAbstractListModel(parent),
+ServerPlayerListModel::ServerPlayerListModel(MultiplayerServer *server, QObject *parent) :
+    PlayerListModel(parent),
     m_server(server)
 {
 }
 
-QVariant PlayerListModel::data(const QModelIndex &index, int role) const
+QVariant ServerPlayerListModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid() || index.row() >= m_playerList.count())
         return QVariant();
-    switch (role) {
-    case Qt::DisplayRole: {
+    if (role == Qt::DisplayRole) {
         Player *player = m_playerList.at(index.row());
         return QString("%1 (%2)").arg(player->name()).arg(m_server->playerId(player));
-        break;
     }
-    case Qt::DecorationRole:
-        return m_playerList.at(index.row())->color();
-        break;
-    }
-    return QVariant();
+    return PlayerListModel::data(index, role);
 }
 
-int PlayerListModel::addPlayer(Player *player)
+int ServerPlayerListModel::addPlayer(Player *player)
 {
-    int index = m_playerList.count();
-    beginInsertRows(QModelIndex(), index, index);
-    m_playerList.append(player);
-    endInsertRows();
     qLog(QString("Player joined: \"%1\"").arg(player->name()));
-    return index;
+    return PlayerListModel::addPlayer(player);
 }
 
-int PlayerListModel::removePlayer(Player *player)
+int ServerPlayerListModel::removePlayer(Player *player)
 {
-    int index = m_playerList.indexOf(player);
-    if (index < 0)
-        return index;
-    beginRemoveRows(QModelIndex(), index, index);
-    m_playerList.removeAt(index);
-    endRemoveRows();
     qLog(QString("Player left: \"%1\"").arg(player->name()));
-    return index;
+    return PlayerListModel::removePlayer(player);
 }

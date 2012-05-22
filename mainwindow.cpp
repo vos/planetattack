@@ -13,6 +13,7 @@
 
 #include "canvas.h"
 #include "computerplayer.h"
+#include "playerlistmodel.h"
 #include "stringpropertyeditor.h"
 #include "vector2dpropertyeditor.h"
 #include "playerpropertyeditor.h"
@@ -50,14 +51,20 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(m_game, SIGNAL(modeChanged(Game::Mode)), SLOT(game_modeChanged(Game::Mode)));
     connect(m_game, SIGNAL(playerAdded(Player*)), SLOT(game_playerAdded(Player*)));
-    connect(m_game, SIGNAL(playerRemoved(Player*)), SLOT(game_playerRemoved(Player*)));
+    connect(m_game, SIGNAL(playerRemoved(Player*)), SLOT(game_playerRemoved(Player*)), Qt::DirectConnection);
+
+    m_playerListModel = new PlayerListModel(this);
+    ui->playerComboBox->setModel(m_playerListModel);
 
     connect(m_canvas, SIGNAL(selectionChanged(QObject*)), SLOT(canvas_selectionChanged(QObject*)));
 
     m_canvas->setFocus();
     connect(ui->action_setFocus, SIGNAL(triggered()), m_canvas, SLOT(setFocus()));
 
-    updatePlayerComboBox();
+    // init player list
+    foreach (Player *player, m_game->players()) {
+        game_playerAdded(player);
+    }
 }
 
 MainWindow::~MainWindow()
@@ -78,11 +85,7 @@ void MainWindow::game_modeChanged(Game::Mode mode)
 
 void MainWindow::game_playerAdded(Player *player)
 {
-    QVariant playerVar;
-    playerVar.setValue(player);
-    ui->playerComboBox->addItem(player->name(), playerVar);
-    connect(player, SIGNAL(nameChanged(QString,QString)), SLOT(player_nameChanged(QString,QString)));
-
+    m_playerListModel->addPlayer(player);
     m_canvas->setActivePlayer(player);
     ui->playerComboBox->setCurrentIndex(ui->playerComboBox->count()-1);
     canvas_selectionChanged(player);
@@ -90,10 +93,7 @@ void MainWindow::game_playerAdded(Player *player)
 
 void MainWindow::game_playerRemoved(Player *player)
 {
-    QVariant playerVar;
-    playerVar.setValue(player);
-    int index = ui->playerComboBox->findData(playerVar);
-    ui->playerComboBox->removeItem(index);
+    m_playerListModel->removePlayer(player);
     if (m_selectedObject == player) {
         canvas_selectionChanged(NULL);
     }
@@ -192,32 +192,14 @@ void MainWindow::saveButton_clicked()
     }
 }
 
-void MainWindow::player_nameChanged(const QString &oldName, const QString &newName)
-{
-    ui->playerComboBox->setItemText(ui->playerComboBox->findText(oldName), newName);
-}
-
 void MainWindow::on_modeComboBox_currentIndexChanged(int index)
 {
     m_game->setMode((Game::Mode)index);
 }
 
-void MainWindow::updatePlayerComboBox() {
-    ui->playerComboBox->clear();
-    foreach (Player *player, m_game->players()) {
-        QVariant playerVar;
-        playerVar.setValue(player);
-        ui->playerComboBox->addItem(player->name(), playerVar);
-        connect(player, SIGNAL(nameChanged(QString,QString)), SLOT(player_nameChanged(QString,QString)));
-    }
-    QVariant playerVar;
-    playerVar.setValue(m_canvas->activePlayer());
-    ui->playerComboBox->setCurrentIndex(ui->playerComboBox->findData(playerVar));
-}
-
 void MainWindow::on_playerComboBox_activated(int index)
 {
-    Player *player = ui->playerComboBox->itemData(index).value<Player*>();
+    Player *player = m_playerListModel->playerAt(index);
     m_canvas->setActivePlayer(player);
     canvas_selectionChanged(player);
 }
@@ -229,7 +211,7 @@ void MainWindow::on_removePlayerButton_clicked()
         return;
     }
     int index = ui->playerComboBox->currentIndex();
-    Player *player = ui->playerComboBox->itemData(index).value<Player*>();
+    Player *player = m_playerListModel->takePlayerAt(index);
     m_game->removePlayer(player);
 }
 
@@ -275,7 +257,6 @@ void MainWindow::on_action_openScenario_triggered()
                 m_game->addPlanet(planet);
             }
             m_canvas->setActivePlayer(scenario.activePlayer);
-            updatePlayerComboBox();
             canvas_selectionChanged(m_canvas->activePlayer());
             QString relativeFilePath = QDir::current().relativeFilePath(fileName);
             updateTitle(relativeFilePath);

@@ -26,7 +26,7 @@ Player::~Player()
 
 void Player::setName(const QString &name)
 {
-    if (name == m_name)
+    if (name.isEmpty() || name == m_name)
         return;
     QString oldName = m_name;
     m_name = name;

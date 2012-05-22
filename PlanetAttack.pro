@@ -42,7 +42,8 @@ HEADERS += \
     multiplayerclient.h \
     multiplayerpacket.h \
     multiplayerserverwindow.h \
-    qlog.h
+    qlog.h \
+    playerlistmodel.h
 
 SOURCES += main.cpp \
     game.cpp \
@@ -69,7 +70,8 @@ SOURCES += main.cpp \
     multiplayerserver.cpp \
     multiplayerclient.cpp \
     multiplayerpacket.cpp \
-    multiplayerserverwindow.cpp
+    multiplayerserverwindow.cpp \
+    playerlistmodel.cpp
 
 FORMS += mainwindow.ui \
     scriptwindow.ui \

@@ -3,11 +3,11 @@
 
 #include <QMainWindow>
 #include <QLabel>
-#include <QAbstractListModel>
 
 #include "multiplayerserver.h"
+#include "playerlistmodel.h"
 
-class PlayerListModel;
+class ServerPlayerListModel;
 
 namespace Ui {
 class MultiplayerServerWindow;
@@ -40,21 +40,17 @@ private:
 
     Game *m_game;
     MultiplayerServer *m_server;
-    PlayerListModel *m_playerListModel;
+    ServerPlayerListModel *m_playerListModel;
 
 };
 
 
-class PlayerListModel : public QAbstractListModel
+class ServerPlayerListModel : public PlayerListModel
 {
     Q_OBJECT
 
 public:
-    explicit PlayerListModel(MultiplayerServer *server, QObject *parent = NULL);
-
-    inline int rowCount(const QModelIndex & = QModelIndex()) const {
-        return m_playerList.count();
-    }
+    explicit ServerPlayerListModel(MultiplayerServer *server, QObject *parent = NULL);
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
@@ -63,7 +59,6 @@ public slots:
     int removePlayer(Player *player);
 
 private:
-    QList<Player*> m_playerList;
     MultiplayerServer *m_server;
 
 };

@@ -23,6 +23,7 @@ public:
         Chat, // client -> server -> other clients, server -> all clients
         PlanetAdded, // client -> server -> other clients
         PlanetId, // server -> client
+        PlanetRemoved, // client -> server -> other clients
         IllegalPacketType
     };
     inline static QString typeString(PacketType type) { return MultiplayerPacket::PacketTypeNames[type]; }

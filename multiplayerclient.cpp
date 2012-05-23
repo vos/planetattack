@@ -16,6 +16,7 @@ MultiplayerClient::MultiplayerClient(Game *game, Player *player, QObject *parent
     connect(this, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(socket_error(QAbstractSocket::SocketError)));
 
     connect(m_game, SIGNAL(planetAdded(Planet*)), SLOT(game_planetAdded(Planet*)));
+    connect(m_game, SIGNAL(planetRemoved(Planet*)), SLOT(game_planetRemoved(Planet*)), Qt::DirectConnection);
 }
 
 void MultiplayerClient::socket_connected()
@@ -108,23 +109,40 @@ void MultiplayerClient::socket_readyRead()
             emit chatMessageReceived(msg, player);
             break;
         }
-        case MultiplayerPacket::PlanetAdded: {
-            PlanetID planetId;
-            Planet *planet = new Planet;
-            in >> planetId >> *planet;
-            if (m_game->addPlanet(planet)) {
-                m_idPlanetMap.insert(planetId, planet);
-                m_planetIdMap.insert(planet, planetId);
-            }
-            break;
-        }
         case MultiplayerPacket::PlanetId: {
             PlanetID tempPlanetId, planetId;
             in >> tempPlanetId >> planetId;
             Planet *planet = m_tempIdPlanetMap.take(tempPlanetId);
             Q_ASSERT(planet);
             m_idPlanetMap.insert(planetId, planet);
-            m_planetIdMap.insert(planet, planetId); // replace temp id
+            m_planetIdMap.insert(planet, planetId);
+            break;
+        }
+        case MultiplayerPacket::PlanetAdded: {
+            PlanetID planetId;
+            Planet *planet = new Planet;
+            PlayerID playerId;
+            in >> planetId >> *planet >> playerId;
+            Player *player = m_idPlayerMap.value(playerId);
+            Q_ASSERT(player);
+            planet->setPlayer(player);
+            // add the id first (to avoid a network loop)
+            m_idPlanetMap.insert(planetId, planet);
+            m_planetIdMap.insert(planet, planetId);
+            if (!m_game->addPlanet(planet)) {
+                // should never fail, just in case remove the id again
+                m_idPlanetMap.remove(planetId);
+                m_planetIdMap.remove(planet);
+            }
+            break;
+        }
+        case MultiplayerPacket::PlanetRemoved: {
+            PlanetID planetId;
+            in >> planetId;
+            Planet *planet = m_idPlanetMap.take(planetId);
+            Q_ASSERT(planet);
+            m_planetIdMap.remove(planet);
+            m_game->removePlanet(planet);
             break;
         }
         default:
@@ -147,9 +165,21 @@ void MultiplayerClient::game_planetAdded(Planet *planet)
     if (!m_planetIdMap.contains(planet)) {
         PlanetID tempPlanetId = m_nextTempPlanetId++;
         m_tempIdPlanetMap.insert(tempPlanetId, planet);
-        m_planetIdMap.insert(planet, tempPlanetId);
         MultiplayerPacket packet(MultiplayerPacket::PlanetAdded);
         packet.stream() << tempPlanetId << *planet;
+        packet.packAndSend(this);
+    }
+}
+
+void MultiplayerClient::game_planetRemoved(Planet *planet)
+{
+    // only send if the planet is not yet removed (locally removed)
+    if (m_planetIdMap.contains(planet)) {
+        PlanetID planetId = m_planetIdMap.take(planet);
+        Q_ASSERT(planetId > 0);
+        m_idPlanetMap.remove(planetId);
+        MultiplayerPacket packet(MultiplayerPacket::PlanetRemoved);
+        packet.stream() << planetId;
         packet.packAndSend(this);
     }
 }

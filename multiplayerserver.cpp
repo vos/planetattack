@@ -149,9 +149,8 @@ void MultiplayerServer::client_readyRead()
             QString msg;
             in >> msg;
             emit chatMessageReceived(msg, client->player);
-            PlayerID senderId = m_playerIdMap.value(client->player);
             MultiplayerPacket chatPacket(MultiplayerPacket::Chat);
-            chatPacket.stream() << msg << senderId;
+            chatPacket.stream() << msg << client->id;
             chatPacket.pack();
             sendPacketToOtherClients(chatPacket, socket);
             break;
@@ -162,16 +161,31 @@ void MultiplayerServer::client_readyRead()
             in >> tempPlanetId >> *planet;
             if (m_game->addPlanet(planet)) {
                 PlanetID planetId = m_nextPlanetId++;
-                // TODO: save id -> planet map
+                m_idPlanetMap.insert(planetId, planet);
+                m_planetIdMap.insert(planet, planetId);
                 // send real id to the creator
                 MultiplayerPacket planetIdPacket(MultiplayerPacket::PlanetId);
                 planetIdPacket.stream() << tempPlanetId << planetId;
                 planetIdPacket.packAndSend(socket);
                 // add id and resend packet to all other clients
                 MultiplayerPacket planetAddedPacket(MultiplayerPacket::PlanetAdded);
-                planetAddedPacket.stream() << planetId << *planet;
+                planetAddedPacket.stream() << planetId << *planet << client->id;
                 planetAddedPacket.pack();
-                sendPacketToOtherClients(planetAddedPacket, socket); // FIXME: network loop!?
+                sendPacketToOtherClients(planetAddedPacket, socket);
+            }
+            break;
+        }
+        case MultiplayerPacket::PlanetRemoved: {
+            PlanetID planetId;
+            in >> planetId;
+            Planet *planet = m_idPlanetMap.take(planetId);
+            Q_ASSERT(planet);
+            m_planetIdMap.remove(planet);
+            if (m_game->removePlanet(planet)) {
+                MultiplayerPacket planetRemovedPacket(MultiplayerPacket::PlanetRemoved);
+                planetRemovedPacket.stream() << planetId;
+                planetRemovedPacket.pack();
+                sendPacketToOtherClients(planetRemovedPacket, socket);
             }
             break;
         }

@@ -45,6 +45,9 @@ private:
     QHash<PlayerID, Player*> m_idPlayerMap;
     QHash<Player*, PlayerID> m_playerIdMap;
 
+    QHash<PlanetID, Planet*> m_idPlanetMap;
+    QHash<Planet*, PlanetID> m_planetIdMap;
+
     void incomingConnection(int socketDescriptor);
     void sendPacketToOtherClients(const MultiplayerPacket &packet, const QTcpSocket *sender);
 

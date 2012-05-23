@@ -23,6 +23,7 @@ private slots:
     void socket_error(QAbstractSocket::SocketError error);
 
     void game_planetAdded(Planet *planet);
+    void game_planetRemoved(Planet *planet);
 
 private:
     Game *m_game;

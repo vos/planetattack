@@ -14,6 +14,7 @@ const char* MultiplayerPacket::PacketTypeNames[] = {
     "Chat",
     "PlanetAdded",
     "PlanetId",
+    "PlanetRemoved",
     "IllegalPacketType"
 };
 

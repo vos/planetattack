@@ -47,6 +47,9 @@ private slots:
     void on_action_createServer_triggered();
     void on_action_ConnectToServer_triggered();
 
+    void on_inputLineEdit_returnPressed();
+    void client_chatMessageReceived(const QString &msg, Player *player);
+
     void client_connected();
     void client_disconnected();
     void client_error(QAbstractSocket::SocketError error);

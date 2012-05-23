@@ -23,6 +23,8 @@
 #include "multiplayerserver.h"
 #include "multiplayerclient.h"
 
+#include "qlog.h"
+
 #include <QDebug>
 #include <QScriptEngineDebugger>
 
@@ -34,6 +36,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_selectedObject(NULL)
 {
     ui->setupUi(this);
+    qRegisterLogView(ui->logView);
+
     m_canvas = new Canvas(this);
     m_game = m_canvas->game();
     setCentralWidget(m_canvas);
@@ -65,6 +69,8 @@ MainWindow::MainWindow(QWidget *parent) :
     foreach (Player *player, m_game->players()) {
         game_playerAdded(player);
     }
+
+    qLog("PlanetAttack started");
 }
 
 MainWindow::~MainWindow()
@@ -235,7 +241,9 @@ void MainWindow::on_action_newScenario_triggered()
     }
     m_scenarioFileName.clear();
     updateTitle("<unsaved scenario>");
-    statusBar()->showMessage("New Scenario created", 5000);
+    QString msg("New Scenario created");
+    statusBar()->showMessage(msg, 5000);
+    qLog(msg);
 }
 
 void MainWindow::on_action_openScenario_triggered()
@@ -256,12 +264,16 @@ void MainWindow::on_action_openScenario_triggered()
             foreach (Planet *planet, scenario.planets) {
                 m_game->addPlanet(planet);
             }
+            m_scenarioFileName = fileName;
             m_canvas->setActivePlayer(scenario.activePlayer);
+            // select active player
+            ui->playerComboBox->setCurrentIndex(m_playerListModel->indexOf(m_canvas->activePlayer()));
             canvas_selectionChanged(m_canvas->activePlayer());
             QString relativeFilePath = QDir::current().relativeFilePath(fileName);
             updateTitle(relativeFilePath);
-            statusBar()->showMessage(QString("Scenario \"%1\" successfully loaded").arg(relativeFilePath), 5000);
-            m_scenarioFileName = fileName;
+            QString msg = QString("Scenario \"%1\" successfully loaded").arg(relativeFilePath);
+            statusBar()->showMessage(msg, 5000);
+            qLog(msg);
         } else {
             QMessageBox::warning(this, "Open Scenario Error", QString("Cannot open scenario file \"%1\".").arg(fileName));
         }
@@ -283,7 +295,9 @@ void MainWindow::on_action_saveScenario_triggered()
     if (serializer.serialize(scenario, m_scenarioFileName)) {
         QString relativeFilePath = QDir::current().relativeFilePath(m_scenarioFileName);
         updateTitle(relativeFilePath);
-        statusBar()->showMessage(QString("Scenario successfully saved as \"%1\"").arg(relativeFilePath), 5000);
+        QString msg = QString("Scenario successfully saved as \"%1\"").arg(relativeFilePath);
+        statusBar()->showMessage(msg, 5000);
+        qLog(msg);
     } else {
         QMessageBox::warning(this, "Save Scenario Error", QString("Cannot save scenario file \"%1\".").arg(m_scenarioFileName));
     }
@@ -305,9 +319,10 @@ void MainWindow::on_action_createServer_triggered()
     if (m_server == NULL) {
         m_server = new MultiplayerServer(m_game, this);
         if (m_server->listen(QHostAddress::Any, 54321)) {
-            statusBar()->showMessage(QString("The server is listening on interface %1, port %2")
-                                     .arg(m_server->serverAddress().toString())
-                                     .arg(m_server->serverPort()));
+            QString msg = QString("The server is listening on interface %1, port %2")
+                    .arg(m_server->serverAddress().toString()).arg(m_server->serverPort());
+            statusBar()->showMessage(msg);
+            qLog(msg);
             ui->action_createServer->setText("Close Server");
         } else {
             qCritical("Failed to start the server on interface %s, port %i: %s (error code %i)",
@@ -318,7 +333,9 @@ void MainWindow::on_action_createServer_triggered()
         if (m_server->isListening()) {
             m_server->close();
             delete m_server;
-            statusBar()->showMessage("Multiplayer server closed", 5000);
+            QString msg("Multiplayer server closed");
+            statusBar()->showMessage(msg, 5000);
+            qLog(msg);
         }
         m_server = NULL;
         ui->action_createServer->setText("Create Server");
@@ -335,6 +352,7 @@ void MainWindow::on_action_ConnectToServer_triggered()
             connect(m_client, SIGNAL(connected()), SLOT(client_connected()));
             connect(m_client, SIGNAL(disconnected()), SLOT(client_disconnected()));
             connect(m_client, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(client_error(QAbstractSocket::SocketError)));
+            connect(m_client, SIGNAL(chatMessageReceived(QString,Player*)), SLOT(client_chatMessageReceived(QString,Player*)));
             ui->action_ConnectToServer->setText("Connecting...");
             ui->action_ConnectToServer->setEnabled(false);
             m_client->connectToHost(hostAddress, 54321);
@@ -350,12 +368,14 @@ void MainWindow::on_action_ConnectToServer_triggered()
 
 void MainWindow::client_connected()
 {
+    qLog(QString("Connected to server %1:%2").arg(m_client->peerName()).arg(m_client->peerPort()));
     ui->action_ConnectToServer->setText("Disconnect from Server");
     ui->action_ConnectToServer->setEnabled(true);
 }
 
 void MainWindow::client_disconnected()
 {
+    qLog("Disconnected from server");
     m_client->deleteLater();
     m_client = NULL;
     ui->action_ConnectToServer->setText("Connect to Server");
@@ -365,8 +385,31 @@ void MainWindow::client_disconnected()
 void MainWindow::client_error(QAbstractSocket::SocketError error)
 {
     Q_UNUSED(error)
-    QMessageBox::warning(this, "Connect to Server Error", QString("Error while connecting to the multiplayer server:\n%1").arg(m_client->errorString()));
-    client_disconnected();
+    QString errorString = m_client->errorString();
+    QMessageBox::warning(this, "Network Error", errorString);
+    qWarning("Network Error: %s", qPrintable(errorString));
+}
+
+void MainWindow::on_inputLineEdit_returnPressed()
+{
+    QString command = ui->inputLineEdit->text();
+    if (command.isEmpty())
+        return;
+    // TODO: proccess command
+    if (m_client != NULL) {
+        qLog(QString("You: %1").arg(command), m_canvas->activePlayer()->color());
+        MultiplayerPacket packet(MultiplayerPacket::Chat);
+        packet.stream() << command;
+        packet.packAndSend(m_client);
+    }
+    ui->inputLineEdit->clear();
+}
+
+void MainWindow::client_chatMessageReceived(const QString &msg, Player *player)
+{
+    QString name = player != NULL ? player->name() : "SERVER";
+    QColor color = player != NULL ? player->color() : Qt::magenta;
+    qLog(QString("%1: %2").arg(name, msg), color);
 }
 
 void MainWindow::updateTitle(const QString &subTitle)

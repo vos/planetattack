@@ -29,7 +29,14 @@
      </widget>
     </item>
     <item>
-     <widget class="QLineEdit" name="inputLineEdit"/>
+     <widget class="QLineEdit" name="inputLineEdit">
+      <property name="font">
+       <font>
+        <family>Courier</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

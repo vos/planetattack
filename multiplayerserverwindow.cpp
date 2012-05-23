@@ -24,6 +24,8 @@ MultiplayerServerWindow::MultiplayerServerWindow(QWidget *parent) :
     connect(m_game, SIGNAL(playerRemoved(Player*)), m_playerListModel, SLOT(removePlayer(Player*)), Qt::DirectConnection);
     ui->playerListView->setModel(m_playerListModel);
 
+    connect(m_server, SIGNAL(chatMessageReceived(QString,Player*)), SLOT(server_chatMessageReceived(QString,Player*)));
+
     qLog("Dedicated Multiplayer Server started");
 }
 
@@ -48,15 +50,17 @@ bool MultiplayerServerWindow::startListening(const QHostAddress &address, quint1
     m_port = port;
     bool listening = m_server->listen(address, port);
     if (listening) {
-        m_statusLabel->setText(QString("Server is listening on interface %1, port %2")
-                               .arg(m_server->serverAddress().toString()).arg(m_server->serverPort()));
+        QString msg = QString("Server is listening on interface %1, port %2")
+                .arg(m_server->serverAddress().toString()).arg(m_server->serverPort());
+        m_statusLabel->setText(msg);
+        qLog(msg);
         ui->action_toggleListening->setText("&Stop listening");
     } else {
-        m_statusLabel->setText(QString("Failed to start the server on interface %1, port %2: %3")
-                               .arg(address.toString()).arg(port)
-                               .arg(m_server->errorString()));
+        QString msg = QString("Failed to start the server on interface %1, port %2: %3")
+                .arg(address.toString()).arg(port).arg(m_server->errorString());
+        m_statusLabel->setText(msg);
+        qCritical(qPrintable(msg));
     }
-    qLog(m_statusLabel->text());
     return listening;
 }
 
@@ -84,14 +88,18 @@ void MultiplayerServerWindow::on_inputLineEdit_returnPressed()
     if (command.isEmpty())
         return;
     // TODO: proccess command
-    qLog(command, Qt::blue);
+    qLog(command, Qt::magenta);
     MultiplayerPacket packet(MultiplayerPacket::Chat);
-    packet.stream() << command;
+    packet.stream() << command << PlayerID(0); // server has PlayerID 0
     packet.pack();
     m_server->sendPacketToAllClients(packet);
     ui->inputLineEdit->clear();
 }
 
+void MultiplayerServerWindow::server_chatMessageReceived(const QString &msg, Player *player)
+{
+    qLog(QString("%1: %2").arg(player->name(), msg), player->color());
+}
 
 ServerPlayerListModel::ServerPlayerListModel(MultiplayerServer *server, QObject *parent) :
     PlayerListModel(parent),
@@ -112,12 +120,12 @@ QVariant ServerPlayerListModel::data(const QModelIndex &index, int role) const
 
 int ServerPlayerListModel::addPlayer(Player *player)
 {
-    qLog(QString("Player joined: \"%1\"").arg(player->name()));
+    qLog(QString("Player joined: \"%1\"").arg(player->name()), player->color());
     return PlayerListModel::addPlayer(player);
 }
 
 int ServerPlayerListModel::removePlayer(Player *player)
 {
-    qLog(QString("Player left: \"%1\"").arg(player->name()));
+    qLog(QString("Player left: \"%1\"").arg(player->name()), player->color());
     return PlayerListModel::removePlayer(player);
 }

@@ -86,3 +86,8 @@ Player* PlayerListModel::takePlayerAt(int index)
     player->disconnect(this, SLOT(player_nameChanged(QString,QString)));
     return player;
 }
+
+int PlayerListModel::indexOf(Player *player) const
+{
+    return m_playerList.indexOf(player);
+}

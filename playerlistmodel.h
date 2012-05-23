@@ -19,6 +19,7 @@ public:
 
     Player* playerAt(int index) const;
     Player* takePlayerAt(int index);
+    int indexOf(Player *player) const;
 
 public slots:
     virtual int addPlayer(Player *player);

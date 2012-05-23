@@ -148,8 +148,10 @@ void MultiplayerServer::client_readyRead()
         case MultiplayerPacket::Chat: {
             QString msg;
             in >> msg;
+            emit chatMessageReceived(msg, client->player);
+            PlayerID senderId = m_playerIdMap.value(client->player);
             MultiplayerPacket chatPacket(MultiplayerPacket::Chat);
-            chatPacket.stream() << msg;
+            chatPacket.stream() << msg << senderId;
             chatPacket.pack();
             sendPacketToOtherClients(chatPacket, socket);
             break;

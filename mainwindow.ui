@@ -112,6 +112,47 @@
    </attribute>
    <widget class="QWidget" name="editorWidget"/>
   </widget>
+  <widget class="QDockWidget" name="logDockWidget">
+   <property name="windowTitle">
+    <string>Log</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="logWidget">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="spacing">
+      <number>4</number>
+     </property>
+     <property name="margin">
+      <number>4</number>
+     </property>
+     <item>
+      <widget class="QPlainTextEdit" name="logView">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="inputLineEdit">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="action_setFocus">
    <property name="text">
     <string>Set Focus</string>

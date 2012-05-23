@@ -13,6 +13,9 @@ class MultiplayerClient : public QTcpSocket
 public:
     explicit MultiplayerClient(Game *game, Player *player, QObject *parent = NULL);
 
+signals:
+    void chatMessageReceived(const QString &msg, Player *player);
+
 private slots:
     void socket_connected();
     void socket_disconnected();

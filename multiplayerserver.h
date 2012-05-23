@@ -19,6 +19,9 @@ public:
 
     inline void sendPacketToAllClients(const MultiplayerPacket &packet) { sendPacketToOtherClients(packet, NULL); }
 
+signals:
+    void chatMessageReceived(const QString &msg, Player *player);
+
 private slots:
     void client_disconnected();
     void client_readyRead();

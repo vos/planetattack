@@ -30,6 +30,7 @@ public slots:
 
 private slots:
     void on_inputLineEdit_returnPressed();
+    void server_chatMessageReceived(const QString &msg, Player *player);
 
 private:
     Ui::MultiplayerServerWindow *ui;

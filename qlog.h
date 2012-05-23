@@ -4,9 +4,9 @@
 #include <QPlainTextEdit>
 #include <QTime>
 
-QPlainTextEdit *__logView = NULL;
+static QPlainTextEdit *__logView = NULL;
 
-void qLog(const QString &msg, const QTextCharFormat &format)
+static void qLog(const QString &msg, const QTextCharFormat &format)
 {
     if (__logView == NULL) {
         qWarning("Log view is NULL, use qRegisterLogView before!");
@@ -18,14 +18,14 @@ void qLog(const QString &msg, const QTextCharFormat &format)
     __logView->appendPlainText(QString("%1  %2").arg(timeStr).arg(msg));
 }
 
-void qLog(const QString &msg, const QColor &color = Qt::black)
+static void qLog(const QString &msg, const QColor &color = Qt::black)
 {
     QTextCharFormat format;
     format.setForeground(color);
     qLog(msg, format);
 }
 
-void qLogMsgHandler(QtMsgType type, const char *msg)
+static void qLogMsgHandler(QtMsgType type, const char *msg)
 {
     QTextCharFormat format;
     switch (type) {
@@ -46,7 +46,7 @@ void qLogMsgHandler(QtMsgType type, const char *msg)
     qLog(msg, format);
 }
 
-void qRegisterLogView(QPlainTextEdit *logView, bool useLogMsgHandler = true)
+static void qRegisterLogView(QPlainTextEdit *logView, bool useLogMsgHandler = true)
 {
     __logView = logView;
     if (useLogMsgHandler) {

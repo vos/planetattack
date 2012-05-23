@@ -102,9 +102,10 @@ void MultiplayerClient::socket_readyRead()
         }
         case MultiplayerPacket::Chat: {
             QString msg;
-            in >> msg;
-            // TODO: display chat
-            qDebug("chat msg = \"%s\"", qPrintable(msg));
+            PlayerID senderId;
+            in >> msg >> senderId;
+            Player *player = senderId > 0 ? m_idPlayerMap.value(senderId) : NULL; // server has PlayerID 0
+            emit chatMessageReceived(msg, player);
             break;
         }
         case MultiplayerPacket::PlanetAdded: {

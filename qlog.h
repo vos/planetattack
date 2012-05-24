@@ -14,7 +14,7 @@ static void qLog(const QString &msg, const QTextCharFormat &format)
         return;
     }
     __logView->setCurrentCharFormat(format);
-    QString timeStr(QTime::currentTime().toString("hh:mm:ss:zzz"));
+    QString timeStr(QTime::currentTime().toString("hh:mm:ss,zzz"));
     __logView->appendPlainText(QString("%1  %2").arg(timeStr).arg(msg));
 }
 

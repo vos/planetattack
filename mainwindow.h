@@ -45,7 +45,7 @@ private slots:
     void on_action_saveScenarioAs_triggered();
 
     void on_action_createServer_triggered();
-    void on_action_ConnectToServer_triggered();
+    void on_action_connectToServer_triggered();
 
     void on_inputLineEdit_returnPressed();
     void client_chatMessageReceived(const QString &msg, Player *player);

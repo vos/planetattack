@@ -318,7 +318,7 @@ void MainWindow::on_action_createServer_triggered()
 {
     if (m_server == NULL) {
         m_server = new MultiplayerServer(m_game, this);
-        if (m_server->listen(QHostAddress::Any, 54321)) {
+        if (m_server->listen(QHostAddress::Any, MultiplayerServer::DEFAULT_PORT)) {
             QString msg = QString("The server is listening on interface %1, port %2")
                     .arg(m_server->serverAddress().toString()).arg(m_server->serverPort());
             statusBar()->showMessage(msg);
@@ -342,25 +342,29 @@ void MainWindow::on_action_createServer_triggered()
     }
 }
 
-void MainWindow::on_action_ConnectToServer_triggered()
+void MainWindow::on_action_connectToServer_triggered()
 {
     if (m_client == NULL) {
         bool ok;
-        QString hostAddress = QInputDialog::getText(this, "Connect to Server", "Host Address", QLineEdit::Normal, "127.0.0.1", &ok);
+        QString server = QInputDialog::getText(this, "Connect to Server", "Host Address", QLineEdit::Normal, "127.0.0.1", &ok);
         if (ok) {
+            QStringList serverSplit = server.split(':');
+            QString host = serverSplit.at(0);
+            quint16 port = serverSplit.length() < 2 ? MultiplayerServer::DEFAULT_PORT : serverSplit.at(1).toUShort();
             m_client = new MultiplayerClient(m_game, m_canvas->activePlayer(), this);
             connect(m_client, SIGNAL(connected()), SLOT(client_connected()));
             connect(m_client, SIGNAL(disconnected()), SLOT(client_disconnected()));
             connect(m_client, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(client_error(QAbstractSocket::SocketError)));
             connect(m_client, SIGNAL(chatMessageReceived(QString,Player*)), SLOT(client_chatMessageReceived(QString,Player*)));
-            ui->action_ConnectToServer->setText("Connecting...");
-            ui->action_ConnectToServer->setEnabled(false);
-            m_client->connectToHost(hostAddress, 54321);
+            ui->action_connectToServer->setText("Connecting...");
+            ui->action_connectToServer->setEnabled(false);
+            qLog(QString("Connecting to Server %1:%2...").arg(host).arg(port));
+            m_client->connectToHost(host, port);
         }
     } else {
         if (m_client->isOpen()) {
-            ui->action_ConnectToServer->setText("Disconnecting...");
-            ui->action_ConnectToServer->setEnabled(false);
+            ui->action_connectToServer->setText("Disconnecting...");
+            ui->action_connectToServer->setEnabled(false);
             m_client->disconnectFromHost(); // TODO: send proper packet
         }
     }
@@ -369,8 +373,8 @@ void MainWindow::on_action_ConnectToServer_triggered()
 void MainWindow::client_connected()
 {
     qLog(QString("Connected to server %1:%2").arg(m_client->peerName()).arg(m_client->peerPort()));
-    ui->action_ConnectToServer->setText("Disconnect from Server");
-    ui->action_ConnectToServer->setEnabled(true);
+    ui->action_connectToServer->setText("Disconnect from Server");
+    ui->action_connectToServer->setEnabled(true);
 }
 
 void MainWindow::client_disconnected()
@@ -378,8 +382,8 @@ void MainWindow::client_disconnected()
     qLog("Disconnected from server");
     m_client->deleteLater();
     m_client = NULL;
-    ui->action_ConnectToServer->setText("Connect to Server");
-    ui->action_ConnectToServer->setEnabled(true);
+    ui->action_connectToServer->setText("Connect to Server");
+    ui->action_connectToServer->setEnabled(true);
 }
 
 void MainWindow::client_error(QAbstractSocket::SocketError error)
@@ -388,6 +392,9 @@ void MainWindow::client_error(QAbstractSocket::SocketError error)
     QString errorString = m_client->errorString();
     QMessageBox::warning(this, "Network Error", errorString);
     qWarning("Network Error: %s", qPrintable(errorString));
+    m_client = NULL;
+    ui->action_connectToServer->setText("Connect to Server");
+    ui->action_connectToServer->setEnabled(true);
 }
 
 void MainWindow::on_inputLineEdit_returnPressed()

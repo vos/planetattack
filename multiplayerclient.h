@@ -2,9 +2,8 @@
 #define MULTIPLAYERCLIENT_H
 
 #include <QTcpSocket>
-#include <QHash>
-
 #include "multiplayer.h"
+#include "bihash.h"
 
 class MultiplayerClient : public QTcpSocket
 {
@@ -31,12 +30,8 @@ private:
     PacketSize m_packetSize;
     PlayerID m_playerId; // own player id
 
-    // bimap wrapper?
-    QHash<PlayerID, Player*> m_idPlayerMap;
-    QHash<Player*, PlayerID> m_playerIdMap;
-
-    QHash<PlanetID, Planet*> m_idPlanetMap;
-    QHash<Planet*, PlanetID> m_planetIdMap;
+    BiHash<PlayerID, Player*> m_idPlayerMap;
+    BiHash<PlanetID, Planet*> m_idPlanetMap;
 
     PlanetID m_nextTempPlanetId;
     QHash<PlanetID, Planet*> m_tempIdPlanetMap;

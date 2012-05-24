@@ -37,7 +37,7 @@
      <string>&amp;Multiplayer</string>
     </property>
     <addaction name="action_createServer"/>
-    <addaction name="action_ConnectToServer"/>
+    <addaction name="action_connectToServer"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Multiplayer"/>
@@ -53,7 +53,7 @@
    <addaction name="action_saveScenario"/>
    <addaction name="separator"/>
    <addaction name="action_createServer"/>
-   <addaction name="action_ConnectToServer"/>
+   <addaction name="action_connectToServer"/>
    <addaction name="separator"/>
    <addaction name="action_setFocus"/>
   </widget>
@@ -192,7 +192,7 @@
     <string>Create &amp;Server</string>
    </property>
   </action>
-  <action name="action_ConnectToServer">
+  <action name="action_connectToServer">
    <property name="text">
     <string>&amp;Connect to Server</string>
    </property>

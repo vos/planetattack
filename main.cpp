@@ -7,8 +7,6 @@
 #include "playerintelligence.h"
 #include "multiplayerserverwindow.h"
 
-const quint16 DEFAULT_PORT = 54321;
-
 quint16 readUShort(const QStringList &arguments, const QString &name, quint16 defaultValue = 0)
 {
     if (arguments.isEmpty())
@@ -45,7 +43,7 @@ int main(int argc, char *argv[])
     QWidget *w;
     if (arguments.contains("-server")) {
         QHostAddress address = QHostAddress::Any;
-        quint16 port = readUShort(arguments, "-port", DEFAULT_PORT);
+        quint16 port = readUShort(arguments, "-port", MultiplayerServer::DEFAULT_PORT);
 
         MultiplayerServerWindow *server = new MultiplayerServerWindow;
         server->startListening(address, port);

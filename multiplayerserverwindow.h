@@ -24,7 +24,7 @@ public:
     bool isListening() const;
 
 public slots:
-    bool startListening(const QHostAddress &address = QHostAddress::Any, quint16 port = 0);
+    bool startListening(const QHostAddress &address = QHostAddress::Any, quint16 port = MultiplayerServer::DEFAULT_PORT);
     void stopListening();
     bool toggleListening();
 

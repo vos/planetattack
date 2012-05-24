@@ -2,7 +2,7 @@
 #define MULTIPLAYERSERVER_H
 
 #include <QTcpServer>
-#include <QHash>
+#include "bihash.h"
 
 #include "multiplayer.h"
 
@@ -11,10 +11,12 @@ class MultiplayerServer : public QTcpServer
     Q_OBJECT
 
 public:
+    static const quint16 DEFAULT_PORT = 54321;
+
     explicit MultiplayerServer(Game *game, QObject *parent = NULL);
     ~MultiplayerServer();
 
-    inline PlayerID playerId(Player *player) const { return m_playerIdMap.value(player); }
+    inline PlayerID playerId(Player *player) const { return m_idPlayerMap.key(player); }
     inline Player* player(PlayerID id) const { return m_idPlayerMap.value(id); }
 
     inline void sendPacketToAllClients(const MultiplayerPacket &packet) { sendPacketToOtherClients(packet, NULL); }
@@ -42,11 +44,8 @@ private:
     PlayerID m_nextPlayerId;
     PlanetID m_nextPlanetId;
 
-    QHash<PlayerID, Player*> m_idPlayerMap;
-    QHash<Player*, PlayerID> m_playerIdMap;
-
-    QHash<PlanetID, Planet*> m_idPlanetMap;
-    QHash<Planet*, PlanetID> m_planetIdMap;
+    BiHash<PlayerID, Player*> m_idPlayerMap;
+    BiHash<PlanetID, Planet*> m_idPlanetMap;
 
     void incomingConnection(int socketDescriptor);
     void sendPacketToOtherClients(const MultiplayerPacket &packet, const QTcpSocket *sender);

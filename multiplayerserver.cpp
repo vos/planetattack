@@ -60,8 +60,7 @@ void MultiplayerServer::client_disconnected()
 
     if (client->isConnected()) {
         m_game->removePlayer(player);
-        m_idPlayerMap.remove(client->id);
-        m_playerIdMap.remove(player);
+        m_idPlayerMap.removeKey(client->id);
 
         MultiplayerPacket playerDisconnectedPacket(MultiplayerPacket::PlayerDisconnected);
         playerDisconnectedPacket.stream() << client->id;
@@ -116,7 +115,6 @@ void MultiplayerServer::client_readyRead()
                 client->player = player;
                 client->id = m_nextPlayerId++;
                 m_idPlayerMap.insert(client->id, client->player);
-                m_playerIdMap.insert(client->player, client->id);
 
                 // accept the player
                 MultiplayerPacket connectAcceptedPacket(MultiplayerPacket::PlayerConnectAccepted);
@@ -162,7 +160,6 @@ void MultiplayerServer::client_readyRead()
             if (m_game->addPlanet(planet)) {
                 PlanetID planetId = m_nextPlanetId++;
                 m_idPlanetMap.insert(planetId, planet);
-                m_planetIdMap.insert(planet, planetId);
                 // send real id to the creator
                 MultiplayerPacket planetIdPacket(MultiplayerPacket::PlanetId);
                 planetIdPacket.stream() << tempPlanetId << planetId;
@@ -178,9 +175,8 @@ void MultiplayerServer::client_readyRead()
         case MultiplayerPacket::PlanetRemoved: {
             PlanetID planetId;
             in >> planetId;
-            Planet *planet = m_idPlanetMap.take(planetId);
+            Planet *planet = m_idPlanetMap.takeValue(planetId);
             Q_ASSERT(planet);
-            m_planetIdMap.remove(planet);
             if (m_game->removePlanet(planet)) {
                 MultiplayerPacket planetRemovedPacket(MultiplayerPacket::PlanetRemoved);
                 planetRemovedPacket.stream() << planetId;

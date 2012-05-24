@@ -29,6 +29,14 @@ public:
         return m_reverseHash.value(value);
     }
 
+    inline bool containsKey(const K &key) const {
+        return m_hash.contains(key);
+    }
+
+    inline bool containsValue(const V &value) const {
+        return m_reverseHash.contains(value);
+    }
+
     inline int size() const {
         return m_hash.size();
     }
@@ -70,9 +78,6 @@ private:
     #ifndef QT_NO_DEBUG_STREAM
     friend QDebug operator<<(QDebug dbg, const BiHash<K, V> &hash);
     #endif
-
-    // TODO: remove
-    friend int main(int argc, char *argv[]);
 
 };
 

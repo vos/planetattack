@@ -96,7 +96,7 @@ void MultiplayerServer::client_readyRead()
         client->packetSize = 0; // reset packet size
 
         // read packet type
-        qint32 packetType; // MultiplayerPacket::PacketType value
+        EnumType packetType; // MultiplayerPacket::PacketType
         in >> packetType;
 
 #ifdef MULTIPLAYERSERVER_DEBUG
@@ -153,6 +153,16 @@ void MultiplayerServer::client_readyRead()
             sendPacketToOtherClients(chatPacket, socket);
             break;
         }
+        case MultiplayerPacket::ModeChanged: {
+            EnumType mode; // Game::Mode
+            in >> mode;
+            qDebug("mode = %s", qPrintable(Game::modeString((Game::Mode)mode)));
+            m_game->setMode((Game::Mode)mode);
+            MultiplayerPacket modeChangedPacket(MultiplayerPacket::ModeChanged);
+            modeChangedPacket.stream() << mode;
+            sendPacketToOtherClients(modeChangedPacket, socket);
+            break;
+        }
         case MultiplayerPacket::PlanetAdded: {
             PlanetID tempPlanetId;
             Planet *planet = new Planet;
@@ -183,6 +193,36 @@ void MultiplayerServer::client_readyRead()
                 planetRemovedPacket.pack();
                 sendPacketToOtherClients(planetRemovedPacket, socket);
             }
+            break;
+        }
+        case MultiplayerPacket::PlanetChanged: {
+            PlanetID planetId;
+            EnumType changeType; // Planet::ChangeType
+            in >> planetId >> changeType;
+            Planet *planet = m_idPlanetMap.value(planetId);
+            Q_ASSERT(planet);
+            MultiplayerPacket planetChangedPacket(MultiplayerPacket::PlanetChanged);
+            planetChangedPacket.stream() << planetId << changeType;
+            switch ((Planet::ChangeType)changeType) {
+            case Planet::PositionChange: {
+                QVector2D position;
+                in >> position;
+                planet->setPosition(position);
+                planetChangedPacket.stream() << position;
+                break;
+            }
+            case Planet::RadiusChange: {
+                qreal radius;
+                in >> radius;
+                planet->setRadius(radius);
+                planetChangedPacket.stream() << radius;
+                break;
+            }
+            default:
+                qWarning("invalid Planet::ChangeType: %d", changeType);
+            }
+            planetChangedPacket.pack();
+            sendPacketToOtherClients(planetChangedPacket, socket);
             break;
         }
         default:

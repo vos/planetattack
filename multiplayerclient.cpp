@@ -1,7 +1,5 @@
 #include "multiplayerclient.h"
 
-#include "game.h"
-
 MultiplayerClient::MultiplayerClient(Game *game, Player *player, QObject *parent) :
     QTcpSocket(parent),
     m_game(game),
@@ -15,8 +13,10 @@ MultiplayerClient::MultiplayerClient(Game *game, Player *player, QObject *parent
     connect(this, SIGNAL(readyRead()), SLOT(socket_readyRead()));
     connect(this, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(socket_error(QAbstractSocket::SocketError)));
 
+    connect(m_game, SIGNAL(modeChanged(Game::Mode)), SLOT(game_modeChanged(Game::Mode)));
     connect(m_game, SIGNAL(planetAdded(Planet*)), SLOT(game_planetAdded(Planet*)));
     connect(m_game, SIGNAL(planetRemoved(Planet*)), SLOT(game_planetRemoved(Planet*)), Qt::DirectConnection);
+    connect(m_game, SIGNAL(planetChanged(Planet*,Planet::ChangeType)), SLOT(game_planetChanged(Planet*,Planet::ChangeType)));
 }
 
 void MultiplayerClient::socket_connected()
@@ -52,7 +52,7 @@ void MultiplayerClient::socket_readyRead()
         m_packetSize = 0; // reset packet size
 
         // read packet type
-        qint32 packetType; // MultiplayerPacket::PacketType value
+        EnumType packetType; // MultiplayerPacket::PacketType
         in >> packetType;
 
 #ifdef MULTIPLAYERCLIENT_DEBUG
@@ -106,6 +106,12 @@ void MultiplayerClient::socket_readyRead()
             emit chatMessageReceived(msg, player);
             break;
         }
+        case MultiplayerPacket::ModeChanged: {
+            EnumType mode; // Game::Mode
+            in >> mode;
+            m_game->setMode((Game::Mode)mode);
+            break;
+        }
         case MultiplayerPacket::PlanetId: {
             PlanetID tempPlanetId, planetId;
             in >> tempPlanetId >> planetId;
@@ -138,6 +144,27 @@ void MultiplayerClient::socket_readyRead()
             m_game->removePlanet(planet);
             break;
         }
+        case MultiplayerPacket::PlanetChanged: {
+            PlanetID planetId;
+            EnumType changeType; // Planet::ChangeType
+            in >> planetId >> changeType;
+            Planet *planet = m_idPlanetMap.value(planetId);
+            Q_ASSERT(planet);
+            switch ((Planet::ChangeType)changeType) {
+            case Planet::PositionChange: {
+//                QVector2D position;
+                in >> planet->m_position;
+//                planet->setPosition(position);
+                break;
+            }
+            case Planet::RadiusChange:
+                in >> planet->m_radius;
+                break;
+            default:
+                qWarning("invalid Planet::ChangeType: %d", changeType);
+            }
+            break;
+        }
         default:
             qWarning("MultiplayerClient::socket_readyRead(): Illegal PacketType %i", packetType);
             return;
@@ -150,6 +177,13 @@ void MultiplayerClient::socket_error(QAbstractSocket::SocketError error)
 #ifdef MULTIPLAYERCLIENT_DEBUG
     qDebug("MultiplayerClient::socket_error(%i) => %s", error, qPrintable(errorString()));
 #endif
+}
+
+void MultiplayerClient::game_modeChanged(Game::Mode mode)
+{
+    MultiplayerPacket packet(MultiplayerPacket::ModeChanged);
+    packet.stream() << (EnumType)mode;
+    packet.packAndSend(this);
 }
 
 void MultiplayerClient::game_planetAdded(Planet *planet)
@@ -172,6 +206,28 @@ void MultiplayerClient::game_planetRemoved(Planet *planet)
         Q_ASSERT(planetId > 0);
         MultiplayerPacket packet(MultiplayerPacket::PlanetRemoved);
         packet.stream() << planetId;
+        packet.packAndSend(this);
+    }
+}
+
+void MultiplayerClient::game_planetChanged(Planet *planet, Planet::ChangeType changeType)
+{
+    if (changeType != Planet::PositionChange && changeType != Planet::RadiusChange)
+        return; // don't send other change types yet
+
+    if (m_idPlanetMap.containsValue(planet)) {
+        PlanetID planetId = m_idPlanetMap.key(planet);
+        Q_ASSERT(planetId > 0);
+        MultiplayerPacket packet(MultiplayerPacket::PlanetChanged);
+        packet.stream() << planetId << (EnumType)changeType;
+        switch (changeType) {
+        case Planet::PositionChange:
+            packet.stream() << planet->position();
+            break;
+        case Planet::RadiusChange:
+            packet.stream() << planet->radius();
+            break;
+        }
         packet.packAndSend(this);
     }
 }

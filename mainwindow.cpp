@@ -92,9 +92,11 @@ void MainWindow::game_modeChanged(Game::Mode mode)
 void MainWindow::game_playerAdded(Player *player)
 {
     m_playerListModel->addPlayer(player);
-    m_canvas->setActivePlayer(player);
-    ui->playerComboBox->setCurrentIndex(ui->playerComboBox->count()-1);
-    canvas_selectionChanged(player);
+    if (m_client == NULL) {
+        m_canvas->setActivePlayer(player);
+        ui->playerComboBox->setCurrentIndex(ui->playerComboBox->count()-1);
+        canvas_selectionChanged(player);
+    }
 }
 
 void MainWindow::game_playerRemoved(Player *player)

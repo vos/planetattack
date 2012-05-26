@@ -64,6 +64,8 @@ private:
     qreal m_angle;
     qreal m_velocity;
 
+    friend class MultiplayerClient;
+
 };
 
 #ifndef QT_NO_DATASTREAM

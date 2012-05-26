@@ -38,6 +38,8 @@ protected:
     QVector2D m_position;
     qreal m_resources;
     QColor m_color;
+
+    friend class MultiplayerClient;
     
 };
 

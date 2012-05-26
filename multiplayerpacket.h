@@ -4,9 +4,8 @@
 #include <QByteArray>
 #include <QDataStream>
 
-QT_FORWARD_DECLARE_CLASS(QTcpSocket)
-
 typedef quint32 PacketSize;
+typedef qint32 EnumType;
 
 class MultiplayerPacket
 {
@@ -21,9 +20,11 @@ public:
         PlayerDisconnect, // client -> server
         PlayerDisconnected, // server -> other clients
         Chat, // client -> server -> other clients, server -> all clients
+        ModeChanged, // client -> server -> other clients
         PlanetAdded, // client -> server -> other clients
         PlanetId, // server -> client
         PlanetRemoved, // client -> server -> other clients
+        PlanetChanged, // client -> server -> other clients
         IllegalPacketType
     };
     inline static QString typeString(PacketType type) { return MultiplayerPacket::PacketTypeNames[type]; }
@@ -39,8 +40,8 @@ public:
     inline int size() const { return m_data.size() - (int)sizeof(PacketSize); }
 
     const MultiplayerPacket& pack(); // NOTE: don't change the data after pack (or use reopen)
-    bool send(QTcpSocket *socket) const; // NOTE: pack before send (packets without extra data can be send directly)!
-    inline bool packAndSend(QTcpSocket *socket) { return pack().send(socket); }
+    bool send(QIODevice *device) const; // NOTE: pack before send (packets without extra data can be send directly)!
+    inline bool packAndSend(QIODevice *device) { return pack().send(device); }
     MultiplayerPacket& reopen();
 
 private:

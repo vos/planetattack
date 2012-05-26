@@ -2,6 +2,8 @@
 #define MULTIPLAYERCLIENT_H
 
 #include <QTcpSocket>
+
+#include "game.h"
 #include "multiplayer.h"
 #include "bihash.h"
 
@@ -21,8 +23,10 @@ private slots:
     void socket_readyRead();
     void socket_error(QAbstractSocket::SocketError error);
 
+    void game_modeChanged(Game::Mode mode);
     void game_planetAdded(Planet *planet);
     void game_planetRemoved(Planet *planet);
+    void game_planetChanged(Planet *planet, Planet::ChangeType changeType);
 
 private:
     Game *m_game;

@@ -1,7 +1,5 @@
 #include "multiplayerpacket.h"
 
-#include <QTcpSocket>
-
 const char* MultiplayerPacket::PacketTypeNames[] = {
     "ConnectionAccepted",
     "ConnectionRefused",
@@ -12,9 +10,11 @@ const char* MultiplayerPacket::PacketTypeNames[] = {
     "PlayerDisconnect",
     "PlayerDisconnected",
     "Chat",
+    "ModeChanged",
     "PlanetAdded",
     "PlanetId",
     "PlanetRemoved",
+    "PlanetChanged",
     "IllegalPacketType"
 };
 
@@ -23,8 +23,8 @@ MultiplayerPacket::MultiplayerPacket(PacketType type) :
     m_stream(&m_data, QIODevice::WriteOnly)
 {
     m_stream.setVersion(StreamVersion);
-    m_stream << (PacketSize)sizeof(qint32); // min size (packet type only)
-    m_stream << (qint32)type;
+    m_stream << (PacketSize)sizeof(EnumType); // min size (packet type only)
+    m_stream << (EnumType)type;
 }
 
 MultiplayerPacket::MultiplayerPacket(MultiplayerPacket::PacketType type, const QByteArray &data) :
@@ -32,8 +32,8 @@ MultiplayerPacket::MultiplayerPacket(MultiplayerPacket::PacketType type, const Q
     m_stream(&m_data, QIODevice::WriteOnly)
 {
     m_stream.setVersion(StreamVersion);
-    m_stream << PacketSize(sizeof(qint32) + data.size()); // current size (packet type + data)
-    m_stream << (qint32)type;
+    m_stream << PacketSize(sizeof(EnumType) + data.size()); // current size (packet type + data)
+    m_stream << (EnumType)type;
     m_stream << data;
 }
 
@@ -44,11 +44,11 @@ const MultiplayerPacket& MultiplayerPacket::pack()
     return *this;
 }
 
-bool MultiplayerPacket::send(QTcpSocket *socket) const
+bool MultiplayerPacket::send(QIODevice *device) const
 {
-    if (socket == NULL)
+    if (device == NULL)
         return false;
-    return socket->write(m_data) == m_data.size();
+    return device->write(m_data) == m_data.size();
 }
 
 MultiplayerPacket& MultiplayerPacket::reopen()

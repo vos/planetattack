@@ -109,7 +109,7 @@ void MultiplayerClient::tcpSocket_readyRead()
         switch ((MultiplayerPacket::PacketType)packetType) {
         case MultiplayerPacket::ConnectionAccepted: {
             MultiplayerPacket packet(MultiplayerPacket::PlayerConnect);
-            packet.stream() << *m_player;
+            packet << *m_player;
             packet.packAndSend(&m_tcpSocket);
             break;
         }
@@ -122,7 +122,7 @@ void MultiplayerClient::tcpSocket_readyRead()
             qDebug("playerId = %d", m_playerId);
             // send UDP packet to register a socket to this client at the server
             MultiplayerPacket udpRegisterPacket(MultiplayerPacket::UdpRegister);
-            udpRegisterPacket.stream() << m_playerId;
+            udpRegisterPacket << m_playerId;
             udpRegisterPacket.packAndSend(&m_udpSocket);
             break;
         }
@@ -292,14 +292,14 @@ void MultiplayerClient::udpSocket_readyRead()
 void MultiplayerClient::sendChatMessage(const QString &msg)
 {
     MultiplayerPacket packet(MultiplayerPacket::Chat);
-    packet.stream() << msg;
+    packet << msg;
     packet.packAndSend(&m_tcpSocket);
 }
 
 void MultiplayerClient::game_modeChanged(Game::Mode mode)
 {
     MultiplayerPacket packet(MultiplayerPacket::ModeChanged);
-    packet.stream() << (EnumType)mode;
+    packet << (EnumType)mode;
     packet.packAndSend(&m_tcpSocket);
 }
 
@@ -310,7 +310,7 @@ void MultiplayerClient::game_planetAdded(Planet *planet)
         PlanetID tempPlanetId = m_nextTempPlanetId++;
         m_tempIdPlanetMap.insert(tempPlanetId, planet);
         MultiplayerPacket packet(MultiplayerPacket::PlanetAdded);
-        packet.stream() << tempPlanetId << *planet;
+        packet << tempPlanetId << *planet;
         packet.packAndSend(&m_tcpSocket);
     }
 }
@@ -322,7 +322,7 @@ void MultiplayerClient::game_planetRemoved(Planet *planet)
         PlanetID planetId = m_idPlanetMap.takeKey(planet);
         Q_ASSERT(planetId > 0);
         MultiplayerPacket packet(MultiplayerPacket::PlanetRemoved);
-        packet.stream() << planetId;
+        packet << planetId;
         packet.packAndSend(&m_tcpSocket);
     }
 }
@@ -336,19 +336,19 @@ void MultiplayerClient::game_planetChanged(Planet *planet, Planet::ChangeType ch
         PlanetID planetId = m_idPlanetMap.key(planet);
         Q_ASSERT(planetId > 0);
         MultiplayerPacket packet(MultiplayerPacket::PlanetChanged);
-        packet.stream() << planetId << (EnumType)changeType;
+        packet << planetId << (EnumType)changeType;
         switch (changeType) {
         case Planet::PositionChange:
-            packet.stream() << planet->position();
+            packet << planet->position();
             break;
         case Planet::RadiusChange:
-            packet.stream() << planet->radius();
+            packet << planet->radius();
             break;
         case Planet::ResourcesChange:
-            packet.stream() << planet->resources();
+            packet << planet->resources();
             break;
         case Planet::ProductionFactorChange:
-            packet.stream() << planet->productionFactor();
+            packet << planet->productionFactor();
             break;
         default:
             return; // abort packet transmission
@@ -360,16 +360,16 @@ void MultiplayerClient::game_planetChanged(Planet *planet, Planet::ChangeType ch
 void MultiplayerClient::player_changed(Player::ChangeType changeType)
 {
     MultiplayerPacket packet(MultiplayerPacket::PlayerChanged);
-    packet.stream() << (EnumType)changeType;
+    packet << (EnumType)changeType;
     switch (changeType) {
     case Player::NameChange:
-        packet.stream() << m_player->name();
+        packet << m_player->name();
         break;
     case Player::ColorChange:
-        packet.stream() << m_player->color();
+        packet << m_player->color();
         break;
     case Player::ResourceFactorChange:
-        packet.stream() << m_player->resourceFactor();
+        packet << m_player->resourceFactor();
         // TODO: use UDP instead?
         break;
     }

@@ -86,7 +86,7 @@ void MultiplayerServer::client_disconnected()
         m_idPlayerMap.removeKey(client->id);
 
         MultiplayerPacket playerDisconnectedPacket(MultiplayerPacket::PlayerDisconnected);
-        playerDisconnectedPacket.stream() << client->id;
+        playerDisconnectedPacket << client->id;
         playerDisconnectedPacket.pack();
         sendTcpPacketToOtherClients(playerDisconnectedPacket, socket);
     }
@@ -150,21 +150,21 @@ void MultiplayerServer::client_tcpReadyRead()
 
                 // accept the player
                 MultiplayerPacket connectAcceptedPacket(MultiplayerPacket::PlayerConnectAccepted);
-                connectAcceptedPacket.stream() << client->id;
+                connectAcceptedPacket << client->id;
                 connectAcceptedPacket.packAndSend(socket);
 
                 // send the client the other players data
                 foreach (Client *otherClient, m_tcpClientMap.values()) {
                     if (otherClient != client && otherClient->isConnected()) {
                         MultiplayerPacket otherPlayerPacket(MultiplayerPacket::PlayerConnected); // send PlayerList in one packet?
-                        otherPlayerPacket.stream() << otherClient->id << *otherClient->player;
+                        otherPlayerPacket << otherClient->id << *otherClient->player;
                         otherPlayerPacket.packAndSend(socket);
                     }
                 }
 
                 // inform the other clients about the new player
                 MultiplayerPacket playerConnectedPacket(MultiplayerPacket::PlayerConnected);
-                playerConnectedPacket.stream() << client->id << *player;
+                playerConnectedPacket << client->id << *player;
                 playerConnectedPacket.pack();
                 sendTcpPacketToOtherClients(playerConnectedPacket, socket);
             } else {
@@ -180,27 +180,27 @@ void MultiplayerServer::client_tcpReadyRead()
             in >> changeType;
             Player *player = client->player;
             MultiplayerPacket playerChangedPacket(MultiplayerPacket::PlayerChanged);
-            playerChangedPacket.stream() << client->id << changeType;
+            playerChangedPacket << client->id << changeType;
             switch ((Player::ChangeType)changeType) {
             case Player::NameChange: {
                 QString name;
                 in >> name;
                 player->setName(name);
-                playerChangedPacket.stream() << name;
+                playerChangedPacket << name;
                 break;
             }
             case Player::ColorChange: {
                 QColor color;
                 in >> color;
                 player->setColor(color);
-                playerChangedPacket.stream() << color;
+                playerChangedPacket << color;
                 break;
             }
             case Player::ResourceFactorChange: {
                 qreal resourceFactor;
                 in >> resourceFactor;
                 player->setResourceFactor(resourceFactor);
-                playerChangedPacket.stream() << resourceFactor;
+                playerChangedPacket << resourceFactor;
                 break;
             }
             default:
@@ -215,7 +215,7 @@ void MultiplayerServer::client_tcpReadyRead()
             in >> msg;
             emit chatMessageReceived(msg, client->player);
             MultiplayerPacket chatPacket(MultiplayerPacket::Chat);
-            chatPacket.stream() << msg << client->id;
+            chatPacket << msg << client->id;
             chatPacket.pack();
             sendTcpPacketToOtherClients(chatPacket, socket);
             break;
@@ -226,7 +226,7 @@ void MultiplayerServer::client_tcpReadyRead()
             qDebug("mode = %s", qPrintable(Game::modeString((Game::Mode)mode)));
             m_game->setMode((Game::Mode)mode);
             MultiplayerPacket modeChangedPacket(MultiplayerPacket::ModeChanged);
-            modeChangedPacket.stream() << mode;
+            modeChangedPacket << mode;
             sendTcpPacketToOtherClients(modeChangedPacket, socket);
             break;
         }
@@ -240,11 +240,11 @@ void MultiplayerServer::client_tcpReadyRead()
                 m_idPlanetMap.insert(planetId, planet);
                 // send real id to the creator
                 MultiplayerPacket planetIdPacket(MultiplayerPacket::PlanetId);
-                planetIdPacket.stream() << tempPlanetId << planetId;
+                planetIdPacket << tempPlanetId << planetId;
                 planetIdPacket.packAndSend(socket);
                 // add id and resend packet to all other clients
                 MultiplayerPacket planetAddedPacket(MultiplayerPacket::PlanetAdded);
-                planetAddedPacket.stream() << planetId << *planet << client->id;
+                planetAddedPacket << planetId << *planet << client->id;
                 planetAddedPacket.pack();
                 sendTcpPacketToOtherClients(planetAddedPacket, socket);
             }
@@ -257,7 +257,7 @@ void MultiplayerServer::client_tcpReadyRead()
             Q_ASSERT(planet);
             if (m_game->removePlanet(planet)) {
                 MultiplayerPacket planetRemovedPacket(MultiplayerPacket::PlanetRemoved);
-                planetRemovedPacket.stream() << planetId;
+                planetRemovedPacket << planetId;
                 planetRemovedPacket.pack();
                 sendTcpPacketToOtherClients(planetRemovedPacket, socket);
             }
@@ -319,34 +319,34 @@ void MultiplayerServer::client_udpReadyRead()
             Planet *planet = m_idPlanetMap.value(planetId);
             Q_ASSERT(planet);
             MultiplayerPacket planetChangedPacket(MultiplayerPacket::PlanetChanged);
-            planetChangedPacket.stream() << planetId << changeType;
+            planetChangedPacket << planetId << changeType;
             switch ((Planet::ChangeType)changeType) {
             case Planet::PositionChange: {
                 QVector2D position;
                 in >> position;
                 planet->setPosition(position);
-                planetChangedPacket.stream() << position;
+                planetChangedPacket << position;
                 break;
             }
             case Planet::RadiusChange: {
                 qreal radius;
                 in >> radius;
                 planet->setRadius(radius);
-                planetChangedPacket.stream() << radius;
+                planetChangedPacket << radius;
                 break;
             }
             case Planet::ResourcesChange: {
                 qreal resources;
                 in >> resources;
                 planet->setResources(resources);
-                planetChangedPacket.stream() << resources;
+                planetChangedPacket << resources;
                 break;
             }
             case Planet::ProductionFactorChange: {
                 qreal productionFactor;
                 in >> productionFactor;
                 planet->setProductionFactor(productionFactor);
-                planetChangedPacket.stream() << productionFactor;
+                planetChangedPacket << productionFactor;
                 break;
             }
             default:
@@ -366,7 +366,7 @@ void MultiplayerServer::client_udpReadyRead()
 void MultiplayerServer::sendChatMessage(const QString &msg)
 {
     MultiplayerPacket packet(MultiplayerPacket::Chat);
-    packet.stream() << msg << PlayerID(0); // server has PlayerID 0
+    packet << msg << PlayerID(0); // server has PlayerID 0
     packet.pack();
     sendTcpPacketToAllClients(packet);
 }

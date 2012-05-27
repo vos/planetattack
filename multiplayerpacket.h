@@ -40,6 +40,7 @@ public:
     inline QByteArray& data() { return m_data; }
     inline const QByteArray& data() const { return m_data; }
     inline QDataStream& stream() { return m_stream; }
+    template<typename T> inline QDataStream& operator<<(const T &data) { return m_stream << data; }
     inline int size() const { return m_data.size() - (int)sizeof(PacketSize); }
 
     const MultiplayerPacket& pack(); // NOTE: don't change the data after pack (or use reopen)

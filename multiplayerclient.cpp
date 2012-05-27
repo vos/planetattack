@@ -24,6 +24,8 @@ MultiplayerClient::MultiplayerClient(Game *game, Player *player, QObject *parent
     connect(m_game, SIGNAL(planetAdded(Planet*)), SLOT(game_planetAdded(Planet*)));
     connect(m_game, SIGNAL(planetRemoved(Planet*)), SLOT(game_planetRemoved(Planet*)), Qt::DirectConnection);
     connect(m_game, SIGNAL(planetChanged(Planet*,Planet::ChangeType)), SLOT(game_planetChanged(Planet*,Planet::ChangeType)));
+
+    connect(m_player, SIGNAL(changed(Player::ChangeType)), SLOT(player_changed(Player::ChangeType)));
 }
 
 void MultiplayerClient::connectToHost(const QString &hostName, quint16 port)
@@ -146,6 +148,36 @@ void MultiplayerClient::tcpSocket_readyRead()
             m_game->removePlayer(player);
             break;
         }
+        case MultiplayerPacket::PlayerChanged: {
+            PlayerID playerId;
+            EnumType changeType; // Player::ChangeType
+            in >> playerId >> changeType;
+            Player *player = m_idPlayerMap.value(playerId);
+            Q_ASSERT(player);
+            switch ((Player::ChangeType)changeType) {
+            case Player::NameChange: {
+                QString name;
+                in >> name;
+                player->setName(name);
+                break;
+            }
+            case Player::ColorChange: {
+                QColor color;
+                in >> color;
+                player->setColor(color);
+                break;
+            }
+            case Player::ResourceFactorChange: {
+                qreal resourceFactor;
+                in >> resourceFactor;
+                player->setResourceFactor(resourceFactor);
+                break;
+            }
+            default:
+                qWarning("invalid Player::ChangeType: %d", changeType);
+            }
+            break;
+        }
         case MultiplayerPacket::Chat: {
             QString msg;
             PlayerID senderId;
@@ -233,14 +265,17 @@ void MultiplayerClient::udpSocket_readyRead()
             Planet *planet = m_idPlanetMap.value(planetId);
             Q_ASSERT(planet);
             switch ((Planet::ChangeType)changeType) {
-            case Planet::PositionChange: {
-//                QVector2D position;
+            case Planet::PositionChange:
                 in >> planet->m_position;
-//                planet->setPosition(position);
                 break;
-            }
             case Planet::RadiusChange:
                 in >> planet->m_radius;
+                break;
+            case Planet::ResourcesChange:
+                in >> planet->m_resources;
+                break;
+            case Planet::ProductionFactorChange:
+                in >> planet->m_productionFactor;
                 break;
             default:
                 qWarning("invalid Planet::ChangeType: %d", changeType);
@@ -294,8 +329,8 @@ void MultiplayerClient::game_planetRemoved(Planet *planet)
 
 void MultiplayerClient::game_planetChanged(Planet *planet, Planet::ChangeType changeType)
 {
-    if (changeType != Planet::PositionChange && changeType != Planet::RadiusChange)
-        return; // don't send other change types yet
+    if (m_game->mode() != Game::EditorMode)
+        return; // only send in editor mode
 
     if (m_idPlanetMap.containsValue(planet)) {
         PlanetID planetId = m_idPlanetMap.key(planet);
@@ -309,7 +344,34 @@ void MultiplayerClient::game_planetChanged(Planet *planet, Planet::ChangeType ch
         case Planet::RadiusChange:
             packet.stream() << planet->radius();
             break;
+        case Planet::ResourcesChange:
+            packet.stream() << planet->resources();
+            break;
+        case Planet::ProductionFactorChange:
+            packet.stream() << planet->productionFactor();
+            break;
+        default:
+            return; // abort packet transmission
         }
         packet.packAndSend(&m_udpSocket);
     }
+}
+
+void MultiplayerClient::player_changed(Player::ChangeType changeType)
+{
+    MultiplayerPacket packet(MultiplayerPacket::PlayerChanged);
+    packet.stream() << (EnumType)changeType;
+    switch (changeType) {
+    case Player::NameChange:
+        packet.stream() << m_player->name();
+        break;
+    case Player::ColorChange:
+        packet.stream() << m_player->color();
+        break;
+    case Player::ResourceFactorChange:
+        packet.stream() << m_player->resourceFactor();
+        // TODO: use UDP instead?
+        break;
+    }
+    packet.packAndSend(&m_tcpSocket);
 }

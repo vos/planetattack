@@ -10,6 +10,7 @@ const char* MultiplayerPacket::PacketTypeNames[] = {
     "PlayerConnected",
     "PlayerDisconnect",
     "PlayerDisconnected",
+    "PlayerChanged",
     "Chat",
     "ModeChanged",
     "PlanetAdded",

@@ -175,6 +175,41 @@ void MultiplayerServer::client_tcpReadyRead()
         case MultiplayerPacket::PlayerDisconnect:
             socket->disconnectFromHost();
             break;
+        case MultiplayerPacket::PlayerChanged: {
+            EnumType changeType; // Player::ChangeType
+            in >> changeType;
+            Player *player = client->player;
+            MultiplayerPacket playerChangedPacket(MultiplayerPacket::PlayerChanged);
+            playerChangedPacket.stream() << client->id << changeType;
+            switch ((Player::ChangeType)changeType) {
+            case Player::NameChange: {
+                QString name;
+                in >> name;
+                player->setName(name);
+                playerChangedPacket.stream() << name;
+                break;
+            }
+            case Player::ColorChange: {
+                QColor color;
+                in >> color;
+                player->setColor(color);
+                playerChangedPacket.stream() << color;
+                break;
+            }
+            case Player::ResourceFactorChange: {
+                qreal resourceFactor;
+                in >> resourceFactor;
+                player->setResourceFactor(resourceFactor);
+                playerChangedPacket.stream() << resourceFactor;
+                break;
+            }
+            default:
+                qWarning("invalid Player::ChangeType: %d", changeType);
+            }
+            playerChangedPacket.pack();
+            sendTcpPacketToOtherClients(playerChangedPacket, socket);
+            break;
+        }
         case MultiplayerPacket::Chat: {
             QString msg;
             in >> msg;
@@ -300,6 +335,20 @@ void MultiplayerServer::client_udpReadyRead()
                 planetChangedPacket.stream() << radius;
                 break;
             }
+            case Planet::ResourcesChange: {
+                qreal resources;
+                in >> resources;
+                planet->setResources(resources);
+                planetChangedPacket.stream() << resources;
+                break;
+            }
+            case Planet::ProductionFactorChange: {
+                qreal productionFactor;
+                in >> productionFactor;
+                planet->setProductionFactor(productionFactor);
+                planetChangedPacket.stream() << productionFactor;
+                break;
+            }
             default:
                 qWarning("invalid Planet::ChangeType: %d", changeType);
             }
@@ -339,10 +388,10 @@ void MultiplayerServer::sendUdpPacketToOtherClients(const MultiplayerPacket &pac
     QHash<PlayerID, QPair<QHostAddress, quint16> >::const_iterator it;
     for (it = m_udpClientMap.hash().constBegin(); it != m_udpClientMap.hash().constEnd(); ++it) {
         const PlayerID playerId = it.key();
-        const QPair<QHostAddress, quint16> &clientAddress = it.value();
         if (playerId != senderId) {
+            const QPair<QHostAddress, quint16> &clientAddress = it.value();
 #ifdef MULTIPLAYERSERVER_DEBUG
-            qDebug("m_udpSocket.writeDatagram(%d, %s:%d)", qPrintable(packet.size(), clientAddress.first.toString()), clientAddress.second);
+            qDebug("m_udpSocket.writeDatagram(size = %d, receiver = %s:%d)", packet.size(), qPrintable(clientAddress.first.toString()), clientAddress.second);
 #endif
             m_udpSocket.writeDatagram(packet.data(), clientAddress.first, clientAddress.second);
         }

@@ -50,6 +50,8 @@ private slots:
     void game_planetRemoved(Planet *planet);
     void game_planetChanged(Planet *planet, Planet::ChangeType changeType);
 
+    void player_changed(Player::ChangeType changeType);
+
 private:
     QTcpSocket m_tcpSocket;
     QUdpSocket m_udpSocket;

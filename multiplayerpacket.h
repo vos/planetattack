@@ -20,6 +20,7 @@ public:
         PlayerConnected, // server -> other clients
         PlayerDisconnect, // client -> server
         PlayerDisconnected, // server -> other clients
+        PlayerChanged, // client -> server -> other clients
         Chat, // client -> server -> other clients, server -> all clients
         ModeChanged, // client -> server -> other clients
         PlanetAdded, // client -> server -> other clients

@@ -29,7 +29,7 @@ public:
     inline Player* player(PlayerID id) const { return m_idPlayerMap.value(id); }
 
     inline void sendTcpPacketToAllClients(const MultiplayerPacket &packet) { sendTcpPacketToOtherClients(packet, NULL); }
-    inline void sendUdpPacketToAllClients(const MultiplayerPacket &packet) { sendUdpPacketToOtherClients(packet, NULL); }
+    inline void sendUdpPacketToAllClients(const MultiplayerPacket &packet) { sendUdpPacketToOtherClients(packet, 0); }
 
 signals:
     void chatMessageReceived(const QString &msg, Player *player);
@@ -57,8 +57,8 @@ private:
         PacketSize packetSize;
         inline bool isConnected() const { return player != NULL; }
     };
-    BiHash<QPair<QHostAddress, quint16>, Client*> m_clients; // <Address, Port> -> Client
     QHash<QTcpSocket*, Client*> m_tcpClientMap;
+    BiHash<PlayerID, QPair<QHostAddress, quint16> > m_udpClientMap; // PlayerID -> <Address, Port>
 
     PlayerID m_nextPlayerId;
     PlanetID m_nextPlanetId;
@@ -67,7 +67,7 @@ private:
     BiHash<PlanetID, Planet*> m_idPlanetMap;
 
     void sendTcpPacketToOtherClients(const MultiplayerPacket &packet, const QTcpSocket *sender);
-    void sendUdpPacketToOtherClients(const MultiplayerPacket &packet, const Client *sender);
+    void sendUdpPacketToOtherClients(const MultiplayerPacket &packet, const PlayerID senderId);
 
 };
 

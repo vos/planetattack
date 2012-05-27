@@ -13,6 +13,7 @@ public:
     enum PacketType {
         ConnectionAccepted, // server -> client
         ConnectionRefused, // server -> client
+        UdpRegister, // client -> server
         PlayerConnect, // client -> server
         PlayerConnectAccepted, // server -> client
         PlayerConnectDenied, // server -> client

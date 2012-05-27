@@ -3,6 +3,7 @@
 const char* MultiplayerPacket::PacketTypeNames[] = {
     "ConnectionAccepted",
     "ConnectionRefused",
+    "UdpRegister",
     "PlayerConnect",
     "PlayerConnectAccepted",
     "PlayerConnectDenied",

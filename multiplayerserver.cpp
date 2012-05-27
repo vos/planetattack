@@ -18,7 +18,7 @@ MultiplayerServer::~MultiplayerServer()
     foreach (QTcpSocket *socket, m_tcpClientMap.keys()) {
         socket->disconnectFromHost();
     }
-    qDeleteAll(m_clients.values());
+    qDeleteAll(m_tcpClientMap.values());
 }
 
 bool MultiplayerServer::listen(const QHostAddress &address, quint16 port)
@@ -56,7 +56,6 @@ void MultiplayerServer::client_newConnection()
     connect(socket, SIGNAL(readyRead()), SLOT(client_tcpReadyRead()));
 
     Client *client = new Client;
-    m_clients.insert(qMakePair(socket->peerAddress(), socket->peerPort()), client);
     m_tcpClientMap.insert(socket, client);
 
     MultiplayerPacket(MultiplayerPacket::ConnectionAccepted).send(socket); // Multiplayer::ConnectionRefused
@@ -71,7 +70,7 @@ void MultiplayerServer::client_disconnected()
     QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
     Q_ASSERT(socket);
 
-    Client *client = m_tcpClientMap.value(socket);
+    Client *client = m_tcpClientMap.take(socket);
     Q_ASSERT(client);
     Player *player = client->player;
 
@@ -83,6 +82,7 @@ void MultiplayerServer::client_disconnected()
 
     if (client->isConnected()) {
         m_game->removePlayer(player);
+        m_udpClientMap.removeKey(client->id);
         m_idPlayerMap.removeKey(client->id);
 
         MultiplayerPacket playerDisconnectedPacket(MultiplayerPacket::PlayerDisconnected);
@@ -90,7 +90,6 @@ void MultiplayerServer::client_disconnected()
         playerDisconnectedPacket.pack();
         sendTcpPacketToOtherClients(playerDisconnectedPacket, socket);
     }
-    m_clients.removeValue(client);
     delete client;
 }
 
@@ -155,7 +154,7 @@ void MultiplayerServer::client_tcpReadyRead()
                 connectAcceptedPacket.packAndSend(socket);
 
                 // send the client the other players data
-                foreach (Client *otherClient, m_clients.values()) {
+                foreach (Client *otherClient, m_tcpClientMap.values()) {
                     if (otherClient != client && otherClient->isConnected()) {
                         MultiplayerPacket otherPlayerPacket(MultiplayerPacket::PlayerConnected); // send PlayerList in one packet?
                         otherPlayerPacket.stream() << otherClient->id << *otherClient->player;
@@ -200,6 +199,7 @@ void MultiplayerServer::client_tcpReadyRead()
             PlanetID tempPlanetId;
             Planet *planet = new Planet;
             in >> tempPlanetId >> *planet;
+            planet->setPlayer(client->player);
             if (m_game->addPlanet(planet)) {
                 PlanetID planetId = m_nextPlanetId++;
                 m_idPlanetMap.insert(planetId, planet);
@@ -248,9 +248,12 @@ void MultiplayerServer::client_udpReadyRead()
         quint16 senderPort;
         m_udpSocket.readDatagram(datagram.data(), datagram.size(), &senderAddress, &senderPort);
 
-        // TODO: get client, udp port is not constant!?
-        Client *client = m_clients.value(qMakePair(senderAddress, senderPort));
-        Q_ASSERT(client);
+        PlayerID senderId = m_udpClientMap.key(qMakePair(senderAddress, senderPort));
+
+#ifdef MULTIPLAYERSERVER_DEBUG
+        qDebug("sender: %s:%d (%d -> '%s'')", qPrintable(senderAddress.toString()), senderPort, senderId,
+               qPrintable(senderId > 0 ? m_idPlayerMap.value(senderId)->name() : "[no player id]"));
+#endif
 
         QDataStream in(datagram);
         in.setVersion(MultiplayerPacket::StreamVersion);
@@ -268,6 +271,12 @@ void MultiplayerServer::client_udpReadyRead()
 
         // read and handle packet data
         switch ((MultiplayerPacket::PacketType)packetType) {
+        case MultiplayerPacket::UdpRegister: {
+            PlayerID playerId;
+            in >> playerId;
+            m_udpClientMap.insert(playerId, qMakePair(senderAddress, senderPort));
+            break;
+        }
         case MultiplayerPacket::PlanetChanged: {
             PlanetID planetId;
             EnumType changeType; // Planet::ChangeType
@@ -295,7 +304,7 @@ void MultiplayerServer::client_udpReadyRead()
                 qWarning("invalid Planet::ChangeType: %d", changeType);
             }
             planetChangedPacket.pack();
-            sendUdpPacketToOtherClients(planetChangedPacket, client);
+            sendUdpPacketToOtherClients(planetChangedPacket, senderId);
             break;
         }
         default:
@@ -325,13 +334,16 @@ void MultiplayerServer::sendTcpPacketToOtherClients(const MultiplayerPacket &pac
     }
 }
 
-void MultiplayerServer::sendUdpPacketToOtherClients(const MultiplayerPacket &packet, const Client *sender)
+void MultiplayerServer::sendUdpPacketToOtherClients(const MultiplayerPacket &packet, const PlayerID senderId)
 {
-    QHash<QPair<QHostAddress, quint16>, Client*>::const_iterator it;
-    for (it = m_clients.hash().constBegin(); it != m_clients.hash().constEnd(); ++it) {
-        const QPair<QHostAddress, quint16> &clientAddress = it.key();
-        const Client *client = it.value();
-        if (client != sender && client->isConnected()) {
+    QHash<PlayerID, QPair<QHostAddress, quint16> >::const_iterator it;
+    for (it = m_udpClientMap.hash().constBegin(); it != m_udpClientMap.hash().constEnd(); ++it) {
+        const PlayerID playerId = it.key();
+        const QPair<QHostAddress, quint16> &clientAddress = it.value();
+        if (playerId != senderId) {
+#ifdef MULTIPLAYERSERVER_DEBUG
+            qDebug("m_udpSocket.writeDatagram(%d, %s:%d)", qPrintable(packet.size(), clientAddress.first.toString()), clientAddress.second);
+#endif
             m_udpSocket.writeDatagram(packet.data(), clientAddress.first, clientAddress.second);
         }
     }

@@ -118,6 +118,10 @@ void MultiplayerClient::tcpSocket_readyRead()
             in >> m_playerId;
             m_idPlayerMap.insert(m_playerId, m_player);
             qDebug("playerId = %d", m_playerId);
+            // send UDP packet to register a socket to this client at the server
+            MultiplayerPacket udpRegisterPacket(MultiplayerPacket::UdpRegister);
+            udpRegisterPacket.stream() << m_playerId;
+            udpRegisterPacket.packAndSend(&m_udpSocket);
             break;
         }
         case MultiplayerPacket::PlayerConnectDenied:

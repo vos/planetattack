@@ -36,6 +36,7 @@ public:
     inline PacketType type() const { return m_type; }
     inline QString typeString() const { return MultiplayerPacket::PacketTypeNames[m_type]; }
     inline QByteArray& data() { return m_data; }
+    inline const QByteArray& data() const { return m_data; }
     inline QDataStream& stream() { return m_stream; }
     inline int size() const { return m_data.size() - (int)sizeof(PacketSize); }
 

@@ -2,11 +2,12 @@
 #define MULTIPLAYERSERVER_H
 
 #include <QTcpServer>
-#include "bihash.h"
+#include <QUdpSocket>
 
 #include "multiplayer.h"
+#include "bihash.h"
 
-class MultiplayerServer : public QTcpServer
+class MultiplayerServer : public QObject
 {
     Q_OBJECT
 
@@ -16,20 +17,37 @@ public:
     explicit MultiplayerServer(Game *game, QObject *parent = NULL);
     ~MultiplayerServer();
 
+    bool listen(const QHostAddress &address = QHostAddress::Any, quint16 port = DEFAULT_PORT);
+    void close();
+    inline bool isListening() const { return m_tcpServer.isListening() && m_udpSocket.isValid(); }
+    inline QHostAddress serverAddress() const { return m_tcpServer.serverAddress(); }
+    inline quint16 serverPort() const { return m_tcpServer.serverPort(); }
+    QAbstractSocket::SocketError serverError() const;
+    QString errorString() const;
+
     inline PlayerID playerId(Player *player) const { return m_idPlayerMap.key(player); }
     inline Player* player(PlayerID id) const { return m_idPlayerMap.value(id); }
 
-    inline void sendPacketToAllClients(const MultiplayerPacket &packet) { sendPacketToOtherClients(packet, NULL); }
+    inline void sendTcpPacketToAllClients(const MultiplayerPacket &packet) { sendTcpPacketToOtherClients(packet, NULL); }
+    inline void sendUdpPacketToAllClients(const MultiplayerPacket &packet) { sendUdpPacketToOtherClients(packet, NULL); }
 
 signals:
     void chatMessageReceived(const QString &msg, Player *player);
 
+public slots:
+    void sendChatMessage(const QString &msg);
+
 private slots:
+    void client_newConnection();
     void client_disconnected();
-    void client_readyRead();
     void client_error(QAbstractSocket::SocketError error);
+    void client_tcpReadyRead();
+    void client_udpReadyRead();
 
 private:
+    QTcpServer m_tcpServer;
+    QUdpSocket m_udpSocket;
+
     Game *m_game;
 
     struct Client {
@@ -39,7 +57,8 @@ private:
         PacketSize packetSize;
         inline bool isConnected() const { return player != NULL; }
     };
-    QHash<QTcpSocket*, Client*> m_clients;
+    BiHash<QPair<QHostAddress, quint16>, Client*> m_clients; // <Address, Port> -> Client
+    QHash<QTcpSocket*, Client*> m_tcpClientMap;
 
     PlayerID m_nextPlayerId;
     PlanetID m_nextPlanetId;
@@ -47,8 +66,8 @@ private:
     BiHash<PlayerID, Player*> m_idPlayerMap;
     BiHash<PlanetID, Planet*> m_idPlanetMap;
 
-    void incomingConnection(int socketDescriptor);
-    void sendPacketToOtherClients(const MultiplayerPacket &packet, const QTcpSocket *sender);
+    void sendTcpPacketToOtherClients(const MultiplayerPacket &packet, const QTcpSocket *sender);
+    void sendUdpPacketToOtherClients(const MultiplayerPacket &packet, const Client *sender);
 
 };
 

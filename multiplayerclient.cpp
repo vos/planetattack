@@ -1,17 +1,24 @@
 #include "multiplayerclient.h"
 
 MultiplayerClient::MultiplayerClient(Game *game, Player *player, QObject *parent) :
-    QTcpSocket(parent),
+    QObject(parent),
     m_game(game),
     m_player(player),
     m_packetSize(0),
     m_playerId(0),
     m_nextTempPlanetId(1)
 {
-    connect(this, SIGNAL(connected()), SLOT(socket_connected()));
-    connect(this, SIGNAL(disconnected()), SLOT(socket_disconnected()));
-    connect(this, SIGNAL(readyRead()), SLOT(socket_readyRead()));
-    connect(this, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(socket_error(QAbstractSocket::SocketError)));
+    connect(&m_tcpSocket, SIGNAL(connected()), SLOT(socket_connected()));
+    connect(&m_tcpSocket, SIGNAL(disconnected()), SLOT(socket_disconnected()));
+    connect(&m_tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(socket_error(QAbstractSocket::SocketError)));
+    connect(&m_tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)), SIGNAL(error(QAbstractSocket::SocketError)));
+    connect(&m_tcpSocket, SIGNAL(readyRead()), SLOT(tcpSocket_readyRead()));
+
+    connect(&m_udpSocket, SIGNAL(connected()), SLOT(socket_connected()));
+    connect(&m_udpSocket, SIGNAL(disconnected()), SLOT(socket_disconnected()));
+    connect(&m_udpSocket, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(socket_error(QAbstractSocket::SocketError)));
+    connect(&m_udpSocket, SIGNAL(error(QAbstractSocket::SocketError)), SIGNAL(error(QAbstractSocket::SocketError)));
+    connect(&m_udpSocket, SIGNAL(readyRead()), SLOT(udpSocket_readyRead()));
 
     connect(m_game, SIGNAL(modeChanged(Game::Mode)), SLOT(game_modeChanged(Game::Mode)));
     connect(m_game, SIGNAL(planetAdded(Planet*)), SLOT(game_planetAdded(Planet*)));
@@ -19,11 +26,37 @@ MultiplayerClient::MultiplayerClient(Game *game, Player *player, QObject *parent
     connect(m_game, SIGNAL(planetChanged(Planet*,Planet::ChangeType)), SLOT(game_planetChanged(Planet*,Planet::ChangeType)));
 }
 
+void MultiplayerClient::connectToHost(const QString &hostName, quint16 port)
+{
+    m_tcpSocket.connectToHost(hostName, port);
+    m_udpSocket.connectToHost(hostName, port);
+}
+
+void MultiplayerClient::disconnectFromHost()
+{
+    m_tcpSocket.disconnectFromHost();
+    m_udpSocket.disconnectFromHost();
+}
+
+QAbstractSocket::SocketError MultiplayerClient::error() const
+{
+    return m_tcpSocket.error() != QAbstractSocket::UnknownSocketError ? m_tcpSocket.error() : m_udpSocket.error();
+}
+
+QString MultiplayerClient::errorString() const
+{
+    return m_tcpSocket.error() != QAbstractSocket::UnknownSocketError ? m_tcpSocket.errorString() : m_udpSocket.errorString();
+}
+
 void MultiplayerClient::socket_connected()
 {
 #ifdef MULTIPLAYERCLIENT_DEBUG
     qDebug("MultiplayerClient::socket_connected()");
 #endif
+
+    if (m_tcpSocket.state() == QAbstractSocket::ConnectedState && m_udpSocket.state() == QAbstractSocket::ConnectedState) {
+        emit connected();
+    }
 }
 
 void MultiplayerClient::socket_disconnected()
@@ -31,23 +64,34 @@ void MultiplayerClient::socket_disconnected()
 #ifdef MULTIPLAYERCLIENT_DEBUG
     qDebug("MultiplayerClient::socket_disconnected()");
 #endif
+
+    if (m_tcpSocket.state() == QAbstractSocket::UnconnectedState && m_udpSocket.state() == QAbstractSocket::UnconnectedState) {
+        emit disconnected();
+    }
 }
 
-void MultiplayerClient::socket_readyRead()
+void MultiplayerClient::socket_error(QAbstractSocket::SocketError error)
 {
 #ifdef MULTIPLAYERCLIENT_DEBUG
-    qDebug("MultiplayerClient::socket_readyRead(): %li bytes available", (long)bytesAvailable());
+    qDebug("MultiplayerClient::socket_error(%i) => %s", error, qPrintable(errorString()));
+#endif
+}
+
+void MultiplayerClient::tcpSocket_readyRead()
+{
+#ifdef MULTIPLAYERCLIENT_DEBUG
+    qDebug("MultiplayerClient::tcpSocket_readyRead(): %li bytes available", (long)m_tcpSocket.bytesAvailable());
 #endif
 
-    QDataStream in(this);
+    QDataStream in(&m_tcpSocket);
     in.setVersion(MultiplayerPacket::StreamVersion);
-    while (bytesAvailable() > 0) {
+    while (m_tcpSocket.bytesAvailable() > 0) {
         if (m_packetSize == 0) {
-            if (bytesAvailable() < (int)sizeof(PacketSize))
+            if (m_tcpSocket.bytesAvailable() < (int)sizeof(PacketSize))
                 return;
             in >> m_packetSize;
         }
-        if (bytesAvailable() < m_packetSize)
+        if (m_tcpSocket.bytesAvailable() < m_packetSize)
             return;
         m_packetSize = 0; // reset packet size
 
@@ -64,7 +108,7 @@ void MultiplayerClient::socket_readyRead()
         case MultiplayerPacket::ConnectionAccepted: {
             MultiplayerPacket packet(MultiplayerPacket::PlayerConnect);
             packet.stream() << *m_player;
-            packet.packAndSend(this);
+            packet.packAndSend(&m_tcpSocket);
             break;
         }
         case MultiplayerPacket::ConnectionRefused:
@@ -144,6 +188,40 @@ void MultiplayerClient::socket_readyRead()
             m_game->removePlanet(planet);
             break;
         }
+        default:
+            qWarning("MultiplayerClient::socket_readyRead(): Illegal PacketType %i", packetType);
+            return;
+        }
+    }
+}
+
+void MultiplayerClient::udpSocket_readyRead()
+{
+#ifdef MULTIPLAYERCLIENT_DEBUG
+    qDebug("MultiplayerClient::udpSocket_readyRead(): %li bytes available", (long)m_udpSocket.bytesAvailable());
+#endif
+
+    while (m_udpSocket.hasPendingDatagrams()) {
+        QByteArray datagram;
+        datagram.resize(m_udpSocket.pendingDatagramSize());
+        m_udpSocket.readDatagram(datagram.data(), datagram.size());
+
+        QDataStream in(datagram);
+        in.setVersion(MultiplayerPacket::StreamVersion);
+
+        // skip packet size (ignored with datagrams over UDP)
+        in.skipRawData(sizeof(PacketSize));
+
+        // read packet type
+        EnumType packetType; // MultiplayerPacket::PacketType
+        in >> packetType;
+
+#ifdef MULTIPLAYERCLIENT_DEBUG
+        qDebug("PacketType %i (%s)", packetType, qPrintable(MultiplayerPacket::typeString((MultiplayerPacket::PacketType)packetType)));
+#endif
+
+        // read and handle packet data
+        switch ((MultiplayerPacket::PacketType)packetType) {
         case MultiplayerPacket::PlanetChanged: {
             PlanetID planetId;
             EnumType changeType; // Planet::ChangeType
@@ -166,24 +244,24 @@ void MultiplayerClient::socket_readyRead()
             break;
         }
         default:
-            qWarning("MultiplayerClient::socket_readyRead(): Illegal PacketType %i", packetType);
+            qWarning("MultiplayerClient::udpSocket_readyRead(): Illegal PacketType %i", packetType);
             return;
         }
     }
 }
 
-void MultiplayerClient::socket_error(QAbstractSocket::SocketError error)
+void MultiplayerClient::sendChatMessage(const QString &msg)
 {
-#ifdef MULTIPLAYERCLIENT_DEBUG
-    qDebug("MultiplayerClient::socket_error(%i) => %s", error, qPrintable(errorString()));
-#endif
+    MultiplayerPacket packet(MultiplayerPacket::Chat);
+    packet.stream() << msg;
+    packet.packAndSend(&m_tcpSocket);
 }
 
 void MultiplayerClient::game_modeChanged(Game::Mode mode)
 {
     MultiplayerPacket packet(MultiplayerPacket::ModeChanged);
     packet.stream() << (EnumType)mode;
-    packet.packAndSend(this);
+    packet.packAndSend(&m_tcpSocket);
 }
 
 void MultiplayerClient::game_planetAdded(Planet *planet)
@@ -194,7 +272,7 @@ void MultiplayerClient::game_planetAdded(Planet *planet)
         m_tempIdPlanetMap.insert(tempPlanetId, planet);
         MultiplayerPacket packet(MultiplayerPacket::PlanetAdded);
         packet.stream() << tempPlanetId << *planet;
-        packet.packAndSend(this);
+        packet.packAndSend(&m_tcpSocket);
     }
 }
 
@@ -206,7 +284,7 @@ void MultiplayerClient::game_planetRemoved(Planet *planet)
         Q_ASSERT(planetId > 0);
         MultiplayerPacket packet(MultiplayerPacket::PlanetRemoved);
         packet.stream() << planetId;
-        packet.packAndSend(this);
+        packet.packAndSend(&m_tcpSocket);
     }
 }
 
@@ -228,6 +306,6 @@ void MultiplayerClient::game_planetChanged(Planet *planet, Planet::ChangeType ch
             packet.stream() << planet->radius();
             break;
         }
-        packet.packAndSend(this);
+        packet.packAndSend(&m_udpSocket);
     }
 }

@@ -89,10 +89,7 @@ void MultiplayerServerWindow::on_inputLineEdit_returnPressed()
         return;
     // TODO: proccess command
     qLog(command, Qt::magenta);
-    MultiplayerPacket packet(MultiplayerPacket::Chat);
-    packet.stream() << command << PlayerID(0); // server has PlayerID 0
-    packet.pack();
-    m_server->sendPacketToAllClients(packet);
+    m_server->sendChatMessage(command);
     ui->inputLineEdit->clear();
 }
 

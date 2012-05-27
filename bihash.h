@@ -45,6 +45,14 @@ public:
         return m_hash.isEmpty();
     }
 
+    inline QList<V> values() const {
+        return m_reverseHash.keys();
+    }
+
+    inline QList<K> keys() const {
+        return m_hash.keys();
+    }
+
     inline V takeValue(const K &key) {
         V value = m_hash.take(key);
         m_reverseHash.remove(value);
@@ -68,6 +76,9 @@ public:
         hash.m_reverseHash = m_hash;
         return hash;
     }
+
+    inline QHash<K, V>& hash() { return m_hash; }
+    inline QHash<V, K>& reverseHash() { return m_reverseHash; }
 
 private:
     QHash<K, V> m_hash;

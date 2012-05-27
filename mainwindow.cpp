@@ -364,7 +364,7 @@ void MainWindow::on_action_connectToServer_triggered()
             m_client->connectToHost(host, port);
         }
     } else {
-        if (m_client->isOpen()) {
+        if (m_client->isValid()) {
             ui->action_connectToServer->setText("Disconnecting...");
             ui->action_connectToServer->setEnabled(false);
             m_client->disconnectFromHost(); // TODO: send proper packet
@@ -405,11 +405,9 @@ void MainWindow::on_inputLineEdit_returnPressed()
     if (command.isEmpty())
         return;
     // TODO: proccess command
-    if (m_client != NULL) {
-        qLog(QString("You: %1").arg(command), m_canvas->activePlayer()->color());
-        MultiplayerPacket packet(MultiplayerPacket::Chat);
-        packet.stream() << command;
-        packet.packAndSend(m_client);
+    if (m_client != NULL && m_client->isValid()) {
+        qLog(QString("You: %1").arg(command), m_client->player()->color());
+        m_client->sendChatMessage(command);
     }
     ui->inputLineEdit->clear();
 }

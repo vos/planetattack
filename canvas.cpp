@@ -15,7 +15,7 @@ Canvas* Canvas::s_instance = NULL;
 Canvas::Canvas(QWidget *parent) :
     QGLWidget(parent)
 {
-    setWindowTitle("PlanetAttack 0.2.1 alpha - © 2012 Alexander Vos");
+    setWindowTitle("PlanetAttack 0.3 alpha - © 2012 Alexander Vos");
     Canvas::s_instance = this;
 
     m_game = new Game(this);

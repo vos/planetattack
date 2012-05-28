@@ -5,6 +5,7 @@
 #include <QUdpSocket>
 
 #include "game.h"
+#include "ship.h"
 #include "multiplayer.h"
 #include "bihash.h"
 
@@ -49,6 +50,7 @@ private slots:
     void game_planetAdded(Planet *planet);
     void game_planetRemoved(Planet *planet);
     void game_planetChanged(Planet *planet, Planet::ChangeType changeType);
+    void game_resourcesTransferInitiated(Planet *origin, qreal resourceFactor, Ship *ship);
 
     void player_changed(Player::ChangeType changeType);
 

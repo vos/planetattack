@@ -50,6 +50,7 @@ bool MultiplayerServerWindow::startListening(const QHostAddress &address, quint1
     m_port = port;
     bool listening = m_server->listen(address, port);
     if (listening) {
+        m_game->startGameLoop();
         QString msg = QString("Server is listening on interface %1, port %2")
                 .arg(m_server->serverAddress().toString()).arg(m_server->serverPort());
         m_statusLabel->setText(msg);
@@ -66,6 +67,7 @@ bool MultiplayerServerWindow::startListening(const QHostAddress &address, quint1
 
 void MultiplayerServerWindow::stopListening()
 {
+    m_game->stopGameLoop();
     m_server->close();
     qLog("Server stopped listening");
     m_statusLabel->setText("Server is not listening");

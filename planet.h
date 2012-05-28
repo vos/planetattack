@@ -30,7 +30,7 @@ public:
     inline bool isNeutral() const { return !hasPlayer(); }
     bool setPlayer(Player *player);
 
-    Q_INVOKABLE Ship* transferResourcesTo(Planet *target, qreal resourceFactor);
+    Q_INVOKABLE Ship* transferResourcesTo(Planet *target, qreal resourceFactor, bool emitSignal = true);
     Q_INVOKABLE Ship* transferResourcesTo(Planet *target);
 
     QRect rect() const;

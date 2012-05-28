@@ -27,6 +27,7 @@ public:
         PlanetId, // server -> client
         PlanetRemoved, // client -> server -> other clients
         PlanetChanged, // client -> server -> other clients
+        ResourcesTransferInitiated, // client -> server -> other clients
         IllegalPacketType
     };
     inline static QString typeString(PacketType type) { return MultiplayerPacket::PacketTypeNames[type]; }

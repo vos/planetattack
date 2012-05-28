@@ -75,10 +75,10 @@ signals:
     void planetAdded(Planet *planet);
     void planetRemoved(Planet *planet);
     void planetChanged(Planet *planet, Planet::ChangeType changeType);
-    void resourcesTransferInitiated(Ship *ship);
+    void resourcesTransferInitiated(Planet *origin, qreal resourceFactor, Ship *ship);
     void resourcesTransferCompleted(Ship *ship);
 
-    friend void Player::addShip(Ship *ship);
+    friend Ship* Planet::transferResourcesTo(Planet *target, qreal resourceFactor, bool emitSignal);
 
 public slots:
     void startGameLoop();

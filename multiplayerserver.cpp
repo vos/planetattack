@@ -2,6 +2,7 @@
 
 #include <QTcpSocket>
 #include "game.h"
+#include "ship.h"
 
 MultiplayerServer::MultiplayerServer(Game *game, QObject *parent) :
     QObject(parent),
@@ -112,7 +113,7 @@ void MultiplayerServer::client_tcpReadyRead()
     Q_ASSERT(client);
 
 #ifdef MULTIPLAYERSERVER_DEBUG
-    qDebug("MultiplayerServer::client_readyRead(): %li bytes available", (long)socket->bytesAvailable());
+    qDebug("MultiplayerServer::client_tcpReadyRead(): %li bytes available", (long)socket->bytesAvailable());
 #endif
 
     QDataStream in(socket);
@@ -234,8 +235,8 @@ void MultiplayerServer::client_tcpReadyRead()
             PlanetID tempPlanetId;
             Planet *planet = new Planet;
             in >> tempPlanetId >> *planet;
-            planet->setPlayer(client->player);
             if (m_game->addPlanet(planet)) {
+                client->player->addPlanet(planet);
                 PlanetID planetId = m_nextPlanetId++;
                 m_idPlanetMap.insert(planetId, planet);
                 // send real id to the creator
@@ -260,6 +261,21 @@ void MultiplayerServer::client_tcpReadyRead()
                 planetRemovedPacket << planetId;
                 planetRemovedPacket.pack();
                 sendTcpPacketToOtherClients(planetRemovedPacket, socket);
+            }
+            break;
+        }
+        case MultiplayerPacket::ResourcesTransferInitiated: {
+            PlanetID originId, targetId;
+            qreal resourceFactor;
+            in >> originId >> targetId >> resourceFactor;
+            Planet *origin = m_idPlanetMap.value(originId);
+            Q_ASSERT(origin);
+            Planet *target = m_idPlanetMap.value(targetId);
+            Q_ASSERT(target);
+            if (origin->transferResourcesTo(target, resourceFactor) != NULL) {
+                MultiplayerPacket resourcesTransferInitiatedPacket(MultiplayerPacket::ResourcesTransferInitiated);
+                resourcesTransferInitiatedPacket << originId << targetId << resourceFactor;
+                sendTcpPacketToOtherClients(resourcesTransferInitiatedPacket, socket);
             }
             break;
         }

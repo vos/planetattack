@@ -2,7 +2,7 @@
 
 #include <QRadialGradient>
 
-#include "player.h"
+#include "game.h"
 #include "ship.h"
 #include "canvas.h"
 
@@ -71,7 +71,7 @@ bool Planet::setPlayer(Player *p)
     return true;
 }
 
-Ship* Planet::transferResourcesTo(Planet *target, qreal resourceFactor)
+Ship* Planet::transferResourcesTo(Planet *target, qreal resourceFactor, bool emitSignal)
 {
     if (target == NULL) {
         qDebug("Planet::transferResourcesTo() target cannot be null");
@@ -88,6 +88,8 @@ Ship* Planet::transferResourcesTo(Planet *target, qreal resourceFactor)
     (void)subtractResources(res);
     Ship *ship = new Ship(m_position, target, res, m_color, owner);
     owner->addShip(ship);
+    if (emitSignal)
+        emit Game::instance()->resourcesTransferInitiated(this, resourceFactor, ship);
     return ship;
 }
 
@@ -144,19 +146,18 @@ void Planet::draw(QPainter &painter)
 QDataStream& operator<<(QDataStream &stream, const Planet &planet)
 {
     return stream << planet.m_position
-                  << planet.m_radius
                   << planet.m_resources
                   << planet.m_color
+                  << planet.m_radius
                   << planet.m_productionFactor;
 }
 
 QDataStream& operator>>(QDataStream &stream, Planet &planet)
 {
     return stream >> planet.m_position
-                  >> planet.m_radius
                   >> planet.m_resources
                   >> planet.m_color
+                  >> planet.m_radius
                   >> planet.m_productionFactor;
 }
-
 #endif

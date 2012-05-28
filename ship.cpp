@@ -6,6 +6,11 @@
 #include "player.h"
 #include "planet.h"
 
+Ship::Ship() :
+    SpaceObject()
+{
+}
+
 Ship::Ship(const QVector2D& position, Planet *target, qreal resources, const QColor &color, Player *parent) :
     SpaceObject(position, resources, color, parent)
 {
@@ -75,3 +80,21 @@ void Ship::draw(QPainter &painter)
     painter.setPen(Qt::white);
     painter.drawText(m_position.toPoint(), QString::number(int(m_resources)));
 }
+
+#ifndef QT_NO_DATASTREAM
+QDataStream& operator<<(QDataStream &stream, const Ship &ship)
+{
+    return stream << ship.m_position
+                  << ship.m_resources
+                  << ship.m_color
+                  << ship.m_speed;
+}
+
+QDataStream& operator>>(QDataStream &stream, Ship &ship)
+{
+    return stream >> ship.m_position
+                  >> ship.m_resources
+                  >> ship.m_color
+                  >> ship.m_speed;
+}
+#endif

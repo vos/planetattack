@@ -24,6 +24,7 @@ MultiplayerClient::MultiplayerClient(Game *game, Player *player, QObject *parent
     connect(m_game, SIGNAL(planetAdded(Planet*)), SLOT(game_planetAdded(Planet*)));
     connect(m_game, SIGNAL(planetRemoved(Planet*)), SLOT(game_planetRemoved(Planet*)), Qt::DirectConnection);
     connect(m_game, SIGNAL(planetChanged(Planet*,Planet::ChangeType)), SLOT(game_planetChanged(Planet*,Planet::ChangeType)));
+    connect(m_game, SIGNAL(resourcesTransferInitiated(Planet*,qreal,Ship*)), SLOT(game_resourcesTransferInitiated(Planet*,qreal,Ship*)));
 
     connect(m_player, SIGNAL(changed(Player::ChangeType)), SLOT(player_changed(Player::ChangeType)));
 }
@@ -207,10 +208,11 @@ void MultiplayerClient::tcpSocket_readyRead()
             in >> planetId >> *planet >> playerId;
             Player *player = m_idPlayerMap.value(playerId);
             Q_ASSERT(player);
-            planet->setPlayer(player);
             // add the id first (to avoid a network loop)
             m_idPlanetMap.insert(planetId, planet);
-            if (!m_game->addPlanet(planet)) {
+            if (m_game->addPlanet(planet)) {
+                player->addPlanet(planet);
+            } else {
                 // should never fail, just in case remove the planet again
                 m_idPlanetMap.removeKey(planetId);
             }
@@ -222,6 +224,17 @@ void MultiplayerClient::tcpSocket_readyRead()
             Planet *planet = m_idPlanetMap.takeValue(planetId);
             Q_ASSERT(planet);
             m_game->removePlanet(planet);
+            break;
+        }
+        case MultiplayerPacket::ResourcesTransferInitiated: {
+            PlanetID originId, targetId;
+            qreal resourceFactor;
+            in >> originId >> targetId >> resourceFactor;
+            Planet *origin = m_idPlanetMap.value(originId);
+            Q_ASSERT(origin);
+            Planet *target = m_idPlanetMap.value(targetId);
+            Q_ASSERT(target);
+            origin->transferResourcesTo(target, resourceFactor, false);
             break;
         }
         default:
@@ -355,6 +368,18 @@ void MultiplayerClient::game_planetChanged(Planet *planet, Planet::ChangeType ch
         }
         packet.packAndSend(&m_udpSocket);
     }
+}
+
+void MultiplayerClient::game_resourcesTransferInitiated(Planet *origin, qreal resourceFactor, Ship *ship)
+{
+    PlanetID originId = m_idPlanetMap.key(origin);
+    Q_ASSERT(originId > 0);
+    PlanetID targetId = m_idPlanetMap.key(ship->target());
+    Q_ASSERT(targetId > 0);
+
+    MultiplayerPacket packet(MultiplayerPacket::ResourcesTransferInitiated);
+    packet << originId << targetId << resourceFactor;
+    packet.packAndSend(&m_tcpSocket);
 }
 
 void MultiplayerClient::player_changed(Player::ChangeType changeType)

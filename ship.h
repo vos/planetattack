@@ -14,6 +14,7 @@ class Ship : public SpaceObject
     Q_PROPERTY(qreal speed READ speed WRITE setSpeed)
 
 public:
+    Ship();
     Ship(const QVector2D& position, Planet *target, qreal resources, const QColor &color, Player *parent = NULL);
 
     inline Planet* target() const { return m_target; }
@@ -21,6 +22,11 @@ public:
 
     inline qreal speed() const { return m_speed; }
     inline void setSpeed(qreal speed) { m_speed = speed; }
+
+#ifndef QT_NO_DATASTREAM
+    friend QDataStream& operator<<(QDataStream &stream, const Ship &ship);
+    friend QDataStream& operator>>(QDataStream &stream, Ship &ship);
+#endif
 
 public slots:
     void update(const GameTime &gameTime);
@@ -32,6 +38,11 @@ private:
     QVector2D m_direction; // temp
     
 };
+
+#ifndef QT_NO_DATASTREAM
+QDataStream& operator<<(QDataStream &stream, const Ship &ship);
+QDataStream& operator>>(QDataStream &stream, Ship &ship);
+#endif
 
 Q_DECLARE_METATYPE(Ship*)
 Q_DECLARE_METATYPE(QSet<Ship*>)
